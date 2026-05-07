@@ -1,10 +1,6 @@
 [build]
-builder = "RAILPACK"
-buildCommand = "pip install -r requirements.txt && python -m prisma generate"
-
-[build.environment]
-PYTHON_VERSION = "3.12"
+builder = "DOCKERFILE"
 
 [deploy]
-startCommand = startCommand = "uvicorn src.main:app --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/health"
+startCommand = "sh -c 'uvicorn src.main:app --host 0.0.0.0 --port $PORT'"
+restartPolicyType = "ON_FAILURE"
