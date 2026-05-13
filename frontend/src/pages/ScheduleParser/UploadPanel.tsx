@@ -41,6 +41,33 @@ function isAccepted(name: string): boolean {
   return ACCEPTED.includes(name.slice(dot).toLowerCase());
 }
 
+// FastAPI returns errors as either {detail: "string"} (HTTPException) or
+// {detail: [{loc, msg, type, ...}]} (Pydantic ValidationError). The latter
+// caused React error #31 when rendered as a string, so coerce both shapes.
+function extractErrorMessage(e: unknown): string {
+  if (e && typeof e === 'object' && 'response' in e) {
+    const resp = (e as { response?: { data?: { detail?: unknown } } }).response;
+    const detail = resp?.data?.detail;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail)) {
+      return detail
+        .map((d) => {
+          if (d && typeof d === 'object' && 'msg' in d) {
+            const loc = 'loc' in d && Array.isArray((d as { loc: unknown }).loc)
+              ? ((d as { loc: unknown[] }).loc).join('.')
+              : '';
+            return loc ? `${loc}: ${String((d as { msg: unknown }).msg)}` : String((d as { msg: unknown }).msg);
+          }
+          return JSON.stringify(d);
+        })
+        .join('; ');
+    }
+    if (detail) return JSON.stringify(detail);
+  }
+  if (e instanceof Error) return e.message;
+  return 'Upload failed.';
+}
+
 export default function UploadPanel({ onUploaded }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -79,18 +106,15 @@ export default function UploadPanel({ onUploaded }: Props) {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const r = await apiClient.post<UploadSummary>('/schedule/upload', fd);
+      // Override apiClient's default Content-Type: application/json so axios sets
+      // multipart/form-data with the correct boundary for the FormData body.
+      const r = await apiClient.post<UploadSummary>('/schedule/upload', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       setSummary(r.data);
       onUploaded(r.data);
     } catch (e: unknown) {
-      let msg = 'Upload failed.';
-      if (e && typeof e === 'object' && 'response' in e) {
-        const resp = (e as { response?: { data?: { detail?: string } } }).response;
-        if (resp?.data?.detail) msg = resp.data.detail;
-      } else if (e instanceof Error) {
-        msg = e.message;
-      }
-      setError(msg);
+      setError(extractErrorMessage(e));
     } finally {
       setUploading(false);
     }
