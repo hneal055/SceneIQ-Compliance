@@ -1,4 +1,4 @@
-import { LayoutDashboard, Clapperboard, Calculator, Globe, Bot, Bell, LogOut, FlaskConical, Settings, Link2, ClipboardCheck, BookOpen, Layers, Zap } from 'lucide-react';
+import { LayoutDashboard, Clapperboard, Calculator, Globe, Bot, Bell, LogOut, FlaskConical, Settings, Link2, ClipboardCheck, BookOpen, Layers, Zap, CalendarClock } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 
 
@@ -15,6 +15,7 @@ const tabs = [
   { id: 'jurisdictions', label: 'Jurisdictions', icon: Globe },
   { id: 'advisor', label: 'AI Advisor', icon: Bot, badge: 'NEW' },
   { id: 'mmb', label: 'MMB Connector', icon: Link2, badge: 'NEW' },
+  { id: 'schedule', label: 'Schedule Parser', icon: CalendarClock, badge: 'NEW' },
   { id: 'localRules',   label: 'Local Rules',       icon: BookOpen },
   { id: 'pendingRules', label: 'Rule Review',       icon: ClipboardCheck },
   { id: 'scenarioCalc', label: 'Scenario Calculator', icon: Layers },

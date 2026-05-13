@@ -10,18 +10,18 @@ datasource db {
 }
 
 model Jurisdiction {
-  id             String          @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
-  code           String          @unique
+  code           String   @unique
   country        String
   type           String
   description    String?
   website        String?
-  currency       String          @default("USD")
+  currency       String   @default("USD")
   treatyPartners String[]
-  active         Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Sub-jurisdiction hierarchy
   parentId         String?
@@ -33,14 +33,14 @@ model Jurisdiction {
   feedLastChecked DateTime?
   feedLastHash    String?
 
-  incentiveRules         IncentiveRule[]
-  productions            Production[]
-  localRules             LocalRule[]
-  pendingRules           PendingRule[]
-  requirements           JurisdictionRequirement[]
-  childPolicies          InheritancePolicy[] @relation("ChildPolicies")
-  parentPolicies         InheritancePolicy[] @relation("ParentPolicies")
-  subJurisdictionModels  SubJurisdiction[]   @relation("SubJurisdictionModel")
+  incentiveRules        IncentiveRule[]
+  productions           Production[]
+  localRules            LocalRule[]
+  pendingRules          PendingRule[]
+  requirements          JurisdictionRequirement[]
+  childPolicies         InheritancePolicy[]       @relation("ChildPolicies")
+  parentPolicies        InheritancePolicy[]       @relation("ParentPolicies")
+  subJurisdictionModels SubJurisdiction[]         @relation("SubJurisdictionModel")
 
   @@index([parentId])
   @@map("jurisdictions")
@@ -71,17 +71,17 @@ model LocalRule {
 }
 
 model InheritancePolicy {
-  id                  String       @id @default(uuid())
-  childJurisdictionId String
+  id                   String       @id @default(uuid())
+  childJurisdictionId  String
   parentJurisdictionId String
-  child               Jurisdiction @relation("ChildPolicies", fields: [childJurisdictionId], references: [id], onDelete: Cascade)
-  parent              Jurisdiction @relation("ParentPolicies", fields: [parentJurisdictionId], references: [id], onDelete: Cascade)
-  policyType          String
-  ruleCategory        String?
-  priority            Int          @default(0)
-  notes               String?
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  child                Jurisdiction @relation("ChildPolicies", fields: [childJurisdictionId], references: [id], onDelete: Cascade)
+  parent               Jurisdiction @relation("ParentPolicies", fields: [parentJurisdictionId], references: [id], onDelete: Cascade)
+  policyType           String
+  ruleCategory         String?
+  priority             Int          @default(0)
+  notes                String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   @@unique([childJurisdictionId, parentJurisdictionId, ruleCategory])
   @@index([childJurisdictionId])
@@ -119,27 +119,27 @@ model JurisdictionRequirement {
   jurisdiction   Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
 
   /// Short display name, e.g. "Film Permit Required"
-  name           String
+  name String
 
   /// permit | insurance | registration | designation | infrastructure | portal | contact | other
-  category       String
+  category String
 
   /// mandatory | recommended | informational
-  requirementType String      @default("mandatory")
+  requirementType String @default("mandatory")
 
-  description    String
+  description String
 
   /// Who this applies to, e.g. ["feature_film","commercial","tv_series"]
-  applicableTo   String[]     @default([])
+  applicableTo String[] @default([])
 
-  contactInfo    String?      /// phone / email for the relevant office
-  portalUrl      String?      /// direct link to online permit form or portal
-  sourceUrl      String?      /// page this was extracted from
-  extractedBy    String       @default("monitor")   /// monitor | manual
+  contactInfo String? /// phone / email for the relevant office
+  portalUrl   String? /// direct link to online permit form or portal
+  sourceUrl   String? /// page this was extracted from
+  extractedBy String  @default("monitor") /// monitor | manual
 
-  active         Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([jurisdictionId])
   @@index([category])
@@ -149,7 +149,7 @@ model JurisdictionRequirement {
 model IncentiveRule {
   id               String       @id @default(uuid())
   jurisdictionId   String
-  jurisdiction     Jurisdiction @relation(fields:  [jurisdictionId], references: [id], onDelete: Cascade)
+  jurisdiction     Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
   ruleName         String
   ruleCode         String       @unique
   incentiveType    String
@@ -172,11 +172,11 @@ model IncentiveRule {
 }
 
 model Production {
-  id                String           @id @default(uuid())
+  id                String               @id @default(uuid())
   title             String
   productionType    String
   jurisdictionId    String
-  jurisdiction      Jurisdiction     @relation(fields: [jurisdictionId], references: [id])
+  jurisdiction      Jurisdiction         @relation(fields: [jurisdictionId], references: [id])
   budgetTotal       Float
   budgetQualifying  Float?
   startDate         DateTime
@@ -185,8 +185,8 @@ model Production {
   status            String
   contact           String?
   metadata          String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
   expenses          Expense[]
   complianceItems   ComplianceItem[]
   scenarios         ProductionScenario[]
@@ -199,7 +199,7 @@ model Production {
 model Expense {
   id             String     @id @default(uuid())
   productionId   String
-  production     Production @relation(fields:  [productionId], references: [id], onDelete: Cascade)
+  production     Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
   category       String
   subcategory    String?
   description    String
@@ -323,37 +323,37 @@ model MonitoringEvent {
 /// County, city, region, or special-district incentive that stacks on top of
 /// the base state credit. Links to the parent Jurisdiction via parentJurisdictionId.
 model SubJurisdiction {
-  id                            String    @id @default(uuid())
+  id String @id @default(uuid())
 
-  name                          String
+  name                 String
   // county | city | region | special_district
-  type                          String
-  parentJurisdictionId          String
-  parentJurisdiction            Jurisdiction @relation("SubJurisdictionModel", fields: [parentJurisdictionId], references: [id], onDelete: Restrict)
+  type                 String
+  parentJurisdictionId String
+  parentJurisdiction   Jurisdiction @relation("SubJurisdictionModel", fields: [parentJurisdictionId], references: [id], onDelete: Restrict)
 
   // credit | rebate | fee_waiver | in_kind
-  incentiveType                 String
-  ratePercent                   Float?
-  fixedAmount                   Float?
-  capPerProduction              Float?
-  annualCap                     Float?
-  minSpendRequired              Float?
+  incentiveType    String
+  ratePercent      Float?
+  fixedAmount      Float?
+  capPerProduction Float?
+  annualCap        Float?
+  minSpendRequired Float?
 
   // Stacking rules JSON: cannot_stack_with[], requires[], stacking_order, notes
-  stackingRules                 Json      @default("{}")
+  stackingRules                 Json   @default("{}")
   eligibleExpenditureCategories Json?
   localHirePercentageRequired   Float?
 
-  effectiveDate                 DateTime  @db.Date
-  expirationDate                DateTime? @db.Date
+  effectiveDate  DateTime  @db.Date
+  expirationDate DateTime? @db.Date
 
-  isActive                      Boolean   @default(true)
-  sourceUrl                     String?
-  lastVerified                  DateTime?
-  notes                         String?
+  isActive     Boolean   @default(true)
+  sourceUrl    String?
+  lastVerified DateTime?
+  notes        String?
 
-  createdAt                     DateTime  @default(now())
-  updatedAt                     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([parentJurisdictionId])
   @@map("sub_jurisdictions")
@@ -362,26 +362,26 @@ model SubJurisdiction {
 /// Stores "what-if" input parameters for a single production.
 /// Multiple scenarios per production allow baseline vs. optimized comparison.
 model ProductionScenario {
-  id                  String    @id @default(uuid())
-  productionId        String
-  production          Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
 
-  name                String
-  totalBudget         Float?
-  qualifiedSpend      Float?
+  name               String
+  totalBudget        Float?
+  qualifiedSpend     Float?
   /// e.g. {"labor": 5000000, "rentals": 2000000}
-  spendByCategory     Json?
-  shootingDays        Int?
+  spendByCategory    Json?
+  shootingDays       Int?
   /// e.g. [{"jurisdiction_id": "uuid", "days": 20}, {"sub_jurisdiction_id": "uuid", "days": 10}]
-  daysByJurisdiction  Json?
-  postLocation        String?
-  localHirePercent    Float?
-  hireByJurisdiction  Json?
+  daysByJurisdiction Json?
+  postLocation       String?
+  localHirePercent   Float?
+  hireByJurisdiction Json?
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  optimizationResult  ScenarioOptimizationResult?
+  optimizationResult ScenarioOptimizationResult?
 
   @@index([productionId])
   @@map("production_scenarios")
@@ -390,12 +390,12 @@ model ProductionScenario {
 /// Cached stacking-engine output for a given scenario.
 /// Set expiresAt to force recomputation when underlying data changes.
 model ScenarioOptimizationResult {
-  id                  String             @id @default(uuid())
-  scenarioId          String             @unique
-  scenario            ProductionScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  id         String             @id @default(uuid())
+  scenarioId String             @unique
+  scenario   ProductionScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
   /// e.g. [{"jurisdiction_id": "...", "name": "NY Base", "incentive_value": 4500000}]
-  recommendedStack    Json               @default("[]")
+  recommendedStack    Json    @default("[]")
   totalIncentiveValue Float?
   effectiveRate       Float?
   /// e.g. "refundable within 90 days of audit"
@@ -403,8 +403,43 @@ model ScenarioOptimizationResult {
   /// e.g. ["Annual cap 82% exhausted — apply early"]
   warnings            Json?
 
-  createdAt           DateTime           @default(now())
-  expiresAt           DateTime?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
 
   @@map("scenario_optimization_results")
+}
+
+// ─── Broadcast Scheduler Parser ───────────────────────────────────────────────
+
+/// One parsed segment from a broadcast schedule (CSV / XML/BXF / JSON).
+/// Populated by the schedule_parser router from the broadcast_scheduler
+/// service module. Production data ties back optionally via productionId.
+model ScheduleEvent {
+  id            String   @id @default(uuid())
+  channel       String
+  scheduleDate  String?
+  sourceFile    String
+  /// "csv" | "xml" | "json"
+  sourceFormat  String
+  title         String
+  episodeTitle  String?
+  episodeNumber String?
+  seriesNumber  String?
+  txTime        String?
+  duration      String?
+  genre         String?
+  rightsStart   String?
+  rightsEnd     String?
+  assetId       String?
+  /// derived from txTime by date_helper (morning/afternoon/etc — populated later)
+  daypart       String?
+  importedAt    DateTime @default(now())
+  /// optional link to SceneIQ Production model (not enforced as FK yet)
+  productionId  String?
+
+  @@index([channel])
+  @@index([scheduleDate])
+  @@index([sourceFormat])
+  @@index([importedAt])
+  @@map("schedule_events")
 }
