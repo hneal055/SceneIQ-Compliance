@@ -1,2 +1,0 @@
-# Data tooling (optional in Phase 1; breaks on py3.14 without wheels)
-pandas==2.1.4

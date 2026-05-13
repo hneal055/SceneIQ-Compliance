@@ -1,1 +1,0 @@
-cd C:\Projects\Tax_Incentive_Compliance_Platform; $env:PYTHONPATH=(Get-Location).Path; python -m uvicorn src.main:app --reload --host 127.0.0.1 --port 8000

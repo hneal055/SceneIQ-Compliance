@@ -46,3 +46,9 @@ DATABASE_URL=*.txt
 
 # MMB Connector (separate repo)
 SceneIQ-MMB-Connector/
+
+# Scheduler-integration cleanup (Phase 1)
+node_modules/
+Lib/site-packages/
+archive_20260218_125420/
+safety_backup_20260219_085731/

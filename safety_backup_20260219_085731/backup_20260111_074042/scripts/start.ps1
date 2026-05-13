@@ -1,1 +1,0 @@
-<PASTE THE FULL start.ps1 CONTENT HERE>
