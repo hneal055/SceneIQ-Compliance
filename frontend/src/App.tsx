@@ -7,6 +7,7 @@ import Jurisdictions from './pages/Jurisdictions';
 import AIAdvisor from './components/AIAdvisor';
 import MMBConnector from './pages/MMBConnector';
 import ScheduleParser from './pages/ScheduleParser';
+import ProductionSchedule from './pages/ProductionSchedule';
 import PendingRules from './pages/PendingRules';
 import LocalRules from './pages/LocalRules';
 import ScenarioCalculator from './pages/ScenarioCalculator';
@@ -32,6 +33,7 @@ function App() {
     jurisdictions: <Jurisdictions />,
     advisor:      <AIAdvisor />,
     mmb:          <MMBConnector />,
+    productionSchedule: <ProductionSchedule />,
     schedule:     <ScheduleParser />,
     pendingRules:    <PendingRules />,
     localRules:      <LocalRules />,

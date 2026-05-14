@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =============================================================================
+     tests/sample_data/sample_breakdown.fdx
+     Sample Final Draft screenplay export for testing the FDX importer.
+     6 scenes — mix of INT/EXT, DAY/NIGHT/DAWN/DUSK, single and multi-cast.
+     Includes V.O. and O.S. parentheticals to test character name cleaning.
+     ============================================================================= -->
+<FinalDraft DocumentType="Script" Template="No" Version="3">
+  <Content>
+
+    <!-- Scene 1: EXT DAY - multi cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. HARBOUR DOCKS - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The docks are still and quiet. A body floats face-down in the grey water.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Call it in. Now.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Already on it.</Text>
+    </Paragraph>
+
+    <!-- Scene 2: INT DAY - large cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. POLICE PRECINCT - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The bullpen buzzes with activity. Marsh stands at the board.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CAPTAIN HOLT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What do we know?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Victim is male, mid-forties. No ID.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Harbour master wants to talk to us.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DISPATCH (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>All units, report to sector four.</Text>
+    </Paragraph>
+
+    <!-- Scene 3: EXT DAY - two cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. HARBOUR MASTER OFFICE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Marsh approaches the weathered building. The harbour master watches from the doorway.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You reported seeing someone last night?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HARBOUR MASTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Couldn't make out the face. Too dark.</Text>
+    </Paragraph>
+
+    <!-- Scene 4: EXT NIGHT - Brooklyn location -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. BROOKLYN WATERFRONT - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Rain hammers the empty waterfront. Marsh spots a figure in the shadows.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Stop! Police!</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SUSPECT (O.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You'll never prove anything.</Text>
+    </Paragraph>
+
+    <!-- Scene 5: INT NIGHT - action scene -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. BROOKLYN WAREHOUSE - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Dark. Dripping pipes. Marsh moves carefully through the shadows.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I know you're in here.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SUSPECT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Then you know how this ends.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Police! Nobody move!</Text>
+    </Paragraph>
+
+    <!-- Scene 6: EXT DUSK - single cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. HARBOUR DOCKS - DUSK</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The harbour is calm now. Marsh stands alone at the water's edge, watching the last light fade.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Same harbour. Different body. Same city.</Text>
+    </Paragraph>
+
+  </Content>
+</FinalDraft>

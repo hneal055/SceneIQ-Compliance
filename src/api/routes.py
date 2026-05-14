@@ -26,6 +26,7 @@ from src.api.maximizer import router as maximizer_router
 from src.api.requirements import router as requirements_router
 from src.api.scenarios import router as scenarios_router
 from src.api.schedule_parser import router as schedule_parser_router
+from src.api.production_schedule import router as production_schedule_router
 from src.utils.auth_utils import get_current_user
 
 API_PREFIX = "/api/0.1.0"
@@ -59,6 +60,7 @@ router.include_router(maximizer_router, dependencies=_auth_dep)
 router.include_router(requirements_router, dependencies=_auth_dep)
 router.include_router(scenarios_router, dependencies=_auth_dep)
 router.include_router(schedule_parser_router, dependencies=_auth_dep)
+router.include_router(production_schedule_router, dependencies=_auth_dep)
 
 
 @router.get("/", tags=["Meta"])

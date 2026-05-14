@@ -1,0 +1,45 @@
+-- STEP 2: fix_column_naming_drift
+--
+-- This migration intentionally contains NO SQL statements.
+--
+-- The dev database was created by migrations 20260411000001 and
+-- 20260411000002 with snake_case column names on three tables:
+--   - production_scenarios
+--   - scenario_optimization_results
+--   - sub_jurisdictions
+-- However prisma/schema.prisma was edited afterwards to use camelCase
+-- field names without generating an aligning migration, creating drift.
+--
+-- Per the user's instruction (2026-05-14): "Do NOT rename columns in
+-- the database — update the schema to reflect what is already there
+-- using @@map and @map field-level annotations where needed. ... the
+-- DB is the source of truth."
+--
+-- All alignment work happened in prisma/schema.prisma (no DB change):
+--   - @map("snake_case_name") on every camelCase field in the three
+--     drifty tables
+--   - map: "<db_constraint_name>" on @@index, @@unique, and @relation
+--     directives so Prisma uses the existing DB constraint/index names
+--   - @default(dbgenerated("gen_random_uuid()")) @db.Text on id columns
+--     to match the DB's DEFAULT gen_random_uuid()
+--   - @db.Decimal(p, s) on Float-typed columns that the DB stores as
+--     NUMERIC(p, s) — preserving financial precision
+--   - @db.Timestamptz(6) on DateTime columns the DB stores as
+--     timestamp with time zone
+--   - @default(now()) alongside @updatedAt where the DB has
+--     DEFAULT now() on updatedAt columns
+--   - Same map: alignment on the inheritance_policies @@unique/@@index
+--     and @relation FK constraint names
+--
+-- These schema annotations were applied in the same edit pass as
+-- STEP 1's schema preparation so STEP 1's migration could be focused
+-- on creating the two missing tables only. This file exists purely
+-- to preserve STEP 2 as a named, ordered, audit-trail step in the
+-- migration history.
+--
+-- Verification: after this migration is marked applied, running
+--   npx prisma migrate diff \
+--     --from-schema-datasource prisma/schema.prisma \
+--     --to-schema-datamodel prisma/schema.prisma --script
+-- should print "-- This is an empty migration." (which it did on
+-- 2026-05-14 immediately after STEP 1 was marked applied).
