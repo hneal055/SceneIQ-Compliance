@@ -72,7 +72,9 @@ from src.services.production_schedule.models.jurisdiction_shoot_days import (
 from src.services.production_schedule.models.scene import Scene
 from src.services.production_schedule.models.shoot_day import ShootDay
 from src.services.production_schedule.trackers.jurisdiction_tracker import (
+    count_shoot_days_per_jurisdiction,
     get_jurisdiction_summary,
+    verify_shoot_days,
 )
 from src.utils.database import prisma
 
@@ -142,6 +144,49 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
         jur_rows = await prisma.jurisdiction.find_many()
         name_to_id = {j.name: j.id for j in jur_rows}
 
+        # Phase 11.5 fix #2 — dedup by (productionId, sceneNumber).
+        # Load existing scene numbers so re-uploads skip duplicates
+        # instead of creating phantom rows.
+        existing_scene_rows = await prisma.scene.find_many(
+            where={"productionId": production.id},
+        )
+        existing_scene_numbers = {r.sceneNumber for r in existing_scene_rows}
+
+        # Phase 11.5 fix #5 — collect unique cast names across all parsed
+        # scenes, then ensure a CastMember row exists for each. Scene.castIds
+        # is the FK array of CastMember.id values (matches DOOD generator
+        # and the Phase 12 call-sheet resolution).
+        unique_cast_names = []
+        seen_names: set = set()
+        for s in scenes:
+            for cast_name in (s.cast_ids or []):
+                if cast_name and cast_name not in seen_names:
+                    seen_names.add(cast_name)
+                    unique_cast_names.append(cast_name)
+
+        existing_cm_rows = await prisma.castmember.find_many(
+            where={"productionId": production.id},
+        )
+        cast_name_to_id = {cm.characterName: cm.id for cm in existing_cm_rows}
+        for cast_name in unique_cast_names:
+            if cast_name not in cast_name_to_id:
+                try:
+                    cm = await prisma.castmember.create(
+                        data={
+                            "productionId":  production.id,
+                            "characterName": cast_name,
+                        }
+                    )
+                    cast_name_to_id[cast_name] = cm.id
+                except Exception:
+                    logger.exception(
+                        "production-schedule import: failed to create CastMember %s",
+                        cast_name,
+                    )
+                    warnings.append(
+                        f"Cast member {cast_name!r} could not be created — see server log"
+                    )
+
         for scene in scenes:
             raw_name = scene.jurisdiction_id
             if raw_name:
@@ -154,6 +199,21 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
                     f"scene {scene.scene_number} persisted with no FK"
                 )
 
+            # Fix #2 dedup check (also catches in-file duplicates by
+            # adding to the set as we go).
+            if scene.scene_number and scene.scene_number in existing_scene_numbers:
+                warnings.append(
+                    f"Scene {scene.scene_number!r} already exists for this production — skipped"
+                )
+                continue
+
+            # Fix #5 — rewrite cast names → CastMember.id values for storage.
+            resolved_cast_ids = [
+                cast_name_to_id[n]
+                for n in (scene.cast_ids or [])
+                if n in cast_name_to_id
+            ]
+
             try:
                 await prisma.scene.create(
                     data={
@@ -165,11 +225,13 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
                         "timeOfDay":      scene.time_of_day,
                         "pageCount":      scene.page_count,
                         "jurisdictionId": resolved_jid,
-                        "castIds":        scene.cast_ids,
+                        "castIds":        resolved_cast_ids,
                         "notes":          scene.notes,
                     }
                 )
                 scenes_imported += 1
+                if scene.scene_number:
+                    existing_scene_numbers.add(scene.scene_number)
             except Exception:
                 logger.exception(
                     "production-schedule import: failed to save scene %s",
@@ -211,7 +273,17 @@ async def get_stripboard(production_id: str):
     await _load_production_or_404(production_id)
     scenes, shoot_days = await _load_scenes_and_shoot_days(production_id)
     grid = build_stripboard(scenes, shoot_days)
-    return _stripboard_to_json(grid)
+
+    # Phase 11.5 fix #1 — resolve jurisdiction + cast IDs to display
+    # names for the dashboard. Field NAMES are preserved; only values
+    # swap. Matches the Phase 12 call-sheet resolution pattern.
+    jur_rows = await prisma.jurisdiction.find_many()
+    jur_id_to_name = {j.id: j.name for j in jur_rows}
+    cm_rows = await prisma.castmember.find_many(
+        where={"productionId": production_id},
+    )
+    cm_id_to_name = {cm.id: cm.characterName for cm in cm_rows}
+    return _stripboard_to_json(grid, jur_id_to_name, cm_id_to_name)
 
 
 # =============================================================================
@@ -258,6 +330,15 @@ async def assign_scene(production_id: str, body: AssignSceneBody):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Could not assign scene: {exc}",
         )
+
+    # Phase 11.5 fix #3 — roll up the shoot-day count per jurisdiction
+    # into JurisdictionShootDays. Wrapped in try/except so a rollup
+    # failure doesn't break the primary assign action; the user's
+    # action already succeeded by this point.
+    try:
+        await _rollup_jurisdiction_shoot_days(production_id)
+    except Exception:
+        logger.exception("stripboard assign: jurisdiction rollup failed")
 
     # `body.position` is accepted but currently ignored — there is no
     # `position` column on Scene yet (schema flagged as MVP).
@@ -393,7 +474,55 @@ async def get_jurisdiction_tracker(production_id: str):
 
 
 # =============================================================================
-# 9. POST /{production_id}/compliance-bridge/push
+# 9. POST /{production_id}/jurisdiction-tracker/verify     (Phase 11.5 fix #4)
+# =============================================================================
+
+
+@router.post(
+    "/{production_id}/jurisdiction-tracker/verify",
+    summary="Mark all jurisdiction shoot-day records for the production as verified",
+)
+async def verify_jurisdiction_tracker(production_id: str):
+    await _load_production_or_404(production_id)
+    try:
+        rows = await prisma.jurisdictionshootdays.find_many(
+            where={"productionId": production_id},
+        )
+    except Exception as exc:
+        logger.exception("jurisdiction-tracker verify: read failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not load shoot-day records: {exc}",
+        )
+
+    records = [_row_to_jsd(r) for r in rows]
+    if not records:
+        return {"verified": 0, "verified_at": None}
+
+    # Pure compute: mutates records in place, returns the same list.
+    verify_shoot_days(production_id, records)
+    timestamp = records[0].verified_at
+
+    for rec in records:
+        try:
+            await prisma.jurisdictionshootdays.update(
+                where={"id": rec.id},
+                data={"verifiedAt": timestamp},
+            )
+        except Exception:
+            logger.exception(
+                "jurisdiction-tracker verify: update failed for %s", rec.id
+            )
+
+    logger.info(
+        "jurisdiction-tracker verify: production=%s verified=%d at=%s",
+        production_id, len(records), timestamp,
+    )
+    return {"verified": len(records), "verified_at": timestamp}
+
+
+# =============================================================================
+# 10. POST /{production_id}/compliance-bridge/push
 # =============================================================================
 
 
@@ -414,6 +543,13 @@ async def push_compliance(production_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Could not load verified shoot-day records: {exc}",
         )
+
+    # Phase 11.5 fix #4 — filter to verified-only rows in Python (the
+    # prisma-client-py `{"not": None}` filter syntax doesn't work for
+    # nullable DateTime; this is what failed in Phase 12). With
+    # verifiedAt now nullable, this restores the Phase 9 design intent:
+    # ComplianceBridge only pushes verified rows downstream.
+    rows = [r for r in rows if r.verifiedAt is not None]
 
     records = [_row_to_jsd(r) for r in rows]
     payload = push_shoot_days_to_calculator(production_id, records)
@@ -476,6 +612,48 @@ async def _load_scenes_and_shoot_days(
         [_row_to_scene(r) for r in scene_rows],
         [_row_to_shoot_day(r) for r in shoot_day_rows],
     )
+
+
+# Phase 11.5 fix #3 — recomputes shoot-day-per-jurisdiction counts
+# and reconciles the JurisdictionShootDays table. Called from
+# assign_scene; safe to call repeatedly. Pure compute is delegated to
+# count_shoot_days_per_jurisdiction(); this function owns the Prisma
+# upsert / delete.
+async def _rollup_jurisdiction_shoot_days(production_id: str) -> None:
+    day_rows = await prisma.shootday.find_many(
+        where={"productionId": production_id},
+    )
+    day_dcs = [_row_to_shoot_day(r) for r in day_rows]
+    counts = count_shoot_days_per_jurisdiction(production_id, day_dcs)
+
+    existing = await prisma.jurisdictionshootdays.find_many(
+        where={"productionId": production_id},
+    )
+    existing_by_jur = {r.jurisdictionId: r for r in existing}
+
+    # Upsert each jurisdiction that has at least one shoot day pinned.
+    for jur_id, count in counts.items():
+        existing_row = existing_by_jur.get(jur_id)
+        if existing_row is None:
+            await prisma.jurisdictionshootdays.create(
+                data={
+                    "productionId":   production_id,
+                    "jurisdictionId": jur_id,
+                    "shootDays":      count,
+                }
+            )
+        elif existing_row.shootDays != count:
+            await prisma.jurisdictionshootdays.update(
+                where={"id": existing_row.id},
+                data={"shootDays": count},
+            )
+
+    # Drop any aggregate rows whose jurisdiction no longer has scenes.
+    for jur_id, existing_row in existing_by_jur.items():
+        if jur_id not in counts:
+            await prisma.jurisdictionshootdays.delete(
+                where={"id": existing_row.id},
+            )
 
 
 # Loads cast members for a production as in-memory dataclasses.
@@ -622,13 +800,34 @@ def _row_to_jsd(row) -> JurisdictionShootDays:
 # build_stripboard returns Scene OBJECTS inside the per-day "scenes"
 # list. FastAPI's JSON encoder can't serialise dataclasses by default,
 # so flatten via dataclasses.asdict() before returning.
-def _stripboard_to_json(grid: Dict[int, Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
+#
+# Phase 11.5 fix #1 — jur_id_to_name / cm_id_to_name maps resolve raw
+# UUIDs to human-readable names. Field names (`jurisdiction_id`,
+# `cast_ids`) stay the same so the dashboard reads them as-is. Unknown
+# IDs fall back to the raw value (defensive).
+def _stripboard_to_json(
+    grid: Dict[int, Dict[str, Any]],
+    jur_id_to_name: Dict[str, str] = None,
+    cm_id_to_name: Dict[str, str] = None,
+) -> Dict[int, Dict[str, Any]]:
+    jur_id_to_name = jur_id_to_name or {}
+    cm_id_to_name = cm_id_to_name or {}
     out: Dict[int, Dict[str, Any]] = {}
     for day_number, bucket in grid.items():
+        scenes_out = []
+        for s in bucket["scenes"]:
+            snap = asdict(s)
+            jid = snap.get("jurisdiction_id")
+            if jid:
+                snap["jurisdiction_id"] = jur_id_to_name.get(jid, jid)
+            cast_ids = snap.get("cast_ids") or []
+            snap["cast_ids"] = [cm_id_to_name.get(c, c) for c in cast_ids]
+            scenes_out.append(snap)
+        bucket_jur = bucket["jurisdiction"]
         out[day_number] = {
             "date":         bucket["date"],
-            "jurisdiction": bucket["jurisdiction"],
+            "jurisdiction": jur_id_to_name.get(bucket_jur, bucket_jur) if bucket_jur else bucket_jur,
             "total_pages":  bucket["total_pages"],
-            "scenes":       [asdict(s) for s in bucket["scenes"]],
+            "scenes":       scenes_out,
         }
     return out

@@ -587,8 +587,9 @@ model JurisdictionShootDays {
   jurisdiction    Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Restrict)
   shootDays       Int          @default(0)
   /// Marked by an explicit "Verify" action in the dashboard; the
-  /// ComplianceBridge only pushes verified rows downstream.
-  verifiedAt      DateTime     @default(now())
+  /// ComplianceBridge only pushes verified rows downstream. Null
+  /// until verify_shoot_days() / the verify endpoint is called.
+  verifiedAt      DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
