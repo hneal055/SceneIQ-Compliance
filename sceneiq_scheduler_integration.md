@@ -18,6 +18,18 @@ These two tools are being integrated because broadcast schedule data
 directly into SceneIQ's production spend tracking and tax incentive
 qualification workflows.
 
+### Note — separate from the Production Schedule Engine
+
+The Broadcast Scheduler module described in this document is for
+**post-production broadcast scheduling** — what aired, when, on which
+channel. It is distinct from the **Production Schedule Engine**
+(sidebar: "Production Schedule"), which handles **pre-production
+shooting schedules** — what is filmed, by whom, on which day, in
+which jurisdiction. See
+[PRODUCTION_SCHEDULE_USER_GUIDE.md](PRODUCTION_SCHEDULE_USER_GUIDE.md)
+for that module. The two share the word "schedule" but operate at
+opposite ends of the production lifecycle.
+
 ---
 
 ## Developer Profile
