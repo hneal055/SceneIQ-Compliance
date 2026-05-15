@@ -2,142 +2,229 @@
 <!-- =============================================================================
      tests/sample_data/sample_breakdown.fdx
      Sample Final Draft screenplay export for testing the FDX importer.
-     6 scenes — mix of INT/EXT, DAY/NIGHT/DAWN/DUSK, single and multi-cast.
+     10 scenes — Neon Pulse universe (matches sample_breakdown.csv + .mms).
+     Mix of INT/EXT, DAY/NIGHT, single and multi-cast.
      Includes V.O. and O.S. parentheticals to test character name cleaning.
      ============================================================================= -->
 <FinalDraft DocumentType="Script" Template="No" Version="3">
   <Content>
 
-    <!-- Scene 1: EXT DAY - multi cast -->
+    <!-- Scene 1: INT DAY - opening, multi cast -->
     <Paragraph Type="Scene Heading">
-      <Text>EXT. HARBOUR DOCKS - DAWN</Text>
+      <Text>INT. POLICE STATION - DAY</Text>
     </Paragraph>
     <Paragraph Type="Action">
-      <Text>The docks are still and quiet. A body floats face-down in the grey water.</Text>
+      <Text>The station is just waking up. Marsh pushes through the front doors, coffee in hand.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>MARSH</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Call it in. Now.</Text>
+      <Text>Morning.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>ROOKIE</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Already on it.</Text>
-    </Paragraph>
-
-    <!-- Scene 2: INT DAY - large cast -->
-    <Paragraph Type="Scene Heading">
-      <Text>INT. POLICE PRECINCT - DAY</Text>
-    </Paragraph>
-    <Paragraph Type="Action">
-      <Text>The bullpen buzzes with activity. Marsh stands at the board.</Text>
+      <Text>You're early.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>CAPTAIN HOLT</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>What do we know?</Text>
+      <Text>My office. Both of you.</Text>
+    </Paragraph>
+
+    <!-- Scene 2: INT DAY - bullpen briefing, full ensemble -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. POLICE STATION BULLPEN - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The bullpen is full. Whiteboards covered in photos. Marsh stands at the front.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>MARSH</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Victim is male, mid-forties. No ID.</Text>
+      <Text>One victim. No ID. No witnesses.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CAPTAIN HOLT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I want answers by end of shift.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DET. CHEN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Forensics is still working it.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>ROOKIE</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Harbour master wants to talk to us.</Text>
-    </Paragraph>
-    <Paragraph Type="Character">
-      <Text>DISPATCH (V.O.)</Text>
-    </Paragraph>
-    <Paragraph Type="Dialogue">
-      <Text>All units, report to sector four.</Text>
+      <Text>I'll start the canvass.</Text>
     </Paragraph>
 
-    <!-- Scene 3: EXT DAY - two cast -->
+    <!-- Scene 3: INT DAY - captain's office, two cast -->
     <Paragraph Type="Scene Heading">
-      <Text>EXT. HARBOUR MASTER OFFICE - DAY</Text>
+      <Text>INT. CAPTAIN HOLT OFFICE - DAY</Text>
     </Paragraph>
     <Paragraph Type="Action">
-      <Text>Marsh approaches the weathered building. The harbour master watches from the doorway.</Text>
+      <Text>Holt sits across from Marsh. The door is closed.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CAPTAIN HOLT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>This case is yours. Don't make me regret it.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>MARSH</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>You reported seeing someone last night?</Text>
-    </Paragraph>
-    <Paragraph Type="Character">
-      <Text>HARBOUR MASTER</Text>
-    </Paragraph>
-    <Paragraph Type="Dialogue">
-      <Text>Couldn't make out the face. Too dark.</Text>
+      <Text>I won't.</Text>
     </Paragraph>
 
-    <!-- Scene 4: EXT NIGHT - Brooklyn location -->
+    <!-- Scene 4: INT DAY - interrogation, two cast -->
     <Paragraph Type="Scene Heading">
-      <Text>EXT. BROOKLYN WATERFRONT - NIGHT</Text>
+      <Text>INT. INTERROGATION ROOM A - DAY</Text>
     </Paragraph>
     <Paragraph Type="Action">
-      <Text>Rain hammers the empty waterfront. Marsh spots a figure in the shadows.</Text>
+      <Text>Mirror lit. Marsh sits across from Delaney. A folder between them.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>MARSH</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Stop! Police!</Text>
+      <Text>Tell me about Friday night.</Text>
     </Paragraph>
     <Paragraph Type="Character">
-      <Text>SUSPECT (O.S.)</Text>
+      <Text>SUSPECT DELANEY</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>You'll never prove anything.</Text>
+      <Text>I want a lawyer.</Text>
     </Paragraph>
 
-    <!-- Scene 5: INT NIGHT - action scene -->
+    <!-- Scene 5: INT DAY - door insert, no cast -->
     <Paragraph Type="Scene Heading">
-      <Text>INT. BROOKLYN WAREHOUSE - NIGHT</Text>
+      <Text>INT. INTERROGATION ROOM A - DAY</Text>
     </Paragraph>
     <Paragraph Type="Action">
-      <Text>Dark. Dripping pipes. Marsh moves carefully through the shadows.</Text>
+      <Text>CLOSE ON the door latch. It clicks shut.</Text>
     </Paragraph>
-    <Paragraph Type="Character">
-      <Text>MARSH</Text>
+
+    <!-- Scene 6: INT DAY - corridor walk-and-talk, two cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. POLICE STATION CORRIDOR - DAY</Text>
     </Paragraph>
-    <Paragraph Type="Dialogue">
-      <Text>I know you're in here.</Text>
-    </Paragraph>
-    <Paragraph Type="Character">
-      <Text>SUSPECT</Text>
-    </Paragraph>
-    <Paragraph Type="Dialogue">
-      <Text>Then you know how this ends.</Text>
+    <Paragraph Type="Action">
+      <Text>Marsh and Rookie move down the corridor at pace.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>ROOKIE</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Police! Nobody move!</Text>
-    </Paragraph>
-
-    <!-- Scene 6: EXT DUSK - single cast -->
-    <Paragraph Type="Scene Heading">
-      <Text>EXT. HARBOUR DOCKS - DUSK</Text>
-    </Paragraph>
-    <Paragraph Type="Action">
-      <Text>The harbour is calm now. Marsh stands alone at the water's edge, watching the last light fade.</Text>
+      <Text>He's lawyered up.</Text>
     </Paragraph>
     <Paragraph Type="Character">
       <Text>MARSH</Text>
     </Paragraph>
     <Paragraph Type="Dialogue">
-      <Text>Same harbour. Different body. Same city.</Text>
+      <Text>Then we find another way in.</Text>
+    </Paragraph>
+
+    <!-- Scene 7: INT DAY - evidence locker, two cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. EVIDENCE LOCKER - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Rows of shelves. Officer Park signs Rookie in.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>OFFICER PARK</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What case?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Delaney. Pull everything we have.</Text>
+    </Paragraph>
+
+    <!-- Scene 8: EXT DAY - precinct steps, two cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. POLICE STATION STEPS - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Marsh stands at the top of the steps. Det. Chen catches up.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DET. CHEN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Lab just called.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Anything useful?</Text>
+    </Paragraph>
+
+    <!-- Scene 9: INT DAY - break room beat, two cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. BREAK ROOM - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The break room is quiet. Marsh stares at his coffee. Rookie watches.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You okay?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Ask me tomorrow.</Text>
+    </Paragraph>
+
+    <!-- Scene 10: INT DAY - button, full ensemble -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. POLICE STATION - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The station hums with end-of-shift energy. The team gathers.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CAPTAIN HOLT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Day one. Where are we?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Tomorrow we have him.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I'm with Marsh on that.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DET. CHEN (O.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>So am I.</Text>
     </Paragraph>
 
   </Content>

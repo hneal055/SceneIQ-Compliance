@@ -2,76 +2,121 @@
 <!-- =============================================================================
      tests/sample_data/sample_breakdown.mms
      Sample Movie Magic Scheduling export for testing the MMS importer.
-     6 scenes — mix of INT/EXT, DAY/NIGHT, single and multi-cast.
+     10 scenes — Neon Pulse universe (matches sample_breakdown.csv + .fdx).
+     Mix of INT/EXT, DAY/NIGHT, single and multi-cast.
      One element (ProductionNote) is intentionally unmapped to confirm
      silent ignore behaviour.
      ============================================================================= -->
-<BreakdownBook title="Midnight Harbour" production="Harbourlight Films">
+<BreakdownBook title="Neon Pulse" production="SceneIQ Demo Productions">
 
   <BreakdownSheet>
     <SceneNumber>1</SceneNumber>
-    <Description>Harbour at dawn — body discovered</Description>
-    <SceneHeading>EXT. HARBOUR DOCKS - DAWN</SceneHeading>
-    <SetName>Harbour Docks</SetName>
-    <PageCount>2.0</PageCount>
-    <ElementList>MARSH, ROOKIE</ElementList>
+    <Description>Establishing scene; wide master on entry</Description>
+    <SceneHeading>INT. POLICE STATION - DAY</SceneHeading>
+    <SetName>POLICE STATION</SetName>
+    <PageCount>2.5</PageCount>
+    <ElementList>MARSH, ROOKIE, CAPTAIN HOLT</ElementList>
     <ShootDay>Georgia</ShootDay>
-    <ProductionNote>Director wants crane shot</ProductionNote>
+    <ProductionNote>Push in slow on Marsh</ProductionNote>
   </BreakdownSheet>
 
   <BreakdownSheet>
     <SceneNumber>2</SceneNumber>
-    <Description>Precinct briefing — case assigned</Description>
-    <SceneHeading>INT. POLICE PRECINCT - DAY</SceneHeading>
-    <SetName>Police Precinct</SetName>
-    <PageCount>1.5</PageCount>
-    <ElementList>MARSH, CAPTAIN HOLT, ROOKIE, DISPATCH</ElementList>
+    <Description>Ensemble; coverage in three setups</Description>
+    <SceneHeading>INT. POLICE STATION BULLPEN - DAY</SceneHeading>
+    <SetName>POLICE STATION BULLPEN</SetName>
+    <PageCount>3.125</PageCount>
+    <ElementList>MARSH, ROOKIE, CAPTAIN HOLT, DET. CHEN</ElementList>
     <ShootDay>Georgia</ShootDay>
-    <ProductionNote>Practical lighting preferred</ProductionNote>
+    <ProductionNote>Handheld pref</ProductionNote>
   </BreakdownSheet>
 
   <BreakdownSheet>
     <SceneNumber>3</SceneNumber>
-    <Description>Marsh interviews harbour master</Description>
-    <SceneHeading>EXT. HARBOUR MASTER OFFICE - DAY</SceneHeading>
-    <SetName>Harbour Master Office</SetName>
-    <PageCount>1.125</PageCount>
-    <ElementList>MARSH, HARBOUR MASTER</ElementList>
+    <Description>Locked-off two-shot then singles</Description>
+    <SceneHeading>INT. CAPTAIN HOLT OFFICE - DAY</SceneHeading>
+    <SetName>CAPTAIN HOLT OFFICE</SetName>
+    <PageCount>1.875</PageCount>
+    <ElementList>MARSH, CAPTAIN HOLT</ElementList>
     <ShootDay>Georgia</ShootDay>
-    <ProductionNote>Check tide schedule for shoot day</ProductionNote>
+    <ProductionNote>Tripod</ProductionNote>
   </BreakdownSheet>
 
   <BreakdownSheet>
     <SceneNumber>4</SceneNumber>
-    <Description>Suspect spotted on Brooklyn waterfront</Description>
-    <SceneHeading>EXT. BROOKLYN WATERFRONT - NIGHT</SceneHeading>
-    <SetName>Brooklyn Waterfront</SetName>
-    <PageCount>0.875</PageCount>
-    <ElementList>MARSH, SUSPECT</ElementList>
-    <ShootDay>New York</ShootDay>
-    <ProductionNote>Night shoot — arrange catering</ProductionNote>
+    <Description>Mirror practical on</Description>
+    <SceneHeading>INT. INTERROGATION ROOM A - DAY</SceneHeading>
+    <SetName>INTERROGATION ROOM A</SetName>
+    <PageCount>2.25</PageCount>
+    <ElementList>MARSH, SUSPECT DELANEY</ElementList>
+    <ShootDay>Georgia</ShootDay>
+    <ProductionNote>Wide first</ProductionNote>
   </BreakdownSheet>
 
   <BreakdownSheet>
     <SceneNumber>5</SceneNumber>
-    <Description>Marsh confronts suspect in warehouse</Description>
-    <SceneHeading>INT. BROOKLYN WAREHOUSE - NIGHT</SceneHeading>
-    <SetName>Brooklyn Warehouse</SetName>
-    <PageCount>3.125</PageCount>
-    <ElementList>MARSH, SUSPECT, ROOKIE</ElementList>
-    <ShootDay>New York</ShootDay>
-    <ProductionNote>Stunt coordinator required</ProductionNote>
+    <Description>Pickup; door latch close-up</Description>
+    <SceneHeading>INT. INTERROGATION ROOM A - DAY</SceneHeading>
+    <SetName>INTERROGATION ROOM A</SetName>
+    <PageCount>0.125</PageCount>
+    <ElementList></ElementList>
+    <ShootDay>Georgia</ShootDay>
+    <ProductionNote>Insert only — no cast</ProductionNote>
   </BreakdownSheet>
 
   <BreakdownSheet>
     <SceneNumber>6</SceneNumber>
-    <Description>Case closed — Marsh alone at harbour</Description>
-    <SceneHeading>EXT. HARBOUR DOCKS - DUSK</SceneHeading>
-    <SetName>Harbour Docks</SetName>
+    <Description>Walk-and-talk; track right-to-left</Description>
+    <SceneHeading>INT. POLICE STATION CORRIDOR - DAY</SceneHeading>
+    <SetName>POLICE STATION CORRIDOR</SetName>
     <PageCount>0.5</PageCount>
-    <ElementList>MARSH</ElementList>
+    <ElementList>MARSH, ROOKIE</ElementList>
     <ShootDay>Georgia</ShootDay>
-    <ProductionNote>Golden hour — tight schedule window</ProductionNote>
+    <ProductionNote>Steadicam</ProductionNote>
+  </BreakdownSheet>
+
+  <BreakdownSheet>
+    <SceneNumber>7</SceneNumber>
+    <Description>Practicals only; low-key</Description>
+    <SceneHeading>INT. EVIDENCE LOCKER - DAY</SceneHeading>
+    <SetName>EVIDENCE LOCKER</SetName>
+    <PageCount>1.0</PageCount>
+    <ElementList>ROOKIE, OFFICER PARK</ElementList>
+    <ShootDay>Georgia</ShootDay>
+    <ProductionNote>Move slow</ProductionNote>
+  </BreakdownSheet>
+
+  <BreakdownSheet>
+    <SceneNumber>8</SceneNumber>
+    <Description>Quick crane-down outside</Description>
+    <SceneHeading>EXT. POLICE STATION STEPS - DAY</SceneHeading>
+    <SetName>POLICE STATION STEPS</SetName>
+    <PageCount>0.75</PageCount>
+    <ElementList>MARSH, DET. CHEN</ElementList>
+    <ShootDay>Georgia</ShootDay>
+    <ProductionNote>Available light</ProductionNote>
+  </BreakdownSheet>
+
+  <BreakdownSheet>
+    <SceneNumber>9</SceneNumber>
+    <Description>Quiet character beat</Description>
+    <SceneHeading>INT. BREAK ROOM - DAY</SceneHeading>
+    <SetName>BREAK ROOM</SetName>
+    <PageCount>1.5</PageCount>
+    <ElementList>MARSH, ROOKIE</ElementList>
+    <ShootDay>Georgia</ShootDay>
+    <ProductionNote>Hold the silence</ProductionNote>
+  </BreakdownSheet>
+
+  <BreakdownSheet>
+    <SceneNumber>10</SceneNumber>
+    <Description>Closes the morning block; over Marsh</Description>
+    <SceneHeading>INT. POLICE STATION - DAY</SceneHeading>
+    <SetName>POLICE STATION</SetName>
+    <PageCount>1.25</PageCount>
+    <ElementList>MARSH, ROOKIE, CAPTAIN HOLT, DET. CHEN</ElementList>
+    <ShootDay>Georgia</ShootDay>
+    <ProductionNote>Mirror Scene 1 framing</ProductionNote>
   </BreakdownSheet>
 
 </BreakdownBook>
