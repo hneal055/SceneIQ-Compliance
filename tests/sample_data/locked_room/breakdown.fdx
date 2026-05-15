@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =============================================================================
+     tests/sample_data/locked_room/breakdown.fdx
+     Sample Final Draft screenplay export — Locked Room (bottle episode).
+     8 scenes, ALL in HOTEL SUITE 412, all INT/NIGHT, 3-cast ensemble.
+     Tests: identical scene heading 8×, single-cast solo beat, no-cast insert.
+     ============================================================================= -->
+<FinalDraft DocumentType="Script" Template="No" Version="3">
+  <Content>
+
+    <!-- Scene 1: opening confrontation -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The suite is sparse. Alvarez sits across from Greene. A folder between them.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ALVAREZ</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Walk me through it. From the top.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>GREENE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I already told the first detective.</Text>
+    </Paragraph>
+
+    <!-- Scene 2: pressure builds -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Alvarez doesn't look up from his notes. Greene shifts in his seat.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ALVAREZ</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Tell me again.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>GREENE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>This is harassment.</Text>
+    </Paragraph>
+
+    <!-- Scene 3: solo phone call -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Alvarez steps to the window. Phone to his ear.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ALVAREZ</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>He's not breaking. Send Webb.</Text>
+    </Paragraph>
+
+    <!-- Scene 4: lawyer arrives -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A knock. Alvarez opens the door. Webb enters with a briefcase.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WEBB</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>This conversation is over.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ALVAREZ</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Your client invited us. He can ask us to leave.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>GREENE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I want to keep talking.</Text>
+    </Paragraph>
+
+    <!-- Scene 5: lawyer-client moment -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Webb pulls Greene to the far side of the room. Their voices drop.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WEBB</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Don't say another word.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>GREENE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I have to.</Text>
+    </Paragraph>
+
+    <!-- Scene 6: negotiation -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Alvarez and Webb sit at the desk. Greene paces in the background.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WEBB</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What's on the table?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ALVAREZ</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Truth. And maybe a deal.</Text>
+    </Paragraph>
+
+    <!-- Scene 7: time passing - cutaways, no cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>CUTAWAYS: Clock face — 2:17 AM. A cold coffee. An ashtray, half-full.</Text>
+    </Paragraph>
+
+    <!-- Scene 8: breaking point -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HOTEL SUITE 412 - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Greene sits. Hands shaking. Alvarez waits. Webb has stopped objecting.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>GREENE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I was there. I saw what he did.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ALVAREZ</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Then tell me everything.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>WEBB (O.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>For the record — my client is volunteering this statement.</Text>
+    </Paragraph>
+
+  </Content>
+</FinalDraft>

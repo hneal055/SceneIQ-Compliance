@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =============================================================================
+     tests/sample_data/silver_falls/breakdown.fdx
+     Sample Final Draft screenplay export — Silver Falls (large ensemble drama).
+     20 scenes; 14 cast; 8 locations; all NIGHT.
+     Tests: large-ensemble scene with 7-person cast (Scene 20), single-cast solo
+     beats, no-cast atmosphere scene (Scene 13), repeated location across scenes.
+     ============================================================================= -->
+<FinalDraft DocumentType="Script" Template="No" Version="3">
+  <Content>
+
+    <!-- Scene 1: SAWMILL accident -->
+    <Paragraph Type="Scene Heading"><Text>INT. SAWMILL FLOOR - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Saw blades hiss in the dark. Clint pulls Foreman Blaine back from the line.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLINT</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Shut it down. Now.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>FOREMAN BLAINE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Hastings won't like that.</Text></Paragraph>
+
+    <!-- Scene 2: lovers' rendezvous -->
+    <Paragraph Type="Scene Heading"><Text>EXT. RIVER BRIDGE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Lamplight on the railing. Evelyn paces. Clint arrives, breath visible.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>You're late.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLINT</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>The mill. There was an accident.</Text></Paragraph>
+
+    <!-- Scene 3: confession -->
+    <Paragraph Type="Scene Heading"><Text>INT. FIRST METHODIST CHURCH - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Candles in the dark church. Mrs. Hastings kneels. Reverend Pike approaches. Evelyn watches from the back.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>REVEREND PIKE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>You came late.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MRS. HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I came when I could.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN (O.S.)</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I heard everything.</Text></Paragraph>
+
+    <!-- Scene 4: town secret -->
+    <Paragraph Type="Scene Heading"><Text>INT. HASTINGS HOUSE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Firelight in the parlour. Mayor Hastings pours brandy. Judge Colby watches. Mrs. Hastings stands at the window.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MAYOR HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>The town will hold. It always has.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>JUDGE COLBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Towns hold until they don't.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MRS. HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>The girl was at the church.</Text></Paragraph>
+
+    <!-- Scene 5: first arrest -->
+    <Paragraph Type="Scene Heading"><Text>INT. JAILHOUSE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Sheriff Jacobs writes at his desk. Deputy Moore brings him coffee.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>DEPUTY MOORE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Clint Roper's in cell two.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>SHERIFF JACOBS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Don't let him talk to anyone.</Text></Paragraph>
+
+    <!-- Scene 6: hearing -->
+    <Paragraph Type="Scene Heading"><Text>INT. COURTROOM - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Judge Colby gavels for order. Evelyn stands. Clint flanked. Reverend Pike watches from the gallery.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>JUDGE COLBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>State your name for the record.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Evelyn Roper. I'm testifying on my own behalf.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLINT</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Don't do this.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>REVEREND PIKE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Let her speak.</Text></Paragraph>
+
+    <!-- Scene 7: gossip -->
+    <Paragraph Type="Scene Heading"><Text>INT. GENERAL STORE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Ruby stocks shelves. Old Man Hopkins counts coin at the counter.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>OLD MAN HOPKINS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>They say she testified.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>RUBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>They say a lot of things.</Text></Paragraph>
+
+    <!-- Scene 8: brother confronts -->
+    <Paragraph Type="Scene Heading"><Text>EXT. RIVER BRIDGE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Wind off the river. Eli catches Evelyn at the bridge.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>ELI</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>You should leave town.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>This is my home.</Text></Paragraph>
+
+    <!-- Scene 9: cover-up -->
+    <Paragraph Type="Scene Heading"><Text>INT. SAWMILL OFFICE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>A ledger between them. Mayor Hastings closes the door. Foreman Blaine waits.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MAYOR HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>The accident report needs adjusting.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>FOREMAN BLAINE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I won't lie for you.</Text></Paragraph>
+
+    <!-- Scene 10: diagnosis -->
+    <Paragraph Type="Scene Heading"><Text>INT. JAILHOUSE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Dr. Kirby examines Mrs. Hastings in the back room. Medical bag open.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>DR. KIRBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>It's not your nerves. It's a real fever.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MRS. HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Tell my husband nothing.</Text></Paragraph>
+
+    <!-- Scene 11: preparing testimony -->
+    <Paragraph Type="Scene Heading"><Text>INT. SAWMILL FLOOR - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Clarence stands alone among silent saws. He's rehearsing something under his breath.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLARENCE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I saw what I saw. I saw what I saw.</Text></Paragraph>
+
+    <!-- Scene 12: Mrs. Hastings collapses -->
+    <Paragraph Type="Scene Heading"><Text>INT. HASTINGS HOUSE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Mrs. Hastings collapses onto the chaise. Dr. Kirby kneels beside her. Reverend Pike enters from the hall.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>DR. KIRBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Send for the mayor.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>REVEREND PIKE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>He's already at the courthouse.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MRS. HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Tell him to stay there.</Text></Paragraph>
+
+    <!-- Scene 13: empty church - no cast -->
+    <Paragraph Type="Scene Heading"><Text>INT. FIRST METHODIST CHURCH - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Empty pews. Candles burning down. The wind through the rafters.</Text></Paragraph>
+
+    <!-- Scene 14: pre-trial -->
+    <Paragraph Type="Scene Heading"><Text>INT. JAILHOUSE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Bare bulb. Clint at the table. Sheriff Jacobs across from him.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>SHERIFF JACOBS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Last chance to talk before the morning.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLINT</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I've said what I'll say.</Text></Paragraph>
+
+    <!-- Scene 15: solo grief -->
+    <Paragraph Type="Scene Heading"><Text>EXT. RIVER BRIDGE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Evelyn alone at the rail. Lamplight on the water.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN (V.O.)</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Whatever happens tomorrow, I will not be ashamed.</Text></Paragraph>
+
+    <!-- Scene 16: workers organize -->
+    <Paragraph Type="Scene Heading"><Text>INT. SAWMILL OFFICE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Foreman Blaine, Eli, and Clarence around the ledger. Voices kept low.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>FOREMAN BLAINE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>If we all sign, he can't fire all of us.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>ELI</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>He can try.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLARENCE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I'm signing.</Text></Paragraph>
+
+    <!-- Scene 17: verdict -->
+    <Paragraph Type="Scene Heading"><Text>INT. COURTROOM - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Full courtroom. Judge Colby raises the gavel. Evelyn, Reverend Pike, Mayor Hastings, Clarence — all stand.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>JUDGE COLBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>This court finds the defendant not guilty.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MAYOR HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>This is not over.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>REVEREND PIKE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>For her, it is.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLARENCE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I saw what I saw.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Thank you, Your Honour.</Text></Paragraph>
+
+    <!-- Scene 18: reconciliation -->
+    <Paragraph Type="Scene Heading"><Text>INT. SAWMILL FLOOR - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Saws silent. Clint and Evelyn alone among the machinery.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>You can come home now.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLINT</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I will. Tomorrow.</Text></Paragraph>
+
+    <!-- Scene 19: cleanup deal -->
+    <Paragraph Type="Scene Heading"><Text>INT. HASTINGS HOUSE - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>The fire low. Mayor Hastings and Judge Colby with their cigars.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>JUDGE COLBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>You'll need new arrangements.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MAYOR HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I always need new arrangements.</Text></Paragraph>
+
+    <!-- Scene 20: final gathering (large ensemble) -->
+    <Paragraph Type="Scene Heading"><Text>INT. FIRST METHODIST CHURCH - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>The pews are full. Reverend Pike at the pulpit. The whole town gathered.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>REVEREND PIKE</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>We gather tonight for a beginning, not an ending.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>EVELYN</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>I want to thank you. All of you.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>CLINT</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>For standing with us.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>MRS. HASTINGS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>For forgiving us.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>RUBY</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>For staying.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>ELI</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>For all of it.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>OLD MAN HOPKINS</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Amen.</Text></Paragraph>
+
+  </Content>
+</FinalDraft>

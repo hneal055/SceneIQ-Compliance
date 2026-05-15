@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =============================================================================
+     tests/sample_data/continental_express/breakdown.fdx
+     Sample Final Draft screenplay export — Continental Express.
+     15 scenes; multi-state action. (FDX has no jurisdiction column —
+     for state assignment, use the CSV or MMS sibling.)
+     Tests: 15-scene parse, V.O./O.S. parentheticals, 2 no-cast B-roll
+     scenes, multi-location, mix of DAWN/DAY/DUSK/NIGHT.
+     ============================================================================= -->
+<FinalDraft DocumentType="Script" Template="No" Version="3">
+  <Content>
+
+    <!-- Scene 1: EXT DAY - boarding -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. ATLANTA UNION STATION - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Steam rises from the platform. Torres scans faces. Cole and Reed catch up.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>We board in three minutes.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COLE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I hate trains.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>REED</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You'll get used to it.</Text>
+    </Paragraph>
+
+    <!-- Scene 2: INT DAY - mission briefing -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. CARRIAGE 7 - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Torres slides a folder across the small table. Cole studies it.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The mark boards at New Orleans. We have until then.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COLE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What about the courier?</Text>
+    </Paragraph>
+
+    <!-- Scene 3: INT DAY - cover story -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. DINING CAR - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Reed sips coffee. Conductor Bennett pauses at her table.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CONDUCTOR BENNETT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Travelling alone, miss?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>REED</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Just visiting family.</Text>
+    </Paragraph>
+
+    <!-- Scene 4: EXT DAY - B-roll, no cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. GA RAIL CROSSING - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The Continental Express thunders past a country crossing. Sun glints off the engine.</Text>
+    </Paragraph>
+
+    <!-- Scene 5: INT NIGHT - plan hatched -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. SLEEPER COMPARTMENT - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Three figures crammed into a two-berth compartment. Maps on the bed.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>We hit the baggage car in the early hours.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>REED</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>And if he resists?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COLE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Then he resists.</Text>
+    </Paragraph>
+
+    <!-- Scene 6: INT NIGHT - baggage fight -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. BAGGAGE CAR - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Stacked trunks. Low light. Cole moves between them. NICOLAI steps out of the shadows.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NICOLAI</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I expected you sooner.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COLE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hands. Where I can see them.</Text>
+    </Paragraph>
+
+    <!-- Scene 7: EXT DAWN - asset extraction -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. NEW ORLEANS STATION - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Pink light over the platform. Torres meets Dr. Solomon at the edge of the crowd.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DR. SOLOMON</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You're late.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You're alive. Walk.</Text>
+    </Paragraph>
+
+    <!-- Scene 8: INT DAY - interrogation -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. ABANDONED WAREHOUSE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Dust in the slanted light. Dr. Solomon sits across from Torres. Cole watches the door.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What do you know about the courier?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DR. SOLOMON</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>More than I should.</Text>
+    </Paragraph>
+
+    <!-- Scene 9: EXT DAY - courier handoff -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. BAYOU ROAD - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A back road through the cypress. Reed waits beside a parked car. Grey approaches.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COURIER GREY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You're not who I was expecting.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>REED</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Plans changed.</Text>
+    </Paragraph>
+
+    <!-- Scene 10: INT NIGHT - quiet beat -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. GALLEY - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Two coffees. The train sways. Torres and Cole say nothing for a while.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COLE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Reed's good. Better than I expected.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Don't tell her that.</Text>
+    </Paragraph>
+
+    <!-- Scene 11: EXT DAWN - marshal joins -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. DESERT WHISTLE STOP - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A single platform in the middle of nowhere. A figure in a long coat waits.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSHAL DRAKE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You're on my patch now.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>And I'd appreciate the courtesy.</Text>
+    </Paragraph>
+
+    <!-- Scene 12: INT DAY - jurisdiction conflict -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. MARSHAL OFFICE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Drake at his desk. Torres standing. Kidd in the doorway.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSHAL DRAKE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>My deputy. Kidd. He'll be coming with you.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>KIDD</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Don't slow me down.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Same to you.</Text>
+    </Paragraph>
+
+    <!-- Scene 13: EXT DAY - rail yard shootout -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. RAIL YARDS - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Rows of freight cars. Sun beating down. Cole spots Nicolai. Shots ring out.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>COLE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Cover!</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>REED</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Flanking right!</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NICOLAI (O.S.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You can't have both!</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>KIDD</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Watch the high line!</Text>
+    </Paragraph>
+
+    <!-- Scene 14: INT DUSK - aftermath -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. OBSERVATION CAR - DUSK</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Magic hour out the window. Torres watches the desert roll past. Reed joins her.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>REED</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>We did it.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>TORRES (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Did we?</Text>
+    </Paragraph>
+
+    <!-- Scene 15: EXT NIGHT - tail-lights -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. RAIL YARDS - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The Continental Express pulls away into the desert. Tail-lights receding.</Text>
+    </Paragraph>
+
+  </Content>
+</FinalDraft>

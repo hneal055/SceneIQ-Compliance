@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- =============================================================================
+     tests/sample_data/midnight_harbour/breakdown.fdx
+     Sample Final Draft screenplay export — Midnight Harbour (small noir).
+     6 scenes covering harbor + precinct in a single jurisdiction.
+     Tests: DAWN/DUSK timecodes, V.O./O.S. parentheticals, single-cast scene,
+     no-cast insert.
+     ============================================================================= -->
+<FinalDraft DocumentType="Script" Template="No" Version="3">
+  <Content>
+
+    <!-- Scene 1: EXT DAWN - cold open at the docks -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. HARBOUR DOCKS - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The docks are still and quiet. A body floats face-down in grey water.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Call it in. Now.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Already on it.</Text>
+    </Paragraph>
+
+    <!-- Scene 2: INT DAY - precinct briefing -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. POLICE PRECINCT - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The bullpen buzzes with activity. Marsh stands at the board.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>CAPTAIN HOLT</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What do we know?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Victim is male, mid-forties. No ID.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Harbour master wants to talk to us.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DISPATCH (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>All units, report to sector four.</Text>
+    </Paragraph>
+
+    <!-- Scene 3: EXT DAY - witness interview -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. HARBOUR MASTER OFFICE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Marsh approaches the weathered building. The harbour master watches from the doorway.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You reported seeing someone last night?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>HARBOUR MASTER</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Couldn't make out the face. Too dark.</Text>
+    </Paragraph>
+
+    <!-- Scene 4: INT NIGHT - bathroom insert, no cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. HARBOUR DOCKS BATHROOM - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>CLOSE ON a payphone receiver. It rings. Nobody answers.</Text>
+    </Paragraph>
+
+    <!-- Scene 5: INT NIGHT - interrogation, two cast -->
+    <Paragraph Type="Scene Heading">
+      <Text>INT. POLICE PRECINCT INTERROGATION - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Mirror lit. Marsh and Rookie sit across from a SUSPECT (unseen, back to camera).</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Tell me about Friday night.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ROOKIE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Take your time.</Text>
+    </Paragraph>
+
+    <!-- Scene 6: EXT DUSK - solo beat -->
+    <Paragraph Type="Scene Heading">
+      <Text>EXT. HARBOUR DOCKS - DUSK</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The harbour is calm now. Marsh stands alone at the water's edge, watching the last light fade.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MARSH (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Same harbour. Different body. Same city.</Text>
+    </Paragraph>
+
+  </Content>
+</FinalDraft>
