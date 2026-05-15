@@ -187,6 +187,7 @@ model Production {
   budgetQualifying  Float?
   startDate         DateTime
   endDate           DateTime?
+   episodeCount      Int?
   productionCompany String
   status            String
   contact           String?

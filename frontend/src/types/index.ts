@@ -12,6 +12,7 @@ export interface Production {
   endDate?: string;
   jurisdictionId: string;
   status: string;
+  episodeCount?: number | null;
   createdAt: string;
   updatedAt: string;
 }

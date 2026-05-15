@@ -80,6 +80,7 @@ async def create_production(production: ProductionCreate):
             "startDate": format_datetime(production.startDate),
             "endDate": format_datetime(production.endDate),
             "productionCompany": production.productionCompany,
+            "episodeCount": production.episodeCount,
             "status": production.status,
             "contact": production.contact,
             "metadata": production.metadata,
@@ -148,6 +149,8 @@ async def update_production(production_id: str, production: ProductionUpdate):
         update_data["endDate"] = format_datetime(production.endDate)
     if production.productionCompany is not None:
         update_data["productionCompany"] = production.productionCompany
+    if production.episodeCount is not None:
+        update_data["episodeCount"] = production.episodeCount
     if production.status is not None:
         update_data["status"] = production.status
     if production.contact is not None:

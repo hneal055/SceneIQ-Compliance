@@ -36,6 +36,7 @@ const EMPTY_FORM = {
   productionType: 'feature',
   productionCompany: '',
   budgetTotal: '',
+  episodeCount: '',
   startDate: '',
   jurisdictionId: '',
   status: 'planning' as StatusKey,
@@ -90,6 +91,10 @@ export default function Productions() {
     if (!form.startDate)              e.startDate       = 'Start date is required';
     const b = Number(form.budgetTotal);
     if (!form.budgetTotal || isNaN(b) || b <= 0) e.budgetTotal = 'Enter a valid budget';
+    if (form.episodeCount) {
+      const n = Number(form.episodeCount);
+      if (!Number.isInteger(n) || n < 1) e.episodeCount = 'Enter a whole number';
+    }
     return e;
   }
 
@@ -107,6 +112,7 @@ export default function Productions() {
         productionType:    form.productionType,
         productionCompany: form.productionCompany.trim(),
         budgetTotal:       Number(form.budgetTotal),
+        episodeCount:      form.episodeCount ? Number(form.episodeCount) : null,
         startDate:         form.startDate,
         jurisdictionId:    form.jurisdictionId || '',
         status:            form.status,
@@ -151,6 +157,7 @@ export default function Productions() {
       productionType:    p.productionType,
       productionCompany: p.productionCompany,
       budgetTotal:       String(p.budgetTotal),
+      episodeCount:      p.episodeCount != null ? String(p.episodeCount) : '',
       startDate:         p.startDate?.split('T')[0] ?? '',
       jurisdictionId:    p.jurisdictionId ?? '',
       status:            p.status as StatusKey,
@@ -173,6 +180,10 @@ export default function Productions() {
     if (!editForm.startDate)                errs.startDate       = 'Start date is required';
     const b = Number(editForm.budgetTotal);
     if (!editForm.budgetTotal || isNaN(b) || b <= 0) errs.budgetTotal = 'Enter a valid budget';
+    if (editForm.episodeCount) {
+      const n = Number(editForm.episodeCount);
+      if (!Number.isInteger(n) || n < 1) errs.episodeCount = 'Enter a whole number';
+    }
     if (Object.keys(errs).length) { setEditErrors(errs); return; }
 
     setUpdating(true);
@@ -182,6 +193,7 @@ export default function Productions() {
         productionType:    editForm.productionType,
         productionCompany: editForm.productionCompany.trim(),
         budgetTotal:       Number(editForm.budgetTotal),
+        episodeCount:      editForm.episodeCount ? Number(editForm.episodeCount) : null,
         startDate:         editForm.startDate,
         jurisdictionId:    editForm.jurisdictionId || '',
         status:            editForm.status,
@@ -281,6 +293,11 @@ export default function Productions() {
                       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COLORS[p.status] ?? 'bg-slate-100 text-slate-700'}`}>
                         {STATUS_OPTIONS.find(s => s.value === p.status)?.label ?? p.status}
                       </span>
+                      {p.episodeCount != null && (
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                          {p.episodeCount} eps
+                        </span>
+                      )}
                     </div>
                     <p className="text-slate-500 text-sm">
                       {jurName(p.jurisdictionId)} • {p.productionCompany} • Started {p.startDate?.split('T')[0]}
@@ -326,7 +343,7 @@ export default function Productions() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div>
                     <p className="text-slate-500 text-xs font-medium mb-0.5">Budget</p>
                     <p className="text-base font-bold text-slate-900">${(p.budgetTotal / 1_000_000).toFixed(1)}M</p>
@@ -334,6 +351,10 @@ export default function Productions() {
                   <div>
                     <p className="text-slate-500 text-xs font-medium mb-0.5">Type</p>
                     <p className="text-base font-bold text-slate-900">{PROD_TYPES.find(t => t.value === p.productionType)?.label ?? p.productionType}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs font-medium mb-0.5">Episodes</p>
+                    <p className="text-base font-bold text-slate-900">{p.episodeCount ?? '—'}</p>
                   </div>
                   <div>
                     <p className="text-slate-500 text-xs font-medium mb-0.5">Jurisdiction</p>
@@ -410,6 +431,16 @@ export default function Productions() {
                     className={`w-full pl-7 pr-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${editErrors.budgetTotal ? 'border-red-400' : 'border-slate-300'}`} />
                 </div>
                 {editErrors.budgetTotal && <p className="text-red-500 text-xs mt-1">{editErrors.budgetTotal}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Episode Count <span className="text-slate-400 text-xs">(optional — for TV series)</span>
+                </label>
+                <input type="number" title="Episode count" placeholder="e.g. 6" min="1" step="1" value={editForm.episodeCount}
+                  onChange={e => { setEditForm(f => ({ ...f, episodeCount: e.target.value })); setEditErrors(er => ({ ...er, episodeCount: undefined })); }}
+                  className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${editErrors.episodeCount ? 'border-red-400' : 'border-slate-300'}`} />
+                {editErrors.episodeCount && <p className="text-red-500 text-xs mt-1">{editErrors.episodeCount}</p>}
               </div>
 
               <div>
@@ -536,6 +567,24 @@ export default function Productions() {
                   />
                 </div>
                 {errors.budgetTotal && <p className="text-red-500 text-xs mt-1">{errors.budgetTotal}</p>}
+              </div>
+
+              {/* Episode Count */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Episode Count <span className="text-slate-400 text-xs">(optional — for TV series)</span>
+                </label>
+                <input
+                  type="number"
+                  title="Episode count"
+                  placeholder="e.g. 6"
+                  min="1"
+                  step="1"
+                  value={form.episodeCount}
+                  onChange={e => { setForm(f => ({ ...f, episodeCount: e.target.value })); setErrors(er => ({ ...er, episodeCount: undefined })); }}
+                  className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.episodeCount ? 'border-red-400' : 'border-slate-300'}`}
+                />
+                {errors.episodeCount && <p className="text-red-500 text-xs mt-1">{errors.episodeCount}</p>}
               </div>
 
               {/* Start Date */}

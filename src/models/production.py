@@ -16,6 +16,7 @@ class ProductionBase(BaseModel):
     startDate: datetime = Field(..., description="Production start date")
     endDate: Optional[datetime] = Field(None, description="Production end date")
     productionCompany: str = Field(..., description="Production company name")
+    episodeCount: Optional[int] = Field(None, description="Episode count (TV series only)")
     contact: Optional[str] = Field(None, description="Contact information")
     status: str = Field(..., description="Status: planning, pre_production, production, post_production, completed")
     metadata: Optional[str] = Field(None, description="Additional metadata as JSON string")
@@ -36,6 +37,7 @@ class ProductionUpdate(BaseModel):
     startDate: Optional[datetime] = None
     endDate: Optional[datetime] = None
     productionCompany: Optional[str] = None
+    episodeCount: Optional[int] = None
     contact: Optional[str] = None
     status: Optional[str] = None
     metadata: Optional[str] = None
