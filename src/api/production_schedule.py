@@ -358,7 +358,14 @@ async def get_dood(production_id: str):
     await _load_production_or_404(production_id)
     scenes, shoot_days = await _load_scenes_and_shoot_days(production_id)
     cast = await _load_cast(production_id)
-    return generate_dood(production_id, cast, shoot_days, scenes)
+    grid = generate_dood(production_id, cast, shoot_days, scenes)
+
+    # Resolve CastMember.id grid keys to character names for the
+    # dashboard. Same idiom as the stripboard + call-sheet resolutions.
+    # CSV / PDF exports already use cm.character_name internally —
+    # only the JSON endpoint leaks raw IDs to the dashboard.
+    cm_id_to_name = {cm.id: cm.character_name for cm in cast}
+    return {cm_id_to_name.get(k, k): v for k, v in grid.items()}
 
 
 # =============================================================================
