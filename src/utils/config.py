@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = Field(default="HS256")
     JWT_EXPIRE_HOURS: int = Field(default=8)
 
+    # Account lockout (brute-force protection)
+    MAX_FAILED_ATTEMPTS: int = Field(default=5)
+    LOCKOUT_MINUTES: int = Field(default=15)
+
     # Phase 2+ (optional for Phase 1)
     DATABASE_URL: Optional[str] = Field(default=None)
 
