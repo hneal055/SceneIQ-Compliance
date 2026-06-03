@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from src.utils.database import prisma
-from src.utils.auth_utils import get_current_user, hash_password, validate_password_complexity
+from src.utils.auth_utils import get_current_user, hash_password
 from src.models.user import TokenData
 
 logger = logging.getLogger(__name__)
@@ -70,10 +70,6 @@ async def create_user(data: UserCreate, _: TokenData = Depends(_require_admin)):
     if data.role not in ("admin", "viewer"):
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Role must be 'admin' or 'viewer'")
 
-    valid, reason = validate_password_complexity(data.password)
-    if not valid:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, reason)
-
     user = await prisma.user.create(data={
         "email":        data.email,
         "passwordHash": hash_password(data.password),
@@ -105,13 +101,7 @@ async def update_user(
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot deactivate your own account")
         update["isActive"] = data.isActive
     if data.password is not None:
-        valid, reason = validate_password_complexity(data.password)
-        if not valid:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, reason)
         update["passwordHash"] = hash_password(data.password)
-        # An admin password reset also clears any lockout.
-        update["failedLoginCount"] = 0
-        update["lockedUntil"] = None
 
     if not update:
         return user
