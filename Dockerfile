@@ -49,7 +49,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /root/.cache /root/.cache
 
 # Copy application code
-ARG CACHEBUST=20260604094458
+ARG CACHEBUST=20260604121500
 COPY . .
 
 # Set Prisma cache environment variables to use /root/.cache
@@ -64,10 +64,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=5)"
 
 # Start application
-# Apply any pending Prisma migrations before boot so schema changes
-# (e.g. the production-schedule tables) reach the DB on deploy. The CMD
-# previously bypassed start.sh, so `migrate deploy` never ran and new
-# tables silently never landed in prod. `|| echo` keeps startup resilient:
-# a migrate hiccup logs but does not take the whole API down.
-CMD ["sh", "-c", "python -m prisma migrate deploy || echo 'migrate deploy failed — starting anyway'; uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Boot sequence, all best-effort so a DB hiccup never takes the API down:
+#   1. `prisma migrate deploy` — normal path for applying pending migrations.
+#   2. bootstrap_schedule_tables.sql — idempotent, history-INDEPENDENT safety
+#      net that guarantees the Production Schedule Engine tables exist even
+#      when `migrate deploy` aborts on a failed/drifted earlier migration and
+#      never reaches 20260514081759_add_production_schedule_engine. Without
+#      this, every /production-schedule endpoint 500s ("relation does not
+#      exist"). It only ever CREATEs missing objects, so it is safe on every
+#      boot and cannot touch existing data.
+CMD ["sh", "-c", "python -m prisma migrate deploy || echo 'migrate deploy failed — starting anyway'; psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/bootstrap_schedule_tables.sql || echo 'schedule-table bootstrap failed — starting anyway'; uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
