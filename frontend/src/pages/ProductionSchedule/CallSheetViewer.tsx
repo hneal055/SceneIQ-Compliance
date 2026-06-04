@@ -47,11 +47,10 @@ export default function CallSheetViewer({ productionId }: Props) {
     setDaysLoading(true);
     setError(null);
     getStripboard(productionId)
-      .then((dict) => {
+      .then((data) => {
         if (cancelled) return;
-        const nums = Object.keys(dict)
-          .map((n) => Number(n))
-          .filter((n) => !Number.isNaN(n))
+        const nums = data.days
+          .map((d) => d.day_number)
           .sort((a, b) => a - b);
         setAvailableDays(nums);
         if (nums.length > 0 && dayNumber === null) {

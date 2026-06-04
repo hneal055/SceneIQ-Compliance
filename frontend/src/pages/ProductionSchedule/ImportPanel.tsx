@@ -133,14 +133,13 @@ export default function ImportPanel({ productionId }: Props) {
       setPreviewLoading(true);
       try {
         const sb = await getStripboard(productionId);
-        const flattened: StripboardSceneSnapshot[] = [];
-        Object.values(sb).forEach((day) => {
-          flattened.push(...day.scenes);
-        });
-        // Also include unassigned scenes — but those aren't in the stripboard
-        // dict at all (build_stripboard excludes them). The preview is just a
-        // sample to confirm the round-trip; the real backend may also hold
-        // unassigned scenes that aren't yet on a shoot day.
+        // Freshly-imported scenes land in the Unscheduled bin (no shoot day
+        // yet); include those first, then any already on shoot days, so the
+        // preview confirms exactly what just landed in the DB.
+        const flattened: StripboardSceneSnapshot[] = [
+          ...sb.unscheduled.scenes,
+          ...sb.days.flatMap((day) => day.scenes),
+        ];
         setPreview(flattened.slice(0, 10));
       } catch {
         // Preview is informational — don't surface stripboard fetch errors
