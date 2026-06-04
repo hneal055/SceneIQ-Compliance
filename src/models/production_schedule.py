@@ -60,6 +60,18 @@ class CreateShootDayBody(BaseModel):
     notes: Optional[str] = None
 
 
+class UpdateShootDayBody(BaseModel):
+    """Body for PATCH /{production_id}/shoot-days/{shoot_day_id}. The edit
+    form always sends every logistics field, so each is overwritten with the
+    supplied value (an empty value clears the field). day_number and scene
+    assignments are managed separately and are not editable here."""
+    date: Optional[str] = Field(None, description="ISO date string (YYYY-MM-DD)")
+    location: Optional[str] = None
+    call_time: Optional[str] = Field(None, description="e.g. '06:00 AM'")
+    nearest_hospital: Optional[str] = None
+    notes: Optional[str] = None
+
+
 class JurisdictionSummaryRow(BaseModel):
     """One row in GET /{production_id}/jurisdiction-tracker."""
     jurisdiction_id: str

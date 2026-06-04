@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
+  Check,
   ChevronDown,
   ChevronRight,
   Clock,
@@ -27,9 +28,11 @@ import {
   LayoutGrid,
   Loader2,
   MapPin,
+  Pencil,
   Plus,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 
 import {
@@ -38,9 +41,11 @@ import {
   deleteShootDay,
   getStripboard,
   unassignScene,
+  updateShootDay,
   type StripboardDay,
   type StripboardSceneSnapshot,
   type UnscheduledBin,
+  type UpdateShootDayBody,
 } from "../../api/productionSchedule";
 
 interface Props {
@@ -150,6 +155,9 @@ export default function Stripboard({ productionId }: Props) {
 
   const handleDeleteDay = (day: StripboardDay) =>
     mutate(() => deleteShootDay(productionId, day.id));
+
+  const handleUpdateDay = (dayId: string, body: UpdateShootDayBody) =>
+    mutate(() => updateShootDay(productionId, dayId, body));
 
   // Moves a scene to a target placement: a ShootDay.id, or UNSCHEDULED.
   const handleMoveScene = (sceneId: string, target: string) =>
@@ -267,6 +275,7 @@ export default function Stripboard({ productionId }: Props) {
           onToggle={() => toggleDay(d.day_number)}
           onMove={handleMoveScene}
           onDelete={() => handleDeleteDay(d)}
+          onSave={handleUpdateDay}
         />
       ))}
 
@@ -340,6 +349,7 @@ interface DayBlockProps {
   onToggle: () => void;
   onMove: (sceneId: string, target: string) => void;
   onDelete: () => void;
+  onSave: (dayId: string, body: UpdateShootDayBody) => void;
 }
 
 function DayBlock({
@@ -350,7 +360,10 @@ function DayBlock({
   onToggle,
   onMove,
   onDelete,
+  onSave,
 }: DayBlockProps) {
+  const [editing, setEditing] = useState(false);
+
   const castCount = useMemo(() => {
     const names = new Set<string>();
     for (const s of day.scenes) {
@@ -393,7 +406,9 @@ function DayBlock({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Clock size={11} className="text-slate-400" />
-            <span className="text-[11px] text-slate-500">Call TBD</span>
+            <span className="text-[11px] text-slate-500">
+              {day.call_time || "Call TBD"}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <Film size={11} className="text-slate-400" />
@@ -410,6 +425,17 @@ function DayBlock({
           </div>
           <button
             type="button"
+            onClick={() => setEditing((v) => !v)}
+            disabled={busy}
+            title={`Edit Day ${day.day_number} logistics`}
+            className={`p-1 rounded hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed ${
+              editing ? "text-blue-600" : "text-slate-300 hover:text-blue-500"
+            }`}
+          >
+            <Pencil size={13} />
+          </button>
+          <button
+            type="button"
             onClick={onDelete}
             disabled={busy}
             title={`Delete Day ${day.day_number} (scenes return to Unscheduled)`}
@@ -419,6 +445,18 @@ function DayBlock({
           </button>
         </div>
       </div>
+
+      {editing && (
+        <DayEditForm
+          day={day}
+          busy={busy}
+          onCancel={() => setEditing(false)}
+          onSubmit={(body) => {
+            onSave(day.id, body);
+            setEditing(false);
+          }}
+        />
+      )}
 
       {expanded && (
         <div className="px-4 pb-4 pt-1 border-t border-slate-100 bg-slate-50/40">
@@ -444,6 +482,122 @@ function DayBlock({
         </div>
       )}
     </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// DayEditForm — inline editor for a shoot day's call-sheet logistics.
+// -----------------------------------------------------------------------------
+
+interface DayEditFormProps {
+  day: StripboardDay;
+  busy: boolean;
+  onCancel: () => void;
+  onSubmit: (body: UpdateShootDayBody) => void;
+}
+
+function DayEditForm({ day, busy, onCancel, onSubmit }: DayEditFormProps) {
+  const [date, setDate] = useState(day.date ?? "");
+  const [callTime, setCallTime] = useState(day.call_time ?? "");
+  const [location, setLocation] = useState(day.location ?? "");
+  const [hospital, setHospital] = useState(day.nearest_hospital ?? "");
+  const [notes, setNotes] = useState(day.notes ?? "");
+
+  // Empty string → null so the backend clears the column.
+  const nz = (v: string) => (v.trim() === "" ? null : v.trim());
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      date: nz(date),
+      call_time: nz(callTime),
+      location: nz(location),
+      nearest_hospital: nz(hospital),
+      notes: nz(notes),
+    });
+  };
+
+  const fieldCls =
+    "w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+  const labelCls =
+    "text-[11px] font-semibold uppercase tracking-wider text-slate-500";
+
+  return (
+    <form
+      onSubmit={submit}
+      className="px-4 py-4 border-t border-slate-100 bg-blue-50/30 space-y-3"
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <label className="flex flex-col gap-1">
+          <span className={labelCls}>Date</span>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className={fieldCls}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className={labelCls}>Call time</span>
+          <input
+            type="text"
+            value={callTime}
+            placeholder="e.g. 06:00 AM"
+            onChange={(e) => setCallTime(e.target.value)}
+            className={fieldCls}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className={labelCls}>Location</span>
+          <input
+            type="text"
+            value={location}
+            placeholder="Primary shooting location"
+            onChange={(e) => setLocation(e.target.value)}
+            className={fieldCls}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className={labelCls}>Nearest hospital</span>
+          <input
+            type="text"
+            value={hospital}
+            placeholder="For the call sheet header"
+            onChange={(e) => setHospital(e.target.value)}
+            className={fieldCls}
+          />
+        </label>
+      </div>
+      <label className="flex flex-col gap-1">
+        <span className={labelCls}>Notes</span>
+        <textarea
+          value={notes}
+          rows={2}
+          placeholder="Day-level production notes"
+          onChange={(e) => setNotes(e.target.value)}
+          className={`${fieldCls} resize-y`}
+        />
+      </label>
+      <div className="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-slate-600 border border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+        >
+          <X size={13} />
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Check size={13} />
+          Save day
+        </button>
+      </div>
+    </form>
   );
 }
 

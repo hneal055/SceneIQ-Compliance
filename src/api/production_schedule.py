@@ -45,6 +45,7 @@ from src.models.production_schedule import (
     CreateShootDayBody,
     ImportResponse,
     UnassignSceneBody,
+    UpdateShootDayBody,
 )
 from src.services.production_schedule.bridge.compliance_bridge import (
     push_shoot_days_to_calculator,
@@ -445,6 +446,47 @@ async def create_shoot_day(production_id: str, body: CreateShootDayBody):
         production_id, next_day_number, day.id,
     )
     return day
+
+
+@router.patch(
+    "/{production_id}/shoot-days/{shoot_day_id}",
+    summary="Update a shoot day's logistics (date, call time, location, hospital, notes)",
+)
+async def update_shoot_day(
+    production_id: str, shoot_day_id: str, body: UpdateShootDayBody
+):
+    await _load_production_or_404(production_id)
+
+    day_row = await prisma.shootday.find_unique(where={"id": shoot_day_id})
+    if day_row is None or day_row.productionId != production_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"ShootDay {shoot_day_id!r} not found in production {production_id!r}",
+        )
+
+    # The edit form sends every logistics field, so overwrite them all
+    # (a blank value clears the field). day_number / jurisdiction / scene
+    # assignments are intentionally not touched here.
+    try:
+        updated = await prisma.shootday.update(
+            where={"id": shoot_day_id},
+            data={
+                "date":            body.date,
+                "callTime":        body.call_time,
+                "location":        body.location,
+                "nearestHospital": body.nearest_hospital,
+                "notes":           body.notes,
+            },
+        )
+    except Exception as exc:
+        logger.exception("update shoot day failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not update shoot day: {exc}",
+        )
+
+    logger.info("shoot-day updated: production=%s id=%s", production_id, shoot_day_id)
+    return updated
 
 
 @router.delete(
@@ -985,12 +1027,16 @@ def _stripboard_payload(
         bucket = grid.get(day.day_number, {"date": day.date, "jurisdiction": day.jurisdiction_id, "scenes": [], "total_pages": 0.0})
         raw_jur = bucket.get("jurisdiction")
         days_out.append({
-            "id":           day.id,
-            "day_number":   day.day_number,
-            "date":         bucket.get("date"),
-            "jurisdiction": jur_id_to_name.get(raw_jur, raw_jur) if raw_jur else raw_jur,
-            "total_pages":  bucket.get("total_pages", 0.0),
-            "scenes":       [_scene_snapshot(s, jur_id_to_name, cm_id_to_name) for s in bucket.get("scenes", [])],
+            "id":              day.id,
+            "day_number":      day.day_number,
+            "date":            bucket.get("date"),
+            "jurisdiction":    jur_id_to_name.get(raw_jur, raw_jur) if raw_jur else raw_jur,
+            "call_time":       day.call_time,
+            "location":        day.location,
+            "nearest_hospital": day.nearest_hospital,
+            "notes":           day.notes,
+            "total_pages":     bucket.get("total_pages", 0.0),
+            "scenes":          [_scene_snapshot(s, jur_id_to_name, cm_id_to_name) for s in bucket.get("scenes", [])],
         })
 
     unscheduled_scenes = [s for s in scenes if s.shoot_day_id is None]

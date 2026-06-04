@@ -41,6 +41,10 @@ export interface StripboardDay {
   day_number: number;
   date: string | null;
   jurisdiction: string | null;
+  call_time: string | null;
+  location: string | null;
+  nearest_hospital: string | null;
+  notes: string | null;
   total_pages: number;
   scenes: StripboardSceneSnapshot[];
 }
@@ -66,6 +70,14 @@ export interface AssignSceneBody {
 export interface CreateShootDayBody {
   date?: string | null;
   jurisdiction_name?: string | null;
+  location?: string | null;
+  call_time?: string | null;
+  nearest_hospital?: string | null;
+  notes?: string | null;
+}
+
+export interface UpdateShootDayBody {
+  date?: string | null;
   location?: string | null;
   call_time?: string | null;
   nearest_hospital?: string | null;
@@ -176,6 +188,19 @@ export async function createShootDay(
   body: CreateShootDayBody = {},
 ): Promise<unknown> {
   const r = await apiClient.post(`${BASE}/${productionId}/shoot-days`, body);
+  return r.data;
+}
+
+// Updates a shoot day's logistics (date, call time, location, hospital, notes).
+export async function updateShootDay(
+  productionId: string,
+  shootDayId: string,
+  body: UpdateShootDayBody,
+): Promise<unknown> {
+  const r = await apiClient.patch(
+    `${BASE}/${productionId}/shoot-days/${shootDayId}`,
+    body,
+  );
   return r.data;
 }
 
