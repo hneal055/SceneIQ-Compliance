@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone, timedelta
 
 import bcrypt
@@ -19,6 +20,21 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/0.1.0/auth/token")
 
 def hash_password(plain: str) -> str:
     return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
+
+
+def validate_password_complexity(password: str) -> tuple[bool, str]:
+    """Return (is_valid, reason). Reason is empty when valid."""
+    if len(password) < 12:
+        return False, "Password must be at least 12 characters."
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter."
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter."
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one number."
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return False, "Password must contain at least one special character."
+    return True, ""
 
 
 def verify_password(plain: str, hashed: str) -> bool:

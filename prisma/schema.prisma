@@ -242,6 +242,10 @@ model User {
   isActive               Boolean                 @default(true)
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
+  failedLoginCount       Int                     @default(0)
+  lockedUntil            DateTime?
+  lastLoginAt            DateTime?
+  fullName               String?
   notificationPreference NotificationPreference?
   savedScenarios         UserScenario[]
 
