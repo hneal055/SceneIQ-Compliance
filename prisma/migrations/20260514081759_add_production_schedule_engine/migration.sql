@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "scenes" (
     "id" TEXT NOT NULL,
     "productionId" TEXT NOT NULL,

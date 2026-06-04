@@ -231,7 +231,7 @@ async def main():
     print(f"{'=' * 60}")
     print("\nSceneIQ is ready for demo.")
     print("URL: https://taxincentivecomplianceplatform-production.up.railway.app")
-    print("Login: admin@pilotforge.com / pilotforge2024\n")
+    print("Login: admin@sceneiq.com / sceneiq2024\n")
 
     await prisma.disconnect()
 

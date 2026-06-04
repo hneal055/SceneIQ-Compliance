@@ -1,5 +1,5 @@
 # SceneIQ — Tax Incentive Compliance Platform
-## User Manual v2.1
+## User Manual v3.0
 
 ---
 
@@ -13,23 +13,31 @@
 6. [Jurisdictions](#6-jurisdictions)
 7. [Local Rules & Rule Review](#7-local-rules--rule-review)
 8. [AI Advisor](#8-ai-advisor)
-9. [Reports & Exports](#9-reports--exports)
-10. [Monitoring System](#10-monitoring-system)
-11. [Incentive Maximizer](#11-incentive-maximizer)
-12. [Admin & User Management](#12-admin--user-management)
-13. [Notifications & Preferences](#13-notifications--preferences)
-14. [Command-Line Tools](#14-command-line-tools)
-15. [API Reference](#15-api-reference)
-16. [Database Models](#16-database-models)
-17. [Deployment & Operations](#17-deployment--operations)
-18. [Environment Variables](#18-environment-variables)
-19. [Troubleshooting](#19-troubleshooting)
+9. [Budget Builder](#9-budget-builder)
+10. [Reports & Exports](#10-reports--exports)
+11. [Monitoring System](#11-monitoring-system)
+12. [Incentive Maximizer](#12-incentive-maximizer)
+13. [Admin & User Management](#13-admin--user-management)
+14. [Notifications & Preferences](#14-notifications--preferences)
+15. [Command-Line Tools](#15-command-line-tools)
+16. [API Reference](#16-api-reference)
+17. [Database Models](#17-database-models)
+18. [Deployment & Operations](#18-deployment--operations)
+19. [Environment Variables](#19-environment-variables)
+20. [Troubleshooting](#20-troubleshooting)
 
 ---
 
 ## 1. Platform Overview
 
-SceneIQ is a tax incentive compliance platform built for film and TV production professionals. It centralizes jurisdiction research, incentive calculation, compliance tracking, rule monitoring, and AI-powered advisory in one system.
+SceneIQ is a tax incentive compliance platform built for film and TV production professionals. It combines jurisdiction research, incentive calculation, compliance tracking, AI advisory, and script-to-budget intelligence in one unified system.
+
+### Applications
+
+| App | URL Path | Description |
+|---|---|---|
+| **Incentives & Compliance** | `/` | Jurisdiction database, compliance tracking, calculator, maximizer, AI advisor |
+| **Budget Builder** | `/budget` | Script-to-budget pipeline with tax credit optimization and risk scoring |
 
 ### Core Capabilities
 
@@ -40,21 +48,28 @@ SceneIQ is a tax incentive compliance platform built for film and TV production 
 | **Scenario Analysis** | Model what-if spending scenarios per production |
 | **Compliance Tracking** | Manage checklist items with due dates and status |
 | **Jurisdiction Database** | 50+ jurisdictions with incentive rules and live feed monitoring |
-| **Compliance Checklist** | Per-jurisdiction permit, insurance, and registration requirements |
 | **Local Rules** | Sub-jurisdiction and county/city rules extracted from government feeds |
 | **Rule Review** | Human-in-the-loop approval of AI-extracted rules |
 | **AI Advisor** | Claude-powered chat for incentive questions |
 | **Maximizer** | Stack-optimize incentives across jurisdiction layers by location |
 | **Monitoring** | Automated change detection on government feeds |
+| **Budget Builder** | Screenplay import → scene analysis → budget estimate → tax credit optimization |
 | **Exports** | PDF and Excel reports for all major views |
 
 ### Tech Stack
 
-- **Frontend:** React 19 + TypeScript + Vite + Tailwind CSS v4
-- **Backend:** FastAPI + Python 3.12 + Prisma ORM
-- **Database:** PostgreSQL
-- **AI:** Anthropic Claude (Sonnet 4.6) for rule extraction and advisory
-- **Background Jobs:** APScheduler (feed ingestion every 4 hours)
+| Layer | Technology |
+|---|---|
+| **Incentives Frontend** | React 19 + TypeScript + Vite + Tailwind CSS v4 |
+| **Budget Frontend** | React 19 + TypeScript + Vite + Tailwind CSS v4 |
+| **Incentives API** | FastAPI + Python 3.12 + Prisma ORM |
+| **Budget API** | FastAPI + Python 3.12 + Prisma ORM |
+| **Pipeline** | Screenplay Engine, Emotion Rules, Risk Service, Pilotforge Adapter, Orchestrator |
+| **Database** | PostgreSQL (shared) |
+| **Graph DB** | Neo4j 5 (pipeline scene graph) |
+| **AI** | Anthropic Claude (Sonnet 4.6) — rule extraction, advisory, budget analysis |
+| **Reverse Proxy** | nginx |
+| **Background Jobs** | APScheduler (feed ingestion every 4 hours) |
 
 ---
 
@@ -64,8 +79,8 @@ SceneIQ is a tax incentive compliance platform built for film and TV production 
 
 | Field | Value |
 |---|---|
-| Email | `admin@pilotforge.com` |
-| Password | `pilotforge2024` |
+| Email | `admin@sceneiq.com` |
+| Password | `sceneiq2024` |
 
 > Change these immediately after first login via Settings → Account.
 
@@ -73,26 +88,39 @@ SceneIQ is a tax incentive compliance platform built for film and TV production 
 
 | Service | URL | Notes |
 |---|---|---|
-| Platform UI | `http://localhost` | Use this — nginx reverse proxy on port 80 |
-| API (via proxy) | `http://localhost/api/0.1.0/` | All frontend API calls route here |
-| API (direct) | `http://localhost:8001/api/0.1.0/` | Direct to backend, bypasses proxy |
-| API Docs | `http://localhost/docs` | Swagger UI — requires JWT to test protected routes |
-| API Redoc | `http://localhost/redoc` | Alternative docs UI |
+| **Incentives & Compliance** | `http://localhost:8080` | Main app via nginx reverse proxy |
+| **Budget Builder** | `http://localhost:8080/budget` | Budget pipeline app |
+| **Incentives API (via proxy)** | `http://localhost:8080/api/0.1.0/` | Proxied through nginx |
+| **Incentives API (direct)** | `http://localhost:8001/api/0.1.0/` | Direct to container |
+| **Budget API (direct)** | `http://localhost:8002/api/0.1.0/` | Direct to container |
+| **API Docs — Incentives** | `http://localhost:8001/docs` | Swagger UI |
+| **API Docs — Budget** | `http://localhost:8002/docs` | Swagger UI |
+| **Pipeline Orchestrator** | `http://localhost:8080/pipeline/` | Via nginx proxy |
+| **Neo4j Browser** | `http://localhost:7474` | Graph database UI |
 
-> **Do not use port 3000** for API calls. The frontend container's nginx on port 3000 does not proxy `/api/` — all API calls will return 405. Always use `http://localhost` (port 80).
+> **Always use port 8080** (nginx) for the web UI. Direct container ports (8001, 8002) are for API testing only.
 
 ### Docker Services
 
-| Service Name | Container | Role |
-|---|---|---|
-| `backend` | `pilotforge-api` | FastAPI + Prisma backend |
-| `frontend` | `pilotforge-ui` | React frontend (built static files) |
-| `nginx` | `pilotforge-nginx` | Reverse proxy (port 80) |
-| `postgres` | `tax-incentive-db` | PostgreSQL database |
+| Compose Service | Container | Port | Role |
+|---|---|---|---|
+| `incentives-api` | `sceneiq-incentives-api` | 8001→8000 | Incentives/compliance FastAPI backend |
+| `incentives-ui` | `sceneiq-incentives-ui` | (internal) | Incentives React frontend |
+| `budget-api` | `sceneiq-budget-api` | 8002→8000 | Budget Builder FastAPI backend |
+| `budget-ui` | `sceneiq-budget-ui` | (internal) | Budget Builder React frontend |
+| `nginx` | `sceneiq-nginx` | 8080→80 | Reverse proxy for all services |
+| `postgres` | `sceneiq-db` | 5435→5432 | PostgreSQL (shared database) |
+| `neo4j` | `sceneiq-neo4j` | 7474, 7687 | Graph DB for scene analysis |
+| `screenplay-engine` | `sceneiq-screenplay-engine` | 8010→8000 | Scene parsing and budget calculation |
+| `emotion-rules` | `sceneiq-emotion-rules` | 8011→8000 | Emotion-based budget adjustments |
+| `risk-service` | `sceneiq-risk-service` | 8012→8000 | Production risk scoring |
+| `pilotforge-adapter` | `sceneiq-pilotforge-adapter` | 8013→8000 | Incentives API adapter for pipeline |
+| `pipeline-orchestrator` | `sceneiq-pipeline-orchestrator` | 8014→8000 | Pipeline coordination service |
 
 ### Starting the Platform
 
 ```bash
+cd c:/Projects/SceneIQ
 docker compose up -d
 ```
 
@@ -102,25 +130,37 @@ docker compose up -d
 docker compose down
 ```
 
+### Viewing Logs
+
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f incentives-api
+docker compose logs -f budget-api
+docker compose logs -f pipeline-orchestrator
+```
+
 ### Fresh Database Recovery Order
 
 If the database is empty or reset:
 
 ```bash
 # 1. Run migrations
-docker exec pilotforge-api python -m prisma migrate deploy
+docker exec sceneiq-incentives-api python -m prisma migrate deploy
 
 # 2. Seed jurisdictions
-docker cp scripts/seed_jurisdictions.py pilotforge-api:/app/scripts/seed_jurisdictions.py
-docker exec pilotforge-api python scripts/seed_jurisdictions.py
+docker cp scripts/seed_jurisdictions.py sceneiq-incentives-api:/app/scripts/seed_jurisdictions.py
+docker exec sceneiq-incentives-api python scripts/seed_jurisdictions.py
 
 # 3. Seed incentive rules
-docker cp scripts/seed_incentive_rules.py pilotforge-api:/app/scripts/seed_incentive_rules.py
-docker exec pilotforge-api python scripts/seed_incentive_rules.py
+docker cp scripts/seed_incentive_rules.py sceneiq-incentives-api:/app/scripts/seed_incentive_rules.py
+docker exec sceneiq-incentives-api python scripts/seed_incentive_rules.py
 
 # 4. Seed sub-jurisdictions and more rules
-docker exec pilotforge-api python scripts/seed_more_jurisdictions.py
-docker exec pilotforge-api python scripts/seed_more_rules.py
+docker exec sceneiq-incentives-api python scripts/seed_more_jurisdictions.py
+docker exec sceneiq-incentives-api python scripts/seed_more_rules.py
 
 # 5. Seed maximizer test data (optional)
 python scripts/seed_maximizer_test.py
@@ -566,7 +606,150 @@ When a production is selected in the sidebar:
 
 ---
 
-## 9. Reports & Exports
+## 9. Budget Builder
+
+**Navigation:** `http://localhost:8080/budget`
+
+The Budget Builder converts a screenplay or manual budget into a detailed cost estimate with tax credit optimization and risk scoring. It operates in two modes: **Script Pipeline** and **Manual Entry**.
+
+---
+
+### Mode 1: Script Pipeline
+
+The pipeline ingests a screenplay, analyzes it, estimates a budget, evaluates tax credits across all jurisdictions, and scores production risk — all in a single request.
+
+#### Importing a File
+
+Click **Import** (top right of the Script Pipeline panel) to open the format dropdown:
+
+| Format | Extensions | Description |
+|---|---|---|
+| **Screenplay** | `.fountain`, `.fdx`, `.txt` | Script text. `.fdx` (Final Draft XML) is auto-converted to Fountain format |
+| **Budget CSV** | `.csv` | Line-item budget. Required columns: `category`, `amount`. Optional: `description`, `qualifying` |
+| **Project Config** | `.json` | Saved session — restores title, jurisdictions, and optionally script text |
+| **Previous Result** | `.json` | Exported pipeline result — reloads result panel without re-running |
+
+#### Running the Pipeline
+
+1. Import a screenplay (`.fountain`, `.fdx`, or `.txt`)
+2. Optionally set **Production Title**, **Emotion Override**, **Genre Override**, and **Jurisdiction** filters
+3. Click **Run Pipeline**
+4. Results appear in the panel below
+
+#### Pipeline Result Panels
+
+| Panel | Content |
+|---|---|
+| **Script Stats** | Scene count, dialogue blocks, unique characters, total lines |
+| **Budget Estimate** | Per-component breakdown (scenes × $15K, dialogue × $2K, characters × $5K), genre and emotion multipliers, final total |
+| **Tax Credit Analysis** | Top 5 jurisdictions ranked by estimated credit, optimal jurisdiction highlighted |
+| **Risk Assessment** | Risk score (0–100), risk level (low/medium/high), risk factors |
+| **Pipeline Errors** | Any service failures during processing |
+
+#### Downloading Results
+
+From the result panel:
+- **Download PDF** — formatted PDF report via the pipeline `/report` endpoint
+- **Download CSV** — budget breakdown in spreadsheet format
+- **Export JSON** — full result as importable JSON (use as "Previous Result" import)
+
+#### FDX (Final Draft) Files
+
+`.fdx` files are Final Draft XML. The Budget Builder converts them to Fountain format client-side before sending to the pipeline. Supported paragraph types: `Scene Heading`, `Action`, `Character`, `Dialogue`, `Parenthetical`, `Transition`, `Shot`, `General`.
+
+#### CSV Budget Format
+
+When importing a Budget CSV, the parser accepts these column names (case-insensitive):
+
+| Data | Accepted column names |
+|---|---|
+| Category | `category`, `dept`, `department` |
+| Description | `description`, `name`, `item` |
+| Amount | `amount`, `cost`, `total` |
+| Qualifying | `qualifying`, `is_qualifying` (yes/no/true/false/1/0) |
+| Title | `title`, `production` (first row only) |
+
+---
+
+### Mode 2: Manual Entry
+
+Click **Manual Entry** (toggle at top of the page) to switch to the budget builder form.
+
+#### Building a Budget Manually
+
+1. Enter **Production Title**
+2. Select a **Budget Template** (see templates below)
+3. Select **Jurisdiction** for tax credit calculation
+4. Click **Build Budget**
+
+The API returns a structured budget with all line items, categorized spend totals, qualifying vs. non-qualifying split, and estimated tax credit for the selected jurisdiction.
+
+#### Budget Templates
+
+| Template | Budget Tier | Typical Range |
+|---|---|---|
+| Feature Film — Micro Budget | micro | Under $1M |
+| Feature Film — Low Budget | low | $1M – $3.5M |
+| Feature Film — Mid Budget | mid | $10M – $30M |
+| TV Drama — One Hour Episode | basic | Per episode |
+| TV Comedy — Half Hour Episode | basic | Per episode |
+| Limited Series — Per Episode (Prestige) | high | Per episode |
+| Reality / Unscripted Series — Per Episode | basic | Per episode |
+| Documentary Feature | micro | Under $2M |
+| Short Film | micro | Under $50K |
+| Animated Series — Half Hour Episode | mid | Per episode |
+| Commercial / Branded Content | basic | Per spot |
+
+---
+
+### Other Budget Builder Features
+
+#### Budget Analysis (`/budget/analyze`)
+
+POST a list of line items to get a summary:
+- Total budget
+- Above-the-line vs. below-the-line split
+- Qualifying spend and percentage
+- Estimated credit for a jurisdiction
+- Recommendations (e.g., if qualifying spend is below 60%)
+
+#### Rate Cards (`/rates/*`)
+
+Look up union and non-union crew rates:
+- `/rates/union?guild=DGA` — rate card for a specific guild
+- `/rates/nonunion?location=GA` — non-union rates by location
+- `/rates/estimate` — estimate crew cost for a role
+
+#### Schedule Analysis (`/schedule/analyze`)
+
+POST a production brief to get a recommended shoot schedule:
+- Estimated shoot days
+- Cost-per-day breakdown
+- Schedule tier recommendation
+
+#### Budget AI Advisor (`/advisor/chat`)
+
+The Budget Builder has its own AI advisor endpoint focused on below-the-line budgeting, crew rates, and cost estimation questions.
+
+---
+
+### Pipeline Services
+
+The Script Pipeline uses these backend microservices (all run in Docker):
+
+| Service | Role |
+|---|---|
+| `screenplay-engine` | Parses Fountain/FDX, counts scenes, calculates base budget |
+| `emotion-rules` | Applies genre and emotional tone budget multipliers |
+| `risk-service` | Scores production risk based on script complexity |
+| `pilotforge-adapter` | Connects to incentives-api for live tax credit data |
+| `pipeline-orchestrator` | Coordinates all services, aggregates results |
+
+If a service is down, the orchestrator returns partial results with error messages in `pipeline_errors`.
+
+---
+
+## 10. Reports & Exports
 
 Reports can be generated from the Calculator page or the API directly.
 
@@ -577,6 +760,7 @@ Reports can be generated from the Calculator page or the API directly.
 | **Comparison Report** | Multi-jurisdiction comparison table, rates, caps, eligibility | `POST /reports/comparison/` |
 | **Compliance Report** | Checklist status, completion rate, outstanding items | `POST /reports/compliance/` |
 | **Scenario Report** | Scenario inputs, projected credits, chart | `POST /reports/scenario/` |
+| **Budget Pipeline Report** | Script stats, budget breakdown, tax credit ranking, risk score | Budget app `/pipeline/report` |
 
 ### Excel Reports
 
@@ -596,14 +780,14 @@ Reports can be generated from the Calculator page or the API directly.
 
 ```bash
 # PDF comparison report
-curl -X POST http://localhost/api/0.1.0/reports/comparison/ \
+curl -X POST http://localhost:8080/api/0.1.0/reports/comparison/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"production_id": "uuid", "jurisdiction_ids": ["uuid1", "uuid2"]}' \
   --output report.pdf
 
 # Excel compliance workbook
-curl -X POST http://localhost/api/0.1.0/excel/compliance/ \
+curl -X POST http://localhost:8080/api/0.1.0/excel/compliance/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"production_id": "uuid"}' \
@@ -612,7 +796,7 @@ curl -X POST http://localhost/api/0.1.0/excel/compliance/ \
 
 ---
 
-## 10. Monitoring System
+## 11. Monitoring System
 
 The monitoring system automatically tracks government web pages for rule changes and uses Claude to extract new rules.
 
@@ -644,12 +828,12 @@ Each jurisdiction can have a `feedUrl` pointing to a government web page, RSS fe
 | CA-SANFRANCISCO | San Francisco, CA | `sf.gov/topic-permitting` |
 | CA-SANDIEGO | San Diego, CA | `sandiego.gov/specialevents-filming/filming` |
 | CA-SACRAMENTO | Sacramento, CA | `filmsac.com/feed/` *(RSS — change detection only)* |
-| CA-OAKLAND | Oakland, CA | *(WAF-protected — manual monitoring; URL: `oaklandca.gov/Business/Oakland-Economic-Development/Film-Office`)* |
+| CA-OAKLAND | Oakland, CA | *(WAF-protected — manual monitoring)* |
 | IL-COOK | Cook County / Chicago | `chicago.gov/…/chicago_film_office_tax.html` |
 | GA-SAVANNAH | Savannah, GA | `filmsavannah.org/permits/` |
 | GA-FULTON | Fulton County, GA | `fultoncountyga.gov/fultonfilms` |
 | GA-DEKALB | DeKalb County, GA | `dekalbcountyga.gov/planning-and-sustainability/other-permitting-services-1` |
-| GA-ATLANTA | Atlanta, GA | *(WAF-protected — manual monitoring; URL: `atlantaga.gov/…/office-of-film-entertainment-nightlife`)* |
+| GA-ATLANTA | Atlanta, GA | *(WAF-protected — manual monitoring)* |
 | LA-NEW-ORLEANS | New Orleans, LA | `nolafilm.com/feed` |
 | LA-BATONROUGE | Baton Rouge, LA | `batonrougefilm.com/permits/` |
 | LA-SHREVEPORT | Shreveport, LA | *(no verified URL — manual monitoring)* |
@@ -659,8 +843,8 @@ Each jurisdiction can have a `feedUrl` pointing to a government web page, RSS fe
 | TX-HOUSTON | Houston, TX | `houstonfilmcommission.com` |
 | TX-SANANTONIO | San Antonio, TX | `filmsanantonio.com/permits/` |
 | TX-AUSTIN | Austin, TX | *(no verified URL — manual monitoring)* |
-| TX-DALLAS | Dallas, TX | *(feedUrl cleared — filmdallas.com redirects to a production company)* |
-| TX-FORTWORTH | Fort Worth, TX | *(WAF-protected — manual monitoring; URL: `fortworthtexas.gov/departments/communications/media-relations`)* |
+| TX-DALLAS | Dallas, TX | *(feedUrl cleared — redirects to unrelated site)* |
+| TX-FORTWORTH | Fort Worth, TX | *(WAF-protected — manual monitoring)* |
 
 ### Automated Schedule
 
@@ -678,7 +862,7 @@ Events include: title, summary, severity (info/warning/alert), and publish date.
 ### Adding a New Monitoring Source
 
 ```bash
-curl -X POST http://localhost/api/0.1.0/monitoring/sources/ \
+curl -X POST http://localhost:8080/api/0.1.0/monitoring/sources/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -692,13 +876,13 @@ curl -X POST http://localhost/api/0.1.0/monitoring/sources/ \
 ### Manual Ingest
 
 ```bash
-curl -X POST http://localhost/api/0.1.0/monitoring/ingest/ \
+curl -X POST http://localhost:8080/api/0.1.0/monitoring/ingest/ \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ---
 
-## 11. Incentive Maximizer
+## 12. Incentive Maximizer
 
 The Maximizer resolves jurisdiction layers from a lat/lng coordinate and calculates the maximum incentive stack from all applicable rules in `incentive_rules`.
 
@@ -765,8 +949,6 @@ The **Maximizer** tab (⚡ icon, sidebar) provides a point-and-click interface t
 }
 ```
 
-`spend_by_location` is optional. Omit it and every rule uses `qualified_spend`. Include it to scope sub-jurisdiction bonuses to their actual local spend. Keys are jurisdiction codes; values are USD. Jurisdictions not present fall back to `qualified_spend`.
-
 Lat/lng mode:
 
 ```json
@@ -775,39 +957,6 @@ Lat/lng mode:
   "lng": -78.8784,
   "qualified_spend": 5000000,
   "project_type": "film"
-}
-```
-
-**Response:**
-
-```json
-{
-  "resolved_state": "NY",
-  "jurisdictions_evaluated": 10,
-  "qualified_spend": 5000000,
-  "total_incentive_usd": 1500000.00,
-  "effective_rate": 0.30,
-  "breakdown": {
-    "credit": 1500000.0,
-    "rebate": 0.0,
-    "tax_abatement": 0.0,
-    "permit_fee": 0.0,
-    "other": 0.0
-  },
-  "applied_rules": [
-    {
-      "rule_key": "NY-FILM-BASE",
-      "rule_type": "tax_credit",
-      "raw_value": 30.0,
-      "value_unit": "percent",
-      "computed_value": 1500000.0
-    }
-  ],
-  "overridden_rules": [],
-  "warnings": [
-    "NY-FILM-BASE and NY-POST-PROD are mutually exclusive — kept NY-FILM-BASE ($1,500,000)"
-  ],
-  "recommendations": ["Incentive stack is clean — no conflicts detected"]
 }
 ```
 
@@ -835,33 +984,7 @@ python maximizer.py --codes IL IL-COOK --spend 5000000 --type film \
     --location-spend IL:5000000 IL-COOK:2000000
 ```
 
-### Project-Type Filtering
-
-Pass `project_type` to exclude rules that are inapplicable to your production category:
-
-| Value | Rules excluded |
-|---|---|
-| `film` | Rules with `"tvSeries": true` in their requirements (e.g. `CA-TV-RELOCATE`) |
-| `all` (default) | No filtering — all active rules included |
-
-Additional project-type logic can be added to the `fetch_rules` SQL filter in `maximizer.py`.
-
-### Opt-In Bonuses
-
-Some rules require a production-specific election before they apply — a formal Green Sustainability Plan filing, a Relocation Series designation, etc. These rules have `"optIn": true` in their `requirements` JSON.
-
-The Maximizer **excludes opt-in rules from the base total** and surfaces them as warnings instead:
-
-```text
-[!] IL-FILM-GREEN-BONUS (5% = $250,000) requires opt-in election — not included in base total
-[!] IL-FILM-RELOCATION-BONUS (5% = $250,000) requires opt-in election — not included in base total
-```
-
-This prevents the engine from overstating incentives while still informing productions of potential upside if they take the qualifying action.
-
 ### Multi-Market Benchmark ($5M Film)
-
-Validated results from the engine as of April 2026:
 
 | Market | Jurisdiction Codes | Base Incentive | Rate | Opt-In Upside | Type |
 | ------ | ------------------ | -------------- | ---- | ------------- | ---- |
@@ -871,53 +994,27 @@ Validated results from the engine as of April 2026:
 | NYC | `NY` + `NY-NYC` | $2,000,000 | 40% | — | Tax credit |
 | Georgia | `GA` | $1,000,000 | 20% | +$500K (logo in credits) | Tax credit |
 | Los Angeles | `CA` + `CA-LA` | $1,000,000 | 20% | — | Tax credit |
-| San Diego | `CA` + `CA-SANDIEGO` | $1,002,500 | 20.05% | — | Credit + fee waiver |
 | Texas (base) | `TX` | $750,000 | 15% | +$375K (music + veteran + post) | Cash grant |
 | Texas — San Antonio | `TX` + `TX-SANANTONIO` | $750,000 | 15% | +$1,075K (SA local + all uplifts) | Cash grant |
 
-> **Chicago's 50% rate:** IL base (35%) + Chicago location bonus (15%). IL-CHICAGO-BONUS is scoped to IL-COOK spend — use the *Split spend by location* toggle. Example: `spend_by_location={"IL": 5000000, "IL-COOK": 2000000}` → $2.05M at 41%.
->
-> **New Mexico uplifts:** `NM-FILM-TV-UPLIFT` (+5%), `NM-QPF-UPLIFT` (+5%), `NM-RURAL-UPLIFT` (+10%) are all opt-in. QPF and Rural are unlikely to stack simultaneously. Max theoretical: 45%.
->
-> **Georgia logo uplift:** `GA-FILM-LOGO` (+10%) is opt-in — requires Georgia promotional logo in end credits.
->
-> **Texas is a cash grant** (TMIIIP) — paid after production, no tax liability required. Three stackable opt-in uplifts: music composer (+2.5%), veteran crew (+2.5%), post-production in Texas (+2.5%). San Antonio adds a verified 14% local incentive for a market-leading 36.5% combined rate.
->
-> **Louisiana credits are transferable** — productions with no Louisiana tax liability can sell the credit. Max stack: 25% base + 10% labor bonus + 5% music/VFX.
+### Opt-In Bonuses
 
-### Spatial Resolution
+Some rules require a production-specific election. The Maximizer **excludes opt-in rules from the base total** and surfaces them as warnings:
 
-Without PostGIS, the Maximizer uses bounding-box matching to identify the US state. It then loads the state + all direct child sub-jurisdictions (counties and cities with `parentId` = state id).
-
-**Supported regions:** All 50 US states. International jurisdictions require explicit `jurisdiction_codes`.
-
-### Breakdown Categories
-
-| Category | What It Includes |
-|---|---|
-| `credit` | Tax credits (`tax_credit` rule type) |
-| `tax_abatement` | Property tax abatements, tax breaks |
-| `rebate` | Cash rebates on qualifying spend |
-| `permit_fee` | Filming permit fees (shown as negative — reduces total) |
-| `other` | Anything not mapped to the above |
+```text
+[!] IL-FILM-GREEN-BONUS (5% = $250,000) requires opt-in election — not included in base total
+[!] IL-FILM-RELOCATION-BONUS (5% = $250,000) requires opt-in election — not included in base total
+```
 
 ### Mutual Exclusions
 
-Some rules are mutually exclusive and cannot be stacked. When both are present, the Maximizer keeps the higher-value rule and adds a warning to the response. Currently defined:
-
-| Rule A         | Rule B         | Reason                                                                                                                |
-|----------------|----------------|-----------------------------------------------------------------------------------------------------------------------|
-| `NY-FILM-BASE` | `NY-POST-PROD` | Post-production credit is for productions that did **not** shoot in NY — mutually exclusive with the production credit |
-
-Additional exclusions are defined in the `MUTUAL_EXCLUSIONS` list in `maximizer.py`.
-
-### Inheritance Logic
-
-When multiple rules share the same `rule_key` across jurisdictions, the Maximizer applies **additive stacking** — values from all layers are summed. Override and strict modes are configurable via the `inheritance_policies` table.
+| Rule A | Rule B | Reason |
+|---|---|---|
+| `NY-FILM-BASE` | `NY-POST-PROD` | Post-production credit is for productions that did **not** shoot in NY |
 
 ---
 
-## 12. Admin & User Management
+## 13. Admin & User Management
 
 **Navigation:** Sidebar → Settings → Admin (visible to admin role only)
 
@@ -954,7 +1051,7 @@ When multiple rules share the same `rule_key` across jurisdictions, the Maximize
 
 ---
 
-## 13. Notifications & Preferences
+## 14. Notifications & Preferences
 
 **Navigation:** Settings → Notifications
 
@@ -991,7 +1088,7 @@ DELETE /api/0.1.0/notifications/preferences/
 
 ---
 
-## 14. Command-Line Tools
+## 15. Command-Line Tools
 
 ### monitor.py
 
@@ -1020,11 +1117,6 @@ MOCK_CLAUDE=false python monitor.py --code NY-WESTCHESTER
 Complete — changed: 1  unchanged: 1  errors: 0  pending rules queued: 3
 ```
 
-**Cron example (run nightly at 2 AM):**
-```
-0 2 * * * cd /app && python monitor.py >> /var/log/monitor.log 2>&1
-```
-
 ---
 
 ### maximizer.py
@@ -1038,22 +1130,6 @@ python maximizer.py <lat> <lng> [--spend AMOUNT] [--type TYPE] [--codes CODE1 CO
 python maximizer.py 42.8864 -78.8784 --spend 5000000
 python maximizer.py 34.0522 -118.2437 --spend 8000000 --type film
 python maximizer.py --codes CA CA-LA --spend 8000000
-```
-
-**Output:**
-```
-PILOTFORGE MAXIMIZER RESULT
-Resolved state:     CA
-Jurisdictions:      2
-Qualified spend:    $8,000,000
-Total incentive:    $2,400,000.00
-Effective rate:     30.0%
-
-Breakdown:
-  credit                  $2,400,000.00
-
-Applied rules:   2
-Overridden rules: 0
 ```
 
 ---
@@ -1073,40 +1149,34 @@ Overridden rules: 0
 | `update_rules_2026.py` | Refresh rule rates and expiration dates | Annual update |
 
 **Running a seed script:**
-```bash
-# Locally (with .env loaded)
-python scripts/seed_jurisdictions.py
 
+```bash
 # Inside Docker container
-docker cp scripts/seed_jurisdictions.py pilotforge-api:/app/scripts/seed_jurisdictions.py
-docker exec pilotforge-api python scripts/seed_jurisdictions.py
+docker cp scripts/seed_jurisdictions.py sceneiq-incentives-api:/app/scripts/seed_jurisdictions.py
+docker exec sceneiq-incentives-api python scripts/seed_jurisdictions.py
 ```
 
 > Scripts use `INSERT ... ON CONFLICT DO NOTHING` — safe to re-run.
 
 ---
 
-## 15. API Reference
+## 16. API Reference
 
-All endpoints require a JWT Bearer token except `POST /auth/login` and `POST /auth/token`.
+### Incentives API (`http://localhost:8001`)
 
-### Authentication
+All endpoints require a JWT Bearer token except `POST /auth/login`.
+
+#### Authentication
 
 ```bash
-# Get token
 POST /api/0.1.0/auth/login
-Body: { "email": "admin@pilotforge.com", "password": "pilotforge2024" }
+Body: { "email": "admin@sceneiq.com", "password": "sceneiq2024" }
 Returns: { "access_token": "eyJ...", "token_type": "bearer" }
-
-# Use token
-curl -H "Authorization: Bearer eyJ..." http://localhost/api/0.1.0/productions/
 ```
 
 Tokens expire after **8 hours** (configurable via `JWT_EXPIRE_HOURS`). A 401 response automatically clears the stored token and redirects to the login page.
 
----
-
-### Productions
+#### Productions
 
 | Method | Path | Description |
 |---|---|---|
@@ -1121,11 +1191,9 @@ Tokens expire after **8 hours** (configurable via `JWT_EXPIRE_HOURS`). A 401 res
 | POST | `/productions/{id}/expenses/generate/` | Auto-generate expenses |
 | GET | `/productions/{id}/compliance/` | List compliance items |
 | POST | `/productions/{id}/compliance/generate/` | Auto-generate checklist |
-| POST | `/productions/{id}/compliance/` | Add compliance item |
 | PATCH | `/compliance/{item_id}` | Update compliance item |
-| DELETE | `/compliance/{item_id}` | Delete compliance item |
 
-### Calculator
+#### Calculator
 
 | Method | Path | Description |
 |---|---|---|
@@ -1137,7 +1205,7 @@ Tokens expire after **8 hours** (configurable via `JWT_EXPIRE_HOURS`). A 401 res
 | POST | `/calculate/date-based/` | Date-specific rules |
 | POST | `/calculate/scenario/` | Scenario modeling |
 
-### Jurisdictions & Rules
+#### Jurisdictions & Rules
 
 | Method | Path | Description |
 |---|---|---|
@@ -1147,93 +1215,33 @@ Tokens expire after **8 hours** (configurable via `JWT_EXPIRE_HOURS`). A 401 res
 | PUT | `/jurisdictions/{id}` | Update jurisdiction |
 | DELETE | `/jurisdictions/{id}` | Delete jurisdiction |
 | GET | `/incentive-rules/` | List all incentive rules |
-| GET | `/incentive-rules/{id}` | Rule detail |
 | GET | `/local-rules/` | List local rules |
-| GET | `/local-rules/by-jurisdiction/{code}/` | Rules for jurisdiction |
 | POST | `/local-rules/` | Create local rule |
 | PATCH | `/local-rules/{id}/` | Update local rule |
-| DELETE | `/local-rules/{id}/` | Deactivate local rule |
-| GET | `/local-rules/stats/summary/` | Local rules statistics |
 
-### Pending Rules
-
-| Method | Path                           | Description         |
-|--------|--------------------------------|---------------------|
-| GET    | `/pending-rules/`              | List pending rules  |
-| GET    | `/pending-rules/{id}/`         | Pending rule detail |
-| PATCH  | `/pending-rules/{id}/approve/` | Approve rule        |
-| PATCH  | `/pending-rules/{id}/reject/`  | Reject rule         |
-
-### Compliance Requirements (Checklist)
-
-Non-quantified process requirements per jurisdiction (permits, insurance mandates, portal links, designations).
-
-| Method | Path | Description |
-| --- | --- | --- |
-| GET | `/jurisdictions/{code}/requirements` | Compliance checklist. Query params: `project_type`, `include_parent` (default `true`), `active_only` (default `true`) |
-| POST | `/jurisdictions/{code}/requirements` | Manually add a requirement |
-| PATCH | `/requirements/{requirement_id}` | Update a requirement |
-| DELETE | `/requirements/{requirement_id}` | Delete a requirement |
-
-**GET example:**
-
-```bash
-# All requirements for Erie County, film projects only, including NY state requirements
-GET /api/0.1.0/jurisdictions/NY-ERIE/requirements?project_type=film&include_parent=true
-```
-
-**Response shape:**
-
-```json
-{
-  "jurisdictionCode": "NY-ERIE",
-  "jurisdictionName": "Erie County",
-  "projectType": "film",
-  "total": 7,
-  "byCategory": { "permit": 2, "insurance": 1, "portal": 1, "other": 3 },
-  "requirements": [
-    {
-      "id": "uuid",
-      "name": "Film Permit Required Before Filming",
-      "category": "permit",
-      "requirementType": "mandatory",
-      "description": "...",
-      "applicableTo": [],
-      "fromParent": false
-    }
-  ]
-}
-```
-
-### Stacking Engine & Maximizer
+#### Stacking Engine & Maximizer
 
 | Method | Path | Description |
 |---|---|---|
 | POST | `/stacking-engine/calculate/` | Stack for a scenario |
 | POST | `/stacking-engine/compare/` | Compare across jurisdictions |
-| GET | `/stacking-engine/jurisdictions-with-local-rules/` | Which jurisdictions have local rules |
 | POST | `/maximize` | Full maximize (lat/lng or codes) |
 | GET | `/maximize/lookup` | Resolve jurisdictions for a point |
 
-### Monitoring & Reports
+#### Monitoring & Reports
 
 | Method | Path | Description |
 |---|---|---|
 | GET | `/monitoring/events/` | List events |
 | GET | `/monitoring/events/unread-count/` | Unread count |
 | PATCH | `/monitoring/events/{id}/read/` | Mark read |
-| POST | `/monitoring/events/mark-all-read/` | Mark all read |
-| GET | `/monitoring/sources/` | List sources |
-| POST | `/monitoring/sources/` | Add source |
 | POST | `/monitoring/ingest/` | Trigger ingest |
 | POST | `/reports/comparison/` | PDF comparison report |
 | POST | `/reports/compliance/` | PDF compliance report |
-| POST | `/reports/scenario/` | PDF scenario report |
 | POST | `/excel/comparison/` | Excel comparison workbook |
 | POST | `/excel/compliance/` | Excel compliance workbook |
-| POST | `/excel/scenario/` | Excel scenario workbook |
 
-### AI & Admin
+#### AI & Admin
 
 | Method | Path | Description |
 |---|---|---|
@@ -1242,14 +1250,62 @@ GET /api/0.1.0/jurisdictions/NY-ERIE/requirements?project_type=film&include_pare
 | POST | `/admin/users/` | Create user |
 | PATCH | `/admin/users/{id}/` | Update user |
 | DELETE | `/admin/users/{id}/` | Delete user |
-| GET | `/notifications/preferences/` | Get preferences |
-| POST | `/notifications/preferences/` | Set preferences |
-| DELETE | `/notifications/preferences/` | Remove preferences |
 | GET | `/health` | Health check |
 
 ---
 
-## 16. Database Models
+### Budget API (`http://localhost:8002`)
+
+#### Budget Builder
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/0.1.0/budget/create` | Create budget from template |
+| GET | `/api/0.1.0/budget/templates` | List all budget templates |
+| POST | `/api/0.1.0/budget/analyze` | Analyze line items |
+| GET | `/api/0.1.0/budget/accounts` | Standard account codes |
+
+#### Rates
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/0.1.0/rates/union` | Union rate cards (optional `?guild=DGA`) |
+| GET | `/api/0.1.0/rates/nonunion` | Non-union rates (optional `?location=GA`) |
+| GET | `/api/0.1.0/rates/guilds` | List all guilds |
+| POST | `/api/0.1.0/rates/estimate` | Estimate cost for a role |
+
+#### Schedule & Incentives
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/0.1.0/schedule/analyze` | Shoot schedule recommendation |
+| GET | `/api/0.1.0/schedule/tiers` | Budget tiers |
+| GET | `/api/0.1.0/schedule/production-types` | Production type list |
+| POST | `/api/0.1.0/incentives/analyze` | Incentive analysis for a budget |
+| GET | `/api/0.1.0/incentives/jurisdictions` | All available jurisdictions |
+| POST | `/api/0.1.0/incentives/stack` | Stack incentives for a jurisdiction |
+
+#### AI Advisor (Budget)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/0.1.0/advisor/chat` | Streaming chat (SSE) — budget focus |
+| GET | `/api/0.1.0/advisor/prompts` | Suggested budget prompts |
+| POST | `/api/0.1.0/advisor/rate-check` | Validate a proposed crew rate |
+
+---
+
+### Pipeline (`http://localhost:8080/pipeline/`)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/pipeline/orchestrate` | Run full pipeline (script → budget → credits → risk) |
+| POST | `/pipeline/report` | Generate PDF report from result JSON |
+| GET | `/pipeline/health` | Pipeline health check |
+
+---
+
+## 17. Database Models
 
 ### Core Models
 
@@ -1266,23 +1322,19 @@ GET /api/0.1.0/jurisdictions/NY-ERIE/requirements?project_type=film&include_pare
 - `ruleCode` (unique), `ruleName`, `incentiveType`, `percentage`, `fixedAmount`
 - `minSpend`, `maxCredit`, `eligibleExpenses[]`, `excludedExpenses[]`, `creditType`
 - `effectiveDate`, `expirationDate`
-- `requirements` (JSON) — machine-readable eligibility flags read by the Maximizer:
+- `requirements` (JSON) — machine-readable eligibility flags:
   - `"tvSeries": true` — rule is excluded when `project_type=film`
-  - `"optIn": true` — rule requires production election; excluded from base total, surfaced as warning
-  - `"relocatingProject": true` — rule only applies to productions relocating to the jurisdiction
+  - `"optIn": true` — rule requires production election; excluded from base total
+  - `"relocatingProject": true` — rule only applies to relocating productions
 
 **LocalRule** — County/city/sub-jurisdiction rules
 - `code` (unique), `name`, `category`, `ruleType`, `amount`, `percentage`
 - `effectiveDate`, `expirationDate`, `sourceUrl`, `extractedBy` (manual/monitor), `active`
 
-**JurisdictionRequirement** — Non-quantified compliance requirements (no dollar/percent value)
-
-- `name`, `category` — `permit | insurance | registration | designation | infrastructure | portal | contact | other`
+**JurisdictionRequirement** — Non-quantified compliance requirements
+- `name`, `category` — `permit | insurance | registration | designation | portal | contact | other`
 - `requirementType` — `mandatory | recommended | informational`
-- `description`, `applicableTo[]` — project types this applies to; empty = all types
-- `contactInfo`, `portalUrl`, `sourceUrl`
-- `extractedBy` (monitor/manual), `active`
-- Linked to `Jurisdiction` via `jurisdictionId`; inherits parent requirements via `include_parent` query param
+- `description`, `applicableTo[]` — project types; empty = all types
 
 **Production** — Film/TV productions
 - `title`, `productionType`, `budgetTotal`, `budgetQualifying`
@@ -1292,7 +1344,6 @@ GET /api/0.1.0/jurisdictions/NY-ERIE/requirements?project_type=film&include_pare
 **Expense** — Production expense line items
 - `category`, `description`, `amount`, `expenseDate`
 - `isQualifying` — whether this expense counts toward incentive calculation
-- `vendorName`, `vendorLocation`, `receiptNumber`, `invoiceNumber`
 
 **ComplianceItem** — Checklist items per production
 - `label`, `category`, `status` (pending/complete/waived/na)
@@ -1301,44 +1352,14 @@ GET /api/0.1.0/jurisdictions/NY-ERIE/requirements?project_type=film&include_pare
 **PendingRule** — Extracted rules awaiting review
 - `sourceUrl`, `rawContent`, `extractedData` (JSON), `confidence`
 - `status` — `pending | approved | rejected`
-- `reviewNotes`, `reviewedBy`, `reviewedAt`
-
-**MonitoringSource** — Feed sources to watch
-- `name`, `url`, `feedUrl`, `sourceType` (rss/atom/page)
-- `jurisdiction`, `active`, `lastFetched`
 
 **MonitoringEvent** — Change detections
 - `title`, `summary`, `url`, `contentHash`
 - `severity` (info/warning/alert), `isRead`, `publishedAt`
 
-**NotificationPreference** — Per-user notification settings
-- `jurisdictions[]`, `emailAddress`, `active`
-
-**InheritancePolicy** — How rules cascade between parent/child jurisdictions
-- `childJurisdictionId`, `parentJurisdictionId`
-- `policyType` — additive / override / strict
-- `ruleCategory`, `priority`
-
-### Phase 0: Stacking & Scenarios
-
-**SubJurisdiction** — County/city incentive layers (stacking engine)
-- `type` (county/city/region/special_district)
-- `incentiveType` (credit/rebate/fee_waiver/in_kind)
-- `ratePercent`, `fixedAmount`, `capPerProduction`, `annualCap`, `minSpendRequired`
-- `stackingRules` (JSON), `eligibleExpenditureCategories` (JSON)
-- `localHirePercentageRequired`
-
-**ProductionScenario** — What-if scenarios per production
-- `name`, `totalBudget`, `qualifiedSpend`, `spendByCategory` (JSON)
-- `shootingDays`, `daysByJurisdiction` (JSON), `localHirePercent`
-
-**ScenarioOptimizationResult** — Cached stacking engine output
-- `recommendedStack` (JSON), `totalIncentiveValue`, `effectiveRate`
-- `cashFlowEstimate`, `warnings` (JSON), `expiresAt`
-
 ---
 
-## 17. Deployment & Operations
+## 18. Deployment & Operations
 
 ### Docker Compose (Local Development)
 
@@ -1346,121 +1367,145 @@ GET /api/0.1.0/jurisdictions/NY-ERIE/requirements?project_type=film&include_pare
 # Start all services
 docker compose up -d
 
-# View logs
-docker compose logs -f backend
-docker compose logs -f frontend
+# View logs for a service
+docker compose logs -f incentives-api
+docker compose logs -f budget-api
+docker compose logs -f pipeline-orchestrator
 
-# Rebuild after code changes
-docker compose build backend
-docker compose up -d backend
+# Rebuild a specific service
+docker compose build budget-ui
+docker compose up -d budget-ui
 
-# Rebuild frontend (after UI changes)
-docker compose build frontend
-docker compose up -d frontend
-
-# Restart a service
-docker compose restart backend
+# Restart a service without rebuilding
+docker compose restart incentives-api
 ```
+
+### Rebuilding After Code Changes
+
+| Change type | Command |
+|---|---|
+| Backend Python code (volume-mounted) | `docker compose restart incentives-api` |
+| Budget API Python code (volume-mounted) | `docker compose restart budget-api` |
+| Incentives frontend | `docker compose build incentives-ui && docker compose up -d incentives-ui` |
+| Budget frontend | `docker compose build budget-ui && docker compose up -d budget-ui` |
+| nginx.conf | `docker compose restart nginx` |
 
 ### Copying Files Into Containers
 
-The backend `src/` directory is volume-mounted, so changes to `src/` are live. Files at the project root (like `maximizer.py`) are **not** volume-mounted and must be copied:
+The backend `src/` directories are volume-mounted — Python changes are live after restart. Files at the project root (like `maximizer.py`) are **not** volume-mounted and must be copied:
 
 ```bash
-docker cp maximizer.py pilotforge-api:/app/maximizer.py
-docker cp scripts/my_script.py pilotforge-api:/app/scripts/my_script.py
+docker cp maximizer.py sceneiq-incentives-api:/app/maximizer.py
+docker cp scripts/my_script.py sceneiq-incentives-api:/app/scripts/my_script.py
 ```
 
 ### Railway Deployment
 
-The platform deploys to Railway using Railpack (backend) and a Dockerfile (frontend).
+The platform deploys to Railway as 5 independent services. See the Railway project dashboard for current service URLs and variable configuration.
 
-**Backend service:** `Tax_Incentive_Compliance_Platform`
-**Frontend service:** `nurturing-flow`
-**Database service:** `Postgres`
+**Services:**
+- `incentives-api` — Dockerfile (backend)
+- `incentives-ui` — Dockerfile (frontend)
+- `budget-api` — Dockerfile (backend)
+- `budget-ui` — Dockerfile (frontend)
+- `Postgres` — Railway managed plugin
 
-**`railway.toml` (backend):**
-```toml
-[build]
-builder = "RAILPACK"
-buildCommand = "pip install -r requirements.txt && python -m prisma generate"
+**Key environment variables per service:**
 
-[build.environment]
-PYTHON_VERSION = "3.12"
+| Service | Required Variables |
+|---|---|
+| incentives-api | `DATABASE_URL`, `JWT_SECRET`, `ANTHROPIC_API_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` |
+| budget-api | `DATABASE_URL`, `JWT_SECRET`, `ANTHROPIC_API_KEY`, `INCENTIVES_API_URL` |
+| incentives-ui | `VITE_API_URL` (build arg) |
+| budget-ui | `VITE_API_URL`, `VITE_COMPLIANCE_URL` (build args) |
 
-[deploy]
-startCommand = "uvicorn src.main:app --host 0.0.0.0 --port $PORT"
-healthcheckPath = "/health"
-```
-
-**Required Railway environment variables:**
-```
-DATABASE_URL=postgresql://...
-JWT_SECRET=your-secret-here
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### Health Check
-
-```bash
-curl https://your-backend-domain.railway.app/health
-# Returns: {"status": "ok", "database": "connected"}
-```
-
-### API Documentation (Live)
-
-```
-https://your-backend-domain.railway.app/docs
-https://your-backend-domain.railway.app/redoc
-```
+> Railway does not pass service Variables as Docker build args. Build-time env vars (`VITE_*`) must be declared in `railway.toml` as `buildArgs`.
 
 ---
 
-## 18. Environment Variables
+## 19. Environment Variables
+
+### Incentives API
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string |
 | `JWT_SECRET` | Yes | — | Secret key for JWT signing (32+ chars) |
-| `ANTHROPIC_API_KEY` | No | — | Claude API key (AI Advisor + monitor.py rule extraction) |
+| `ANTHROPIC_API_KEY` | No | — | Claude API key (AI Advisor + rule extraction) |
+| `ADMIN_EMAIL` | No | `admin@sceneiq.com` | Seeded admin email |
+| `ADMIN_PASSWORD` | No | `sceneiq2024` | Seeded admin password |
 | `MOCK_CLAUDE` | No | `false` | Set `true` to use simulated Claude responses |
-| `JWT_ALGORITHM` | No | `HS256` | JWT signing algorithm |
 | `JWT_EXPIRE_HOURS` | No | `8` | Token lifetime in hours |
-| `APP_HOST` | No | `0.0.0.0` | Server bind address |
-| `APP_PORT` | No | `8000` | Server port |
-| `LOG_LEVEL` | No | `info` | Logging verbosity |
 | `API_VERSION` | No | `0.1.0` | API path version segment |
 
-**Example `.env`:**
+### Budget API
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `JWT_SECRET` | Yes | — | Must match incentives-api JWT_SECRET |
+| `ANTHROPIC_API_KEY` | No | — | Claude API key for budget advisor |
+| `INCENTIVES_API_URL` | No | — | Base URL of incentives-api (for live rate data) |
+| `APP_ENV` | No | `production` | `development` enables debug logging |
+
+**Example `.env` (local development):**
+
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5435/tax_incentive_db
 JWT_SECRET=my-super-secret-32-char-key-here
 ANTHROPIC_API_KEY=sk-ant-api03-...
+ADMIN_EMAIL=admin@sceneiq.com
+ADMIN_PASSWORD=sceneiq2024
 MOCK_CLAUDE=false
 JWT_EXPIRE_HOURS=8
 ```
 
 ---
 
-## 19. Troubleshooting
+## 20. Troubleshooting
 
 ### Login fails — "Invalid credentials"
-- Confirm you are using `admin@pilotforge.com` / `pilotforge2024`
-- Confirm the backend is running: `curl http://localhost/health`
-- Check backend logs: `docker compose logs backend`
+- Confirm you are using `admin@sceneiq.com` / `sceneiq2024`
+- Confirm the backend is running: `curl http://localhost:8080/health`
+- Check backend logs: `docker compose logs incentives-api`
 
 ### All pages show blank / white screen
-- Rebuild: `docker compose build backend && docker compose up -d backend`
+- Rebuild: `docker compose build incentives-ui && docker compose up -d incentives-ui`
 - Check browser console for JS errors
-- Confirm you are using `http://localhost` (port 80), **not** `http://localhost:3000`
+- Confirm you are using `http://localhost:8080` — not port 3000 or port 80
 
 ### API calls return 405 Method Not Allowed
-- You are hitting port 3000 directly — that nginx has no `/api/` proxy
-- Always use `http://localhost` (port 80)
+- The request is hitting the wrong service through nginx
+- Budget API calls (`/budget/create`, `/rates/*`, etc.) must go to `http://localhost:8002` — the budget-ui is pre-built with this URL baked in
+- Incentives API calls (`/productions`, `/jurisdictions`, etc.) go through `http://localhost:8080/api/`
+
+### Budget Builder shows 405 on Build Budget
+- This means the budget-ui JS bundle has the wrong API URL
+- Rebuild: `docker compose build budget-ui && docker compose up -d budget-ui`
+- Verify the build arg is set: `VITE_API_URL=http://localhost:8002` in docker-compose.yml
+
+### Pipeline returns 404 on `/pipeline/orchestrate`
+- Check the pipeline-orchestrator is running: `docker compose ps pipeline-orchestrator`
+- Check nginx routing: `docker compose logs nginx`
+- The pipeline location in nginx.conf must include `rewrite ^/pipeline/(.*)$ /$1 break;`
+
+### Pipeline returns 0 scenes from FDX file
+- The screenplay engine only parses Fountain format — FDX conversion happens client-side
+- Verify the file is a valid Final Draft `.fdx` (XML with `<Paragraph Type="...">` elements)
+- Check browser console for conversion errors
+
+### Budget Builder shows stale results after import
+- Import a new screenplay — the result panel should clear when a non-result file is imported
+- If result persists, hard refresh: Ctrl+Shift+R (Windows) / Cmd+Shift+R (Mac)
+
+### Pipeline-orchestrator 502 Bad Gateway
+- Check the orchestrator container: `docker compose logs pipeline-orchestrator`
+- Verify `entrypoint.sh` has LF line endings (not CRLF) — Windows machines can corrupt shell scripts
+- `.gitattributes` should contain `*.sh text eol=lf`
 
 ### "Failed to load pending rules" or "Failed to load local rules"
-- Check that migrations ran: `docker exec pilotforge-api python -m prisma migrate status`
-- Re-run if needed: `docker exec pilotforge-api python -m prisma migrate deploy`
+- Check that migrations ran: `docker exec sceneiq-incentives-api python -m prisma migrate status`
+- Re-run if needed: `docker exec sceneiq-incentives-api python -m prisma migrate deploy`
 
 ### monitor.py returns "invalid x-api-key" (401)
 - `ANTHROPIC_API_KEY` in `.env` is missing or invalid
@@ -1478,19 +1523,19 @@ JWT_EXPIRE_HOURS=8
 ### Database connection refused
 - Check `DATABASE_URL` is set correctly
 - Verify postgres container is healthy: `docker compose ps`
-- Test: `docker exec pilotforge-api python -c "import psycopg2, os; psycopg2.connect(os.environ['DATABASE_URL']); print('OK')"`
-
-### Frontend shows stale data / old UI
-- Hard refresh: Ctrl+Shift+R (Windows) / Cmd+Shift+R (Mac)
-- Rebuild frontend: `docker compose build frontend && docker compose up -d frontend`
-- Clear `localStorage` in browser devtools if auth token is stale
+- Test: `docker exec sceneiq-incentives-api python -c "import psycopg2, os; psycopg2.connect(os.environ['DATABASE_URL']); print('OK')"`
 
 ### AI Advisor shows no response / stops streaming
-- Check `ANTHROPIC_API_KEY` is set: `docker exec pilotforge-api printenv ANTHROPIC_API_KEY`
+- Check `ANTHROPIC_API_KEY` is set: `docker exec sceneiq-incentives-api printenv ANTHROPIC_API_KEY`
 - Set `MOCK_CLAUDE=true` for scripted fallback responses
-- Check backend logs for SSE errors: `docker compose logs -f backend`
+- Check backend logs for SSE errors: `docker compose logs -f incentives-api`
+
+### Neo4j fails to start (screenplay engine errors)
+- Check Neo4j container: `docker compose logs neo4j`
+- Default credentials are `neo4j` / `password123`
+- APOC plugin must load on first start — can take 30–60 seconds
 
 ---
 
-*SceneIQ v2.1 — Tax Incentive Compliance Platform*
+*SceneIQ v3.0 — Tax Incentive Compliance Platform*
 *For support, file an issue at the project repository.*

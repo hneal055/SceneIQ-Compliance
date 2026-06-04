@@ -1,77 +1,35 @@
-"""Main FastAPI application."""
-
-import os
-import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from app.api.v1.endpoints.auth import router as auth_router
 
-from app.api.v1 import router as api_router
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Create FastAPI app
 app = FastAPI(
-    title="SceneIQ Tax Incentive Compliance Platform",
-    description="API for managing film and television tax incentives",
-    version="1.0.0",
+    title="SceneIQ Compliance Platform API",
+    description="Film & TV Tax Incentive Intelligence Platform",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For demo purposes; restrict in production
+    allow_origins=["https://getsceneiq.com", "https://aura.getsceneiq.com"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
-# Include API routes
-app.include_router(api_router, prefix="/api/v1")
-
-# Serve static files (HTML/CSS/JS for demo pages)
-# Get the backend directory (one level up from this file)
-backend_dir = os.path.dirname(os.path.dirname(__file__))
-static_dir = os.path.join(backend_dir, "static")
-
-if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
-    logger.info(f"Serving static files from {static_dir}")
-else:
-    logger.warning(f"Static directory not found at {static_dir}")
-
+app.include_router(auth_router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
     return {
-        "message": "SceneIQ Tax Incentive Compliance Platform",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "demo": "/static/index.html",
+        "message": "SceneIQ Compliance Platform API",
+        "status": "operational",
+        "version": "2.0.0",
+        "documentation": "/docs",
     }
 
-
-@app.get("/health")
-async def health():
-    """Health check endpoint."""
+@app.get("/api/v1/health")
+async def health_check():
     return {"status": "healthy"}
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database and seed data on startup."""
-    try:
-        from app.db.session import engine, Base
-        from scripts.seed_baseline import seed_baseline
-
-        logger.info("Running database initialization...")
-        Base.metadata.create_all(bind=engine)
-        logger.info("Tables created")
-
-        seed_baseline()
-
-        logger.info("Startup complete")
-    except Exception as e:
-        logger.error(f"Startup error: {e}")

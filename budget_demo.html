@@ -42,7 +42,7 @@
         async function load() {
             try {
                 // 1. Login
-                const loginRes = await fetch(`${BASE}/api/0.1.0/auth/login`, {
+                const loginRes = await fetch(`${API}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: 'admin@pilotforge.com', password: 'pilotforge2024' })
@@ -51,19 +51,19 @@
                 const headers = { Authorization: `Bearer ${access_token}` };
 
                 // 2. Get productions, pick first one
-                const prodsRes = await fetch(`${BASE}/api/0.1.0/productions`, { headers });
+                const prodsRes = await fetch(`${API}/productions`, { headers });
                 const prodsData = await prodsRes.json();
                 const productions = prodsData.productions ?? prodsData;
                 if (!productions.length) {
-                    document.getElementById('content').innerHTML = '<p class="empty">No productions found.</p>';
+                    document.getElementById('content').innerHTML = '<p class="empty">No productions found. Run the seed script first.</p>';
                     return;
                 }
                 const prod = productions[0];
                 document.getElementById('title').textContent = `Budget Line Items for "${prod.title}"`;
-                document.getElementById('sub').textContent = `${prod.productionCompany} · ${prod.productionType}`;
+                document.getElementById('sub').textContent = `${prod.productionCompany ?? ''} · ${prod.productionType ?? ''}`;
 
                 // 3. Fetch expenses
-                const expRes = await fetch(`${BASE}/api/0.1.0/productions/${prod.id}/expenses`, { headers });
+                const expRes = await fetch(`${API}/productions/${prod.id}/expenses`, { headers });
                 const expData = await expRes.json();
                 const expenses = expData.expenses ?? expData;
 
@@ -79,15 +79,15 @@
                 // 5. Table
                 const content = document.getElementById('content');
                 if (!expenses.length) {
-                    content.innerHTML = '<p class="empty">No expenses logged yet.</p>';
+                    content.innerHTML = '<p class="empty">No expenses logged yet. Seed data or add expenses via the API.</p>';
                     return;
                 }
                 content.innerHTML = '<table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Vendor</th><th>Amount</th><th>Qualifying</th></tr></thead><tbody>' +
                     expenses.map(e => `<tr>
-                        <td>${(e.expenseDate||'').split('T')[0]}</td>
-                        <td>${e.category}</td>
-                        <td>${e.description}</td>
-                        <td>${e.vendorName || '—'}</td>
+                        <td>${(e.expenseDate || '').split('T')[0]}</td>
+                        <td>${e.category ?? '—'}</td>
+                        <td>${e.description ?? '—'}</td>
+                        <td>${e.vendorName ?? '—'}</td>
                         <td><strong>${fmt(e.amount)}</strong></td>
                         <td><span class="badge ${e.isQualifying ? 'yes' : 'no'}">${e.isQualifying ? '✓ Yes' : 'No'}</span></td>
                     </tr>`).join('') +

@@ -1,7 +1,7 @@
 import requests
 
 BASE = 'http://localhost:8001/api/0.1.0'
-r = requests.post(f'{BASE}/auth/login', json={'email': 'admin@pilotforge.com', 'password': 'pilotforge2024'})
+r = requests.post(f'{BASE}/auth/login', json={'email': 'admin@sceneiq.com', 'password': 'sceneiq2024'})
 token = r.json()['access_token']
 headers = {'Authorization': f'Bearer {token}'}
 

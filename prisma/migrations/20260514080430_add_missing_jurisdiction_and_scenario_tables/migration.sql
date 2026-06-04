@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "jurisdiction_requirements" (
     "id" TEXT NOT NULL,
     "jurisdictionId" TEXT NOT NULL,

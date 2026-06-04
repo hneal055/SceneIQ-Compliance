@@ -1,0 +1,15 @@
+TAX INCENTIVE CALCULATION REPORT
+Generated: May 20, 2026
+
+Production:          Midnight Harbour
+Jurisdiction:        Illinois
+
+Total Budget:        $8,000,000
+Qualified Expenses:  $6,400,000
+Qualified Ratio:     80% of budget
+Credit Rate:         30%
+Estimated Tax Credit: $1,920,000
+Effective Rate:      24.0%
+
+This estimate is for planning purposes only.
+Consult a qualified production accountant for final tax decisions.

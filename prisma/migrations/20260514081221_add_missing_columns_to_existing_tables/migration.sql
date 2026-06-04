@@ -1,4 +1,4 @@
-﻿-- AlterTable
+-- AlterTable
 ALTER TABLE "incentive_rules" ADD COLUMN     "creditType" TEXT NOT NULL DEFAULT 'refundable';
 
 -- AlterTable

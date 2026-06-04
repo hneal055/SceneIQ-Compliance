@@ -59,7 +59,7 @@ export default function Login() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@pilotforge.com"
+                placeholder="admin@sceneiq.com"
                 className="w-full px-4 py-2.5 bg-[#13151a] border border-white/10 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

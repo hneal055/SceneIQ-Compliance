@@ -140,13 +140,19 @@ function ProgramCard({ program }: { program: Program }) {
               <ul className="space-y-1">
                 {(typeof program.requirements === 'string'
                   ? program.requirements.split('\n')
-                  : program.requirements as string[]
-                ).filter(Boolean).map((req, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
-                    {req}
-                  </li>
-                ))}
+                  : Array.isArray(program.requirements) ? program.requirements : []
+                ).filter(Boolean).map((req, i) => {
+                  const reqText = typeof req === 'string'
+                    ? req
+                    : (req as { description?: string }).description ?? '';
+                  if (!reqText) return null;
+                  return (
+                    <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+                      {reqText}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

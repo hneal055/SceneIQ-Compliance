@@ -1,10 +1,10 @@
-name: pilotforge
+name: sceneiq
 
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: pilotforge-db
+    container_name: sceneiq-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -24,11 +24,11 @@ services:
 
   # FastAPI Backend
   backend:
-    image: hneal1038/pilotforge-backend:latest
+    image: hneal1038/sceneiq-backend:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pilotforge-api
+    container_name: sceneiq-api
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/tax_incentive_db
@@ -36,7 +36,7 @@ services:
       LOG_LEVEL: DEBUG
       PYTHONUNBUFFERED: 1
       API_VERSION: 0.1.0
-      JWT_SECRET: dev-only-change-in-production-pilotforge-2024
+      JWT_SECRET: dev-only-change-in-production-sceneiq-2024
       JWT_ALGORITHM: HS256
       JWT_EXPIRE_HOURS: 8
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
@@ -59,13 +59,13 @@ services:
 
   # Frontend UI - React + Vite with Nginx
   frontend:
-    image: hneal1038/pilotforge-frontend:latest
+    image: hneal1038/sceneiq-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         VITE_API_URL: ""
-    container_name: pilotforge-ui
+    container_name: sceneiq-ui
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -84,7 +84,7 @@ services:
   # Nginx Reverse Proxy (optional, for routing)
   nginx:
     image: nginx:alpine
-    container_name: pilotforge-nginx
+    container_name: sceneiq-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -98,6 +98,8 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: pilotforge_postgres_data
 
 networks:
   tax-incentive-network:

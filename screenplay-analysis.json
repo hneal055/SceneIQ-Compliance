@@ -1,0 +1,36 @@
+{
+  "detailed_analysis": {
+    "character_analysis": {
+      "character_depth_score": 88,
+      "main_characters": "Nina Ortiz, The Child, Sami Al-Jamil, Emir Kaya, Priya Sharma, The Agoge"
+    },
+    "market_potential": {
+      "market_potential": "HIGH — occupies a rare and commercially valuable intersection of prestige historical drama and high-concept sci-fi, with a diverse ensemble and built-in anthology format that reduces per-season creative stagnation risk; directly competitive with HBO and Apple TV+ tentpole programming",
+      "target_audience": "Adults 25-54 with appetite for prestige streaming drama; fans of The Expanse, Band of Brothers, Westworld, and Dark; history enthusiasts; international audiences drawn to multicultural ensemble and global historical settings; academic and philosophical sci-fi niche with crossover mainstream potential"
+    },
+    "structural_breakdown": {
+      "act_breakdown": {
+        "act1": "Strong cold open concept — Nina's death-to-leap transition is immediately visceral and orienting. Episode 1 efficiently establishes rules, stakes, and tone. The Thermopylae setting is a recognizable historical anchor that earns audience trust quickly. Minor risk: the volume of world-building exposition in the bible may translate to frontloaded info-dump in pilot script if not carefully managed.",
+        "act2": "The episodic-leap structure provides excellent mid-series variety and momentum, with each historical setting offering fresh visual and dramatic texture. The child's gradual awakening across Episodes 3-6 is well-escalated. The leaper ensemble convergence at Isandlwana (Ep. 6) is a strong midpoint pivot. Slight structural concern: the Leningrad bottle episode (Ep. 7) risks pacing stall if the quieter survival premise isn't executed with surgical precision.",
+        "act3": "Episode 8's 'Outside Time' climax is conceptually bold and emotionally satisfying — Nina's refusal to abandon the child is a earned, character-consistent choice. The pocket dimension resolution is inventive without feeling like a cheat. The open ending (child watching, waiting) effectively sets up Season 2 without feeling incomplete. The truncated Season 3 outline is the only structural weakness flagged."
+      },
+      "pacing_score": 79
+    }
+  },
+  "input_tokens": 3382,
+  "output_tokens": 737,
+  "quick_verdict": {
+    "commercial_score": 84,
+    "estimated_roi": "3x-5x",
+    "priority_level": "HIGH PRIORITY",
+    "recommendation": "Greenlight for development — a high-concept, emotionally resonant sci-fi series with premium streaming appeal, strong ensemble casting potential, and a distinctive philosophical spine that differentiates it from existing IP."
+  },
+  "technical_metrics": {
+    "document_metrics": {
+      "character_count": 6,
+      "estimated_pages": 38,
+      "primary_genre": "Historical Science Fiction / Psychological Drama"
+    },
+    "processing_time": "17.5s"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "admin": {
+    "description": "Full administrative access. Use sparingly.",
+    "permissions": ["*"]
+  },
+  "operator": {
+    "description": "Operational tasks: start/stop jobs, run backups.",
+    "permissions": ["backups:create", "backups:restore", "jobs:manage"]
+  },
+  "power-user": {
+    "description": "Elevated user for bulk operations and configuration.",
+    "permissions": ["data:read", "data:write", "reports:generate"]
+  },
+  "auditor": {
+    "description": "Read-only access to audit and logs.",
+    "permissions": ["audit:read", "logs:read"]
+  },
+  "service": {
+    "description": "Least-privilege service accounts for internal integrations.",
+    "permissions": ["api:call"]
+  }
+}

@@ -1,0 +1,616 @@
+generator client {
+  provider                    = "prisma-client-py"
+  interface                   = "asyncio"
+  recursive_type_depth        = 5
+  enable_experimental_decimal = true
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Jurisdiction {
+  id             String   @id @default(uuid())
+  name           String
+  code           String   @unique
+  country        String
+  type           String
+  description    String?
+  website        String?
+  currency       String   @default("USD")
+  treatyPartners String[] @default([])
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Sub-jurisdiction hierarchy
+  parentId         String?
+  parent           Jurisdiction?  @relation("SubJurisdictions", fields: [parentId], references: [id])
+  subJurisdictions Jurisdiction[] @relation("SubJurisdictions")
+
+  // Feed monitoring
+  feedUrl         String?
+  feedLastChecked DateTime?
+  feedLastHash    String?
+
+  incentiveRules        IncentiveRule[]
+  productions           Production[]
+  localRules            LocalRule[]
+  pendingRules          PendingRule[]
+  requirements          JurisdictionRequirement[]
+  childPolicies         InheritancePolicy[]       @relation("ChildPolicies")
+  parentPolicies        InheritancePolicy[]       @relation("ParentPolicies")
+  subJurisdictionModels SubJurisdiction[]         @relation("SubJurisdictionModel")
+
+  // Production Schedule Engine back-relations
+  scenes                Scene[]
+  shootDays             ShootDay[]
+  jurisdictionShootDays JurisdictionShootDays[]
+
+  @@index([parentId])
+  @@map("jurisdictions")
+}
+
+model LocalRule {
+  id             String       @id @default(uuid())
+  jurisdictionId String
+  jurisdiction   Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  name           String
+  code           String       @unique
+  category       String
+  ruleType       String
+  amount         Float?
+  percentage     Float?
+  description    String
+  requirements   String?
+  effectiveDate  DateTime
+  expirationDate DateTime?
+  sourceUrl      String?
+  extractedBy    String       @default("manual")
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([jurisdictionId])
+  @@map("local_rules")
+}
+
+model InheritancePolicy {
+  id                   String       @id @default(uuid())
+  childJurisdictionId  String
+  parentJurisdictionId String
+  child                Jurisdiction @relation("ChildPolicies", fields: [childJurisdictionId], references: [id], onDelete: Cascade, map: "inheritance_policies_child_fkey")
+  parent               Jurisdiction @relation("ParentPolicies", fields: [parentJurisdictionId], references: [id], onDelete: Cascade, map: "inheritance_policies_parent_fkey")
+  policyType           String
+  ruleCategory         String?
+  priority             Int          @default(0)
+  notes                String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@unique([childJurisdictionId, parentJurisdictionId, ruleCategory], map: "inheritance_policies_unique")
+  @@index([childJurisdictionId], map: "inheritance_policies_child_idx")
+  @@index([parentJurisdictionId], map: "inheritance_policies_parent_idx")
+  @@map("inheritance_policies")
+}
+
+model PendingRule {
+  id             String       @id @default(uuid())
+  jurisdictionId String
+  jurisdiction   Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  sourceUrl      String
+  rawContent     String
+  extractedData  Json
+  confidence     Float?
+  status         String       @default("pending")
+  reviewNotes    String?
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([jurisdictionId])
+  @@index([status])
+  @@map("pending_rules")
+}
+
+/// Non-quantified requirements extracted from government pages.
+/// Stores process/structural rules (permits, portals, designations,
+/// insurance mandates) that have no dollar/percentage value and
+/// therefore cannot live in local_rules or incentive_rules.
+model JurisdictionRequirement {
+  id             String       @id @default(uuid())
+  jurisdictionId String
+  jurisdiction   Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+
+  /// Short display name, e.g. "Film Permit Required"
+  name String
+
+  /// permit | insurance | registration | designation | infrastructure | portal | contact | other
+  category String
+
+  /// mandatory | recommended | informational
+  requirementType String @default("mandatory")
+
+  description String
+
+  /// Who this applies to, e.g. ["feature_film","commercial","tv_series"]
+  applicableTo String[] @default([])
+
+  contactInfo String? /// phone / email for the relevant office
+  portalUrl   String? /// direct link to online permit form or portal
+  sourceUrl   String? /// page this was extracted from
+  extractedBy String  @default("monitor") /// monitor | manual
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jurisdictionId])
+  @@index([category])
+  @@map("jurisdiction_requirements")
+}
+
+model IncentiveRule {
+  id               String       @id @default(uuid())
+  jurisdictionId   String
+  jurisdiction     Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  ruleName         String
+  ruleCode         String       @unique
+  incentiveType    String
+  percentage       Float?
+  fixedAmount      Float?
+  minSpend         Float?
+  maxCredit        Float?
+  eligibleExpenses String[]
+  excludedExpenses String[]
+  creditType       String       @default("refundable")
+  effectiveDate    DateTime
+  expirationDate   DateTime?
+  requirements     String?
+  active           Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([jurisdictionId])
+  @@map("incentive_rules")
+}
+
+model Production {
+  id                String               @id @default(uuid())
+  title             String
+  productionType    String
+  jurisdictionId    String
+  jurisdiction      Jurisdiction         @relation(fields: [jurisdictionId], references: [id])
+  budgetTotal       Float
+  budgetQualifying  Float?
+  startDate         DateTime
+  endDate           DateTime?
+   episodeCount      Int?
+  productionCompany String
+  status            String
+  contact           String?
+  metadata          String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  expenses          Expense[]
+  complianceItems   ComplianceItem[]
+  scenarios         ProductionScenario[]
+
+  // Production Schedule Engine back-relations
+  scenes                Scene[]
+  shootDays             ShootDay[]
+  castMembers           CastMember[]
+  callSheets            CallSheet[]
+  jurisdictionShootDays JurisdictionShootDays[]
+
+  @@index([jurisdictionId])
+  @@index([status])
+  @@map("productions")
+}
+
+model Expense {
+  id             String     @id @default(uuid())
+  productionId   String
+  production     Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  category       String
+  subcategory    String?
+  description    String
+  amount         Float
+  expenseDate    DateTime
+  paymentDate    DateTime?
+  isQualifying   Boolean    @default(true)
+  qualifyingNote String?
+  vendorName     String?
+  vendorLocation String?
+  receiptNumber  String?
+  invoiceNumber  String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([productionId])
+  @@index([expenseDate])
+  @@map("expenses")
+}
+
+model User {
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  passwordHash           String
+  role                   String                  @default("admin")
+  isActive               Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  notificationPreference NotificationPreference?
+  savedScenarios         UserScenario[]
+
+  @@map("users")
+}
+
+/// Maximizer scenarios saved by a user — persisted in DB, not localStorage.
+model UserScenario {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  codes       String
+  spend       String
+  projectType String   @default("film")
+  splitSpend  Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_scenarios")
+}
+
+model ComplianceItem {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  label        String
+  category     String     @default("general")
+  status       String     @default("pending")
+  notes        String?
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  @@index([productionId])
+  @@map("compliance_items")
+}
+
+model NotificationPreference {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jurisdictions   String[] @default([])
+  emailAddress    String
+  active          Boolean  @default(true)
+  /// daily | weekly | never
+  reportFrequency String   @default("never")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("notification_preferences")
+}
+
+model MonitoringSource {
+  id           String            @id @default(uuid())
+  name         String
+  url          String
+  feedUrl      String?
+  sourceType   String            @default("rss")
+  jurisdiction String?
+  active       Boolean           @default(true)
+  lastFetched  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  events       MonitoringEvent[]
+
+  @@map("monitoring_sources")
+}
+
+model MonitoringEvent {
+  id          String           @id @default(uuid())
+  sourceId    String
+  source      MonitoringSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  title       String
+  summary     String?
+  url         String?
+  contentHash String?
+  severity    String           @default("info")
+  isRead      Boolean          @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([sourceId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("monitoring_events")
+}
+
+// ─── Phase 0: Sub-Jurisdiction Layer ──────────────────────────────────────────
+
+/// County, city, region, or special-district incentive that stacks on top of
+/// the base state credit. Links to the parent Jurisdiction via parentJurisdictionId.
+model SubJurisdiction {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Text
+
+  name                 String
+  // county | city | region | special_district
+  type                 String
+  parentJurisdictionId String       @map("parent_jurisdiction_id")
+  parentJurisdiction   Jurisdiction @relation("SubJurisdictionModel", fields: [parentJurisdictionId], references: [id], onDelete: Restrict)
+
+  // credit | rebate | fee_waiver | in_kind
+  incentiveType    String   @map("incentive_type")
+  ratePercent      Decimal? @db.Decimal(5, 2)  @map("rate_percent")
+  fixedAmount      Decimal? @db.Decimal(12, 2) @map("fixed_amount")
+  capPerProduction Decimal? @db.Decimal(12, 2) @map("cap_per_production")
+  annualCap        Decimal? @db.Decimal(12, 2) @map("annual_cap")
+  minSpendRequired Decimal? @db.Decimal(12, 2) @map("min_spend_required")
+
+  // Stacking rules JSON: cannot_stack_with[], requires[], stacking_order, notes
+  stackingRules                 Json     @default("{}") @map("stacking_rules")
+  eligibleExpenditureCategories Json?    @map("eligible_expenditure_categories")
+  localHirePercentageRequired   Decimal? @db.Decimal(5, 2) @map("local_hire_percentage_required")
+
+  effectiveDate  DateTime  @db.Date @map("effective_date")
+  expirationDate DateTime? @db.Date @map("expiration_date")
+
+  isActive     Boolean   @default(true) @map("is_active")
+  sourceUrl    String?   @map("source_url")
+  lastVerified DateTime? @db.Timestamptz(6) @map("last_verified")
+  notes        String?
+
+  createdAt DateTime @default(now())              @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt   @db.Timestamptz(6) @map("updated_at")
+
+  @@index([parentJurisdictionId], map: "idx_sub_jurisdictions_parent_jurisdiction")
+  // DB also has a partial index `idx_sub_jurisdictions_active`:
+  //   CREATE INDEX idx_sub_jurisdictions_active ON sub_jurisdictions(is_active) WHERE (is_active = true)
+  // Prisma's @@index doesn't support WHERE clauses, so the partial index
+  // stays unmanaged here. Keep it via raw SQL if it's ever dropped.
+  @@map("sub_jurisdictions")
+}
+
+/// Stores "what-if" input parameters for a single production.
+/// Multiple scenarios per production allow baseline vs. optimized comparison.
+model ProductionScenario {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Text
+  productionId String     @map("production_id")
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+
+  name               String
+  totalBudget        Decimal? @db.Decimal(12, 2) @map("total_budget")
+  qualifiedSpend     Decimal? @db.Decimal(12, 2) @map("qualified_spend")
+  /// e.g. {"labor": 5000000, "rentals": 2000000}
+  spendByCategory    Json?    @map("spend_by_category")
+  shootingDays       Int?     @map("shooting_days")
+  /// e.g. [{"jurisdiction_id": "uuid", "days": 20}, {"sub_jurisdiction_id": "uuid", "days": 10}]
+  daysByJurisdiction Json?    @map("days_by_jurisdiction")
+  postLocation       String?  @map("post_location")
+  localHirePercent   Decimal? @db.Decimal(5, 2)  @map("local_hire_percent")
+  hireByJurisdiction Json?    @map("hire_by_jurisdiction")
+
+  createdAt DateTime @default(now())            @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  optimizationResult ScenarioOptimizationResult?
+
+  @@index([productionId], map: "idx_scenarios_production")
+  @@map("production_scenarios")
+}
+
+/// Cached stacking-engine output for a given scenario.
+/// Set expiresAt to force recomputation when underlying data changes.
+model ScenarioOptimizationResult {
+  id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Text
+  scenarioId String             @unique(map: "scenario_optimization_results_unique") @map("scenario_id")
+  scenario   ProductionScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  /// e.g. [{"jurisdiction_id": "...", "name": "NY Base", "incentive_value": 4500000}]
+  recommendedStack    Json     @default("[]") @map("recommended_stack")
+  totalIncentiveValue Decimal? @db.Decimal(12, 2) @map("total_incentive_value")
+  effectiveRate       Decimal? @db.Decimal(5, 2)  @map("effective_rate")
+  /// e.g. "refundable within 90 days of audit"
+  cashFlowEstimate    String?  @map("cash_flow_estimate")
+  /// e.g. ["Annual cap 82% exhausted — apply early"]
+  warnings            Json?
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+  expiresAt DateTime? @db.Timestamptz(6) @map("expires_at")
+
+  @@map("scenario_optimization_results")
+}
+
+// ─── Broadcast Scheduler Parser ───────────────────────────────────────────────
+
+/// One parsed segment from a broadcast schedule (CSV / XML/BXF / JSON).
+/// Populated by the schedule_parser router from the broadcast_scheduler
+/// service module. Production data ties back optionally via productionId.
+model ScheduleEvent {
+  id            String   @id @default(uuid())
+  channel       String
+  scheduleDate  String?
+  sourceFile    String
+  /// "csv" | "xml" | "json"
+  sourceFormat  String
+  title         String
+  episodeTitle  String?
+  episodeNumber String?
+  seriesNumber  String?
+  txTime        String?
+  duration      String?
+  genre         String?
+  rightsStart   String?
+  rightsEnd     String?
+  assetId       String?
+  /// derived from txTime by date_helper (morning/afternoon/etc — populated later)
+  daypart       String?
+  importedAt    DateTime @default(now())
+  /// optional link to SceneIQ Production model (not enforced as FK yet)
+  productionId  String?
+
+  @@index([channel])
+  @@index([scheduleDate])
+  @@index([sourceFormat])
+  @@index([importedAt])
+  @@map("schedule_events")
+}
+
+// ─── Production Schedule Engine ───────────────────────────────────────────────
+
+/// One scene from a script breakdown. Imported from CSV / Movie Magic
+/// Scheduling (.mms) / Final Draft (.fdx). Optionally pinned to a shoot day
+/// and a jurisdiction. NOTE: this is a PRODUCTION SHOOTING scene — distinct
+/// from broadcast/playout records in schedule_events.
+model Scene {
+  id              String        @id @default(uuid())
+  productionId    String
+  production      Production    @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  /// Script scene number, e.g. "12", "12A", "INSERT-3"
+  sceneNumber     String
+  title           String?
+  location        String?
+  /// "INT" | "EXT" | "INT/EXT"
+  locationType    String?
+  /// "DAY" | "NIGHT" | "DAWN" | "DUSK"
+  timeOfDay       String?
+  /// Page count in decimal pages (8/8 = 1.0)
+  pageCount       Float?
+  jurisdictionId  String?
+  jurisdiction    Jurisdiction? @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+  /// CastMember.id list — denormalized for MVP. Replace with a join table
+  /// if scene/cast queries become hot.
+  castIds         String[]      @default([])
+  notes           String?
+  shootDayId      String?
+  shootDay        ShootDay?     @relation(fields: [shootDayId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([productionId])
+  @@index([shootDayId])
+  @@index([jurisdictionId])
+  @@map("scenes")
+}
+
+/// One shooting day on the stripboard. Holds an ordered set of scenes
+/// (ordering is implicit by sceneNumber for MVP; explicit ordering can be
+/// added later via a position column on Scene if needed).
+model ShootDay {
+  id              String        @id @default(uuid())
+  productionId    String
+  production      Production    @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  dayNumber       Int
+  /// ISO date string (YYYY-MM-DD). Kept as String per brief; consider
+  /// DateTime @db.Date later if date math becomes common.
+  date            String?
+  jurisdictionId  String?
+  jurisdiction    Jurisdiction? @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+  scenes          Scene[]
+  totalPages      Float?
+  /// Crew call time string, e.g. "06:00 AM"
+  callTime        String?
+  location        String?
+  nearestHospital String?
+  notes           String?
+  callSheets      CallSheet[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([productionId, dayNumber])
+  @@index([productionId])
+  @@index([jurisdictionId])
+  @@map("shoot_days")
+}
+
+/// One cast member on a production. Used to render the Day Out of Days grid.
+model CastMember {
+  id              String     @id @default(uuid())
+  productionId    String
+  production      Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  characterName   String
+  actorName       String?
+  /// Per-day DOOD status codes keyed by ISO date:
+  /// { "2026-01-15": "W", "2026-01-16": "H" }
+  /// Codes: S, W, H, T, F, SW, WF
+  doodEntries     Json?
+  startDay        Int?
+  finishDay       Int?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([productionId])
+  @@map("cast_members")
+}
+
+/// Generated call sheet for a single shoot day. Stored so previously
+/// generated sheets remain reproducible even after the stripboard changes.
+model CallSheet {
+  id              String     @id @default(uuid())
+  productionId    String
+  production      Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  shootDayId      String
+  shootDay        ShootDay   @relation(fields: [shootDayId], references: [id], onDelete: Cascade)
+  dayNumber       Int
+  date            String?
+  /// General crew call time
+  generalCall     String?
+  location        String?
+  nearestHospital String?
+  /// Placeholder — populated manually or via weather API later
+  weather         String?
+  /// Snapshot of scene list at generation time
+  scenes          Json?
+  /// Department call times table
+  crewCalls       Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([productionId])
+  @@index([shootDayId])
+  @@map("call_sheets")
+}
+
+/// Aggregate shoot-day counts per jurisdiction for a production.
+/// Populated by the JurisdictionShootDayTracker and consumed by the
+/// ComplianceBridge to feed the Incentive Calculator.
+model JurisdictionShootDays {
+  id              String       @id @default(uuid())
+  productionId    String
+  production      Production   @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  jurisdictionId  String
+  jurisdiction    Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Restrict)
+  shootDays       Int          @default(0)
+  /// Marked by an explicit "Verify" action in the dashboard; the
+  /// ComplianceBridge only pushes verified rows downstream. Null
+  /// until verify_shoot_days() / the verify endpoint is called.
+  verifiedAt      DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([productionId, jurisdictionId])
+  @@index([productionId])
+  @@index([jurisdictionId])
+  @@map("jurisdiction_shoot_days")
+}
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  hashedPassword    String
+  fullName          String?
+  role              String    @default("viewer")
+  isActive          Boolean   @default(true)
+  failedLoginCount  Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("users")
+}

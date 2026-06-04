@@ -10,7 +10,7 @@ declare module 'axios' {
 // ?? instead of || so empty string (Docker: relative URL via nginx) is kept as-is
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 const API_VERSION = import.meta.env.VITE_API_VERSION || '0.1.0';
-const TOKEN_KEY = 'pilotforge_token';
+const TOKEN_KEY = 'sceneiq_token';
 
 export const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api/${API_VERSION}`,

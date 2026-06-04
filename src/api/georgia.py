@@ -1,9 +1,36 @@
 from fastapi import APIRouter, HTTPException, status
 from src.utils.database import prisma
 import logging
+from typing import Union
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/georgia", tags=["Georgia"])
+
+
+def _normalize_requirements(raw) -> Union[list, str, None]:
+    """Coerce Prisma requirements field to list[str] | str | None.
+
+    The DB stores requirements as JSON, which Prisma may return as a list of
+    objects {minSpend, minSpendCurrency, description}. The frontend expects
+    strings only, so we extract .description (falling back to str()) here
+    rather than letting raw objects flow through to React.
+    """
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, list):
+        result = []
+        for item in raw:
+            if isinstance(item, str):
+                if item:
+                    result.append(item)
+            elif isinstance(item, dict):
+                text = item.get("description") or item.get("minSpend")
+                if text is not None:
+                    result.append(str(text))
+        return result if result else None
+    return str(raw)
 
 @router.get("/health")
 async def legacy_health():
@@ -46,7 +73,7 @@ async def get_programs(jid: str):
             "max_credit": r.maxCredit,
             "eligible_expenses": r.eligibleExpenses,
             "excluded_expenses": r.excludedExpenses,
-            "requirements": r.requirements,
+            "requirements": _normalize_requirements(r.requirements),
             "effective_date": r.effectiveDate,
             "active": r.active,
         } for r in rules],
