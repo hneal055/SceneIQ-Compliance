@@ -39,6 +39,27 @@ class AssignSceneBody(BaseModel):
     )
 
 
+class UnassignSceneBody(BaseModel):
+    """Body for POST /{production_id}/stripboard/unassign — moves a scene
+    back to the Unscheduled bin by clearing its shootDayId."""
+    scene_id: str = Field(..., description="Scene.id to move back to Unscheduled")
+
+
+class CreateShootDayBody(BaseModel):
+    """Body for POST /{production_id}/shoot-days. Every field is optional;
+    the day_number is assigned automatically (max existing + 1). A blank day
+    is created when no fields are supplied — the user fills it in by assigning
+    scenes from the Unscheduled bin."""
+    date: Optional[str] = Field(None, description="ISO date string (YYYY-MM-DD)")
+    jurisdiction_name: Optional[str] = Field(
+        None, description="Jurisdiction NAME; resolved to a FK id server-side"
+    )
+    location: Optional[str] = None
+    call_time: Optional[str] = Field(None, description="e.g. '06:00 AM'")
+    nearest_hospital: Optional[str] = None
+    notes: Optional[str] = None
+
+
 class JurisdictionSummaryRow(BaseModel):
     """One row in GET /{production_id}/jurisdiction-tracker."""
     jurisdiction_id: str

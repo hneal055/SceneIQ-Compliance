@@ -72,14 +72,19 @@ export default function DayOutOfDays({ productionId }: Props) {
           Object.keys(row).forEach((k) => numbers.add(Number(k)));
         });
         // Fall back to whatever's in the stripboard if the grid is empty.
-        Object.keys(stripboard).forEach((k) => numbers.add(Number(k)));
+        // day_number → date lookup from the stripboard's scheduled days.
+        const dateByDay = new Map<number, string | null>();
+        stripboard.days.forEach((d) => {
+          numbers.add(d.day_number);
+          dateByDay.set(d.day_number, d.date);
+        });
 
         const cols = Array.from(numbers)
           .filter((n) => !Number.isNaN(n))
           .sort((a, b) => a - b)
           .map<ColumnSpec>((n) => ({
             dayNumber: n,
-            date: stripboard[String(n)]?.date ?? null,
+            date: dateByDay.get(n) ?? null,
           }));
         setColumns(cols);
       })

@@ -1,54 +1,57 @@
 // =============================================================================
 // frontend/src/pages/ProductionSchedule/Stripboard.tsx
-// DAY-block + scene-strip stripboard view. Structural reference is
-// SchedulePage.tsx, but the gold-and-dark visual tokens are dropped:
-//   #C9973A → blue-500/600    bg-white/5 → bg-white (light shell)
-//   linear-gradient page bg → inherits Layout's bg-slate-50
-//   text-white/N → slate-700 / slate-500 etc.
+// DAY-block + scene-strip stripboard view with an Unscheduled bin.
 //
-// Fetches from GET /production-schedule/{productionId}/stripboard and
-// maps the dict response to an ordered RenderedDay[] for rendering.
+// Flow:
+//   - GET /production-schedule/{id}/stripboard returns { days[], unscheduled }.
+//   - Freshly-imported scenes land in the Unscheduled bin (no shoot day yet).
+//   - "New shoot day" (POST /shoot-days) adds an empty day.
+//   - Each scene strip has an "Assign ▾" dropdown (Unscheduled / Day N) that
+//     calls POST /stripboard/assign or /stripboard/unassign, then refetches.
+//   - Each day can be deleted (DELETE /shoot-days/{id}); its scenes return to
+//     the Unscheduled bin (FK onDelete: SetNull).
 //
-// Drag-and-drop reordering is NOT implemented in this phase (the
-// POST /stripboard/assign endpoint exists; wiring it is a follow-up).
+// Visual tokens match the rest of the Production Schedule pages (blue/slate,
+// light theme). Full drag-and-drop is a future enhancement; the dropdown is
+// the reliable MVP affordance.
 // =============================================================================
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ChevronDown,
   ChevronRight,
   Clock,
   Film,
+  Inbox,
   LayoutGrid,
-  List,
   Loader2,
   MapPin,
   Plus,
+  Trash2,
   Users,
 } from "lucide-react";
 
 import {
+  assignScene,
+  createShootDay,
+  deleteShootDay,
   getStripboard,
+  unassignScene,
   type StripboardDay,
   type StripboardSceneSnapshot,
+  type UnscheduledBin,
 } from "../../api/productionSchedule";
 
 interface Props {
   productionId: string;
 }
 
-interface RenderedDay {
-  day_number: number;
-  date: string | null;
-  jurisdiction: string | null;
-  total_pages: number;
-  scenes: StripboardSceneSnapshot[];
-}
+// Sentinel select value for "move back to Unscheduled".
+const UNSCHEDULED = "__unscheduled__";
 
 // Converts a decimal page count (`2.5`, `3.125`) to the eighths display
 // used on traditional stripboards (`"2 4/8"`, `"3 1/8"`).
-// Rounds to the nearest 8th to handle floating-point noise like 2.4999.
 function pagesDisplay(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   if (value === 0) return "0";
@@ -62,8 +65,6 @@ function pagesDisplay(value: number | null | undefined): string {
 
 function formatDate(value: string | null): string {
   if (!value) return "Date TBD";
-  // Treat the date as a calendar date, not a UTC instant — slicing avoids
-  // off-by-one timezone display issues.
   const [y, m, d] = value.split("-");
   if (!y || !m || !d) return value;
   const dt = new Date(Number(y), Number(m) - 1, Number(d));
@@ -75,32 +76,35 @@ function formatDate(value: string | null): string {
 }
 
 export default function Stripboard({ productionId }: Props) {
-  const [days, setDays] = useState<RenderedDay[]>([]);
+  const [days, setDays] = useState<StripboardDay[]>([]);
+  const [unscheduled, setUnscheduled] = useState<UnscheduledBin>({
+    scenes: [],
+    total_pages: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const [view, setView] = useState<"stripboard" | "list">("stripboard");
+
+  const load = useCallback(async () => {
+    const data = await getStripboard(productionId);
+    setDays(data.days);
+    setUnscheduled(data.unscheduled);
+    return data;
+  }, [productionId]);
 
   useEffect(() => {
     if (!productionId) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
-    getStripboard(productionId)
-      .then((dict) => {
+    load()
+      .then((data) => {
         if (cancelled) return;
-        const out: RenderedDay[] = Object.entries(dict)
-          .map(([dn, bucket]: [string, StripboardDay]) => ({
-            day_number: Number(dn),
-            date: bucket.date,
-            jurisdiction: bucket.jurisdiction,
-            total_pages: bucket.total_pages,
-            scenes: bucket.scenes,
-          }))
-          .sort((a, b) => a.day_number - b.day_number);
-        setDays(out);
-        // Expand Day 1 by default for visual context.
-        if (out.length > 0) setExpanded(new Set([out[0].day_number]));
+        // Expand the first day by default for visual context.
+        if (data.days.length > 0) {
+          setExpanded(new Set([data.days[0].day_number]));
+        }
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -117,17 +121,53 @@ export default function Stripboard({ productionId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [productionId]);
+  }, [productionId, load]);
+
+  // Wraps a mutation: set busy, run it, refetch, surface errors.
+  const mutate = useCallback(
+    async (fn: () => Promise<unknown>) => {
+      setBusy(true);
+      setError(null);
+      try {
+        await fn();
+        await load();
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Action failed. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [load],
+  );
+
+  const handleNewDay = () =>
+    mutate(async () => {
+      const created = (await createShootDay(productionId)) as { dayNumber?: number };
+      if (created?.dayNumber) {
+        setExpanded((prev) => new Set(prev).add(created.dayNumber as number));
+      }
+    });
+
+  const handleDeleteDay = (day: StripboardDay) =>
+    mutate(() => deleteShootDay(productionId, day.id));
+
+  // Moves a scene to a target placement: a ShootDay.id, or UNSCHEDULED.
+  const handleMoveScene = (sceneId: string, target: string) =>
+    mutate(() =>
+      target === UNSCHEDULED
+        ? unassignScene(productionId, sceneId)
+        : assignScene(productionId, { scene_id: sceneId, shoot_day_id: target }),
+    );
 
   const totals = useMemo(() => {
-    let scenes = 0;
-    let pages = 0;
+    let scenes = unscheduled.scenes.length;
+    let pages = unscheduled.total_pages || 0;
     for (const d of days) {
       scenes += d.scenes.length;
       pages += d.total_pages || 0;
     }
     return { scenes, pages, dayCount: days.length };
-  }, [days]);
+  }, [days, unscheduled]);
 
   function toggleDay(n: number) {
     setExpanded((prev) => {
@@ -136,14 +176,6 @@ export default function Stripboard({ productionId }: Props) {
       else next.add(n);
       return next;
     });
-  }
-
-  function expandAll() {
-    setExpanded(new Set(days.map((d) => d.day_number)));
-  }
-
-  function collapseAll() {
-    setExpanded(new Set());
   }
 
   if (loading) {
@@ -155,25 +187,15 @@ export default function Stripboard({ productionId }: Props) {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-4 rounded-lg border bg-red-50 border-red-200 text-red-900 text-sm flex items-start gap-2">
-        <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-        <span>{error}</span>
-      </div>
-    );
-  }
-
-  if (days.length === 0) {
+  const isEmpty = days.length === 0 && unscheduled.scenes.length === 0;
+  if (isEmpty && !error) {
     return (
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
         <LayoutGrid className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-        <h2 className="text-lg font-semibold text-slate-900">
-          No shoot days yet
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-900">No scenes yet</h2>
         <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
-          Import a script breakdown on the Import tab, then create shoot days
-          and assign scenes to populate the stripboard.
+          Import a script breakdown on the Import tab. Imported scenes appear
+          here in the Unscheduled bin, ready to assign to shoot days.
         </p>
       </div>
     );
@@ -181,7 +203,14 @@ export default function Stripboard({ productionId }: Props) {
 
   return (
     <section className="space-y-4">
-      {/* Stats bar with view toggles */}
+      {error && (
+        <div className="p-4 rounded-lg border bg-red-50 border-red-200 text-red-900 text-sm flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Stats bar + actions */}
       <div className="flex items-center gap-4 px-4 py-3 bg-white rounded-xl border border-slate-100 shadow-sm">
         <div className="flex items-center gap-1.5">
           <Film className="w-4 h-4 text-slate-400" />
@@ -193,6 +222,12 @@ export default function Stripboard({ productionId }: Props) {
           <span className="text-sm font-semibold text-slate-900">{totals.scenes}</span>
         </div>
         <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500">Unscheduled</span>
+          <span className="text-sm font-semibold text-amber-600">
+            {unscheduled.scenes.length}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
           <span className="text-xs text-slate-500">Total pages</span>
           <span className="text-sm font-semibold text-blue-600">
             {pagesDisplay(totals.pages)}
@@ -200,80 +235,122 @@ export default function Stripboard({ productionId }: Props) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {busy && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
           <button
             type="button"
-            onClick={expandAll}
-            className="text-xs text-slate-500 hover:text-blue-600"
+            onClick={handleNewDay}
+            disabled={busy}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Expand all
+            <Plus size={13} />
+            New shoot day
           </button>
-          <span className="text-slate-300">·</span>
-          <button
-            type="button"
-            onClick={collapseAll}
-            className="text-xs text-slate-500 hover:text-blue-600"
-          >
-            Collapse all
-          </button>
-
-          <div className="ml-4 flex items-center gap-1 p-0.5 rounded-md bg-slate-100 border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setView("stripboard")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] transition-colors ${
-                view === "stripboard"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <LayoutGrid size={11} />
-              Strip Board
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("list")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] transition-colors ${
-                view === "list"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <List size={11} />
-              List
-            </button>
-          </div>
         </div>
       </div>
 
-      {view === "list" ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center text-sm text-slate-500">
-          List view coming soon. Use Strip Board for now.
-        </div>
-      ) : (
-        days.map((d) => (
-          <DayBlock
-            key={d.day_number}
-            day={d}
-            expanded={expanded.has(d.day_number)}
-            onToggle={() => toggleDay(d.day_number)}
-          />
-        ))
+      {/* Unscheduled bin */}
+      <UnscheduledBlock
+        bin={unscheduled}
+        days={days}
+        busy={busy}
+        onMove={handleMoveScene}
+      />
+
+      {/* Scheduled days */}
+      {days.map((d) => (
+        <DayBlock
+          key={d.id}
+          day={d}
+          days={days}
+          expanded={expanded.has(d.day_number)}
+          busy={busy}
+          onToggle={() => toggleDay(d.day_number)}
+          onMove={handleMoveScene}
+          onDelete={() => handleDeleteDay(d)}
+        />
+      ))}
+
+      {days.length === 0 && (
+        <p className="text-center text-xs text-slate-400 py-2">
+          No shoot days yet — click <span className="font-semibold">New shoot day</span> to
+          start scheduling, then assign scenes from the Unscheduled bin above.
+        </p>
       )}
     </section>
   );
 }
 
 // -----------------------------------------------------------------------------
-// DayBlock — restyled version of SchedulePage's DayBlock (light theme).
+// Unscheduled bin
+// -----------------------------------------------------------------------------
+
+interface UnscheduledBlockProps {
+  bin: UnscheduledBin;
+  days: StripboardDay[];
+  busy: boolean;
+  onMove: (sceneId: string, target: string) => void;
+}
+
+function UnscheduledBlock({ bin, days, busy, onMove }: UnscheduledBlockProps) {
+  if (bin.scenes.length === 0) return null;
+  return (
+    <div className="bg-amber-50/40 rounded-xl border border-amber-200 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-amber-100">
+        <Inbox size={16} className="text-amber-500" />
+        <div className="flex flex-col">
+          <span className="text-[10px] font-mono text-amber-600 uppercase tracking-widest">
+            Unscheduled
+          </span>
+          <span className="text-sm font-bold text-slate-900 leading-tight">
+            {bin.scenes.length} scene{bin.scenes.length === 1 ? "" : "s"} not yet
+            assigned
+          </span>
+        </div>
+        <div className="ml-auto px-2 py-0.5 rounded bg-amber-100 border border-amber-200">
+          <span className="text-xs font-bold text-amber-700">
+            {pagesDisplay(bin.total_pages)} pgs
+          </span>
+        </div>
+      </div>
+      <div className="px-4 py-3 flex flex-col gap-1.5">
+        {bin.scenes.map((s, i) => (
+          <SceneStrip
+            key={s.id ?? i}
+            scene={s}
+            days={days}
+            currentDayId={null}
+            busy={busy}
+            onMove={onMove}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// DayBlock
 // -----------------------------------------------------------------------------
 
 interface DayBlockProps {
-  day: RenderedDay;
+  day: StripboardDay;
+  days: StripboardDay[];
   expanded: boolean;
+  busy: boolean;
   onToggle: () => void;
+  onMove: (sceneId: string, target: string) => void;
+  onDelete: () => void;
 }
 
-function DayBlock({ day, expanded, onToggle }: DayBlockProps) {
+function DayBlock({
+  day,
+  days,
+  expanded,
+  busy,
+  onToggle,
+  onMove,
+  onDelete,
+}: DayBlockProps) {
   const castCount = useMemo(() => {
     const names = new Set<string>();
     for (const s of day.scenes) {
@@ -284,43 +361,43 @@ function DayBlock({ day, expanded, onToggle }: DayBlockProps) {
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:border-blue-300 hover:bg-blue-50/30 transition-colors text-left"
-      >
-        {expanded ? (
-          <ChevronDown size={14} className="text-blue-500" />
-        ) : (
-          <ChevronRight size={14} className="text-slate-400" />
-        )}
+      <div className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50/30 transition-colors">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex items-center gap-3 text-left flex-1 min-w-0"
+        >
+          {expanded ? (
+            <ChevronDown size={14} className="text-blue-500 shrink-0" />
+          ) : (
+            <ChevronRight size={14} className="text-slate-400 shrink-0" />
+          )}
 
-        <div className="flex flex-col items-start">
-          <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest">
-            Day {day.day_number}
-          </span>
-          <span className="text-sm font-bold text-slate-900 leading-tight">
-            {formatDate(day.date)}
-          </span>
-        </div>
-
-        {day.jurisdiction && (
-          <div className="flex items-center gap-1 ml-2">
-            <MapPin size={11} className="text-slate-400" />
-            <span className="text-[11px] text-slate-500">{day.jurisdiction}</span>
+          <div className="flex flex-col items-start">
+            <span className="text-[10px] font-mono text-blue-600 uppercase tracking-widest">
+              Day {day.day_number}
+            </span>
+            <span className="text-sm font-bold text-slate-900 leading-tight">
+              {formatDate(day.date)}
+            </span>
           </div>
-        )}
 
-        <div className="ml-auto flex items-center gap-4">
+          {day.jurisdiction && (
+            <div className="flex items-center gap-1 ml-2">
+              <MapPin size={11} className="text-slate-400" />
+              <span className="text-[11px] text-slate-500">{day.jurisdiction}</span>
+            </div>
+          )}
+        </button>
+
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Clock size={11} className="text-slate-400" />
             <span className="text-[11px] text-slate-500">Call TBD</span>
           </div>
           <div className="flex items-center gap-1">
             <Film size={11} className="text-slate-400" />
-            <span className="text-[11px] text-slate-500">
-              {day.scenes.length} scenes
-            </span>
+            <span className="text-[11px] text-slate-500">{day.scenes.length} scenes</span>
           </div>
           <div className="flex items-center gap-1">
             <Users size={11} className="text-slate-400" />
@@ -331,40 +408,59 @@ function DayBlock({ day, expanded, onToggle }: DayBlockProps) {
               {pagesDisplay(day.total_pages)} pgs
             </span>
           </div>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={busy}
+            title={`Delete Day ${day.day_number} (scenes return to Unscheduled)`}
+            className="p-1 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 size={13} />
+          </button>
         </div>
-      </button>
+      </div>
 
       {expanded && (
         <div className="px-4 pb-4 pt-1 border-t border-slate-100 bg-slate-50/40">
           {day.scenes.length === 0 ? (
             <p className="text-sm text-slate-500 italic py-3">
-              No scenes assigned to this day yet.
+              No scenes assigned to this day yet — assign them from the
+              Unscheduled bin using the “Assign ▾” menu.
             </p>
           ) : (
             <div className="flex flex-col gap-1.5 mt-2">
               {day.scenes.map((s, i) => (
-                <SceneStrip key={s.id ?? i} scene={s} />
+                <SceneStrip
+                  key={s.id ?? i}
+                  scene={s}
+                  days={days}
+                  currentDayId={day.id}
+                  busy={busy}
+                  onMove={onMove}
+                />
               ))}
             </div>
           )}
-
-          {/* Stub — drag-and-drop assignment hook lands in a future phase. */}
-          <button
-            type="button"
-            disabled
-            title="Drag-and-drop reordering arrives in a future phase"
-            className="mt-2 flex items-center gap-2 px-3 py-2 rounded-md text-[11px] text-slate-400 border border-dashed border-slate-300 cursor-not-allowed w-full justify-center"
-          >
-            <Plus size={11} />
-            Add scene to Day {day.day_number}
-          </button>
         </div>
       )}
     </div>
   );
 }
 
-function SceneStrip({ scene }: { scene: StripboardSceneSnapshot }) {
+// -----------------------------------------------------------------------------
+// SceneStrip — with an inline placement <select> (Unscheduled / Day N).
+// -----------------------------------------------------------------------------
+
+interface SceneStripProps {
+  scene: StripboardSceneSnapshot;
+  days: StripboardDay[];
+  currentDayId: string | null;
+  busy: boolean;
+  onMove: (sceneId: string, target: string) => void;
+}
+
+function SceneStrip({ scene, days, currentDayId, busy, onMove }: SceneStripProps) {
+  const value = currentDayId ?? UNSCHEDULED;
   return (
     <div className="flex items-stretch rounded-md border border-slate-200 border-l-4 border-l-blue-400 bg-white hover:border-blue-300 transition-colors">
       {/* Scene number */}
@@ -439,6 +535,28 @@ function SceneStrip({ scene }: { scene: StripboardSceneSnapshot }) {
           <AlertCircle size={12} className="text-amber-500" />
         </div>
       )}
+
+      {/* Placement control */}
+      <div className="flex items-center px-2 border-l border-slate-100">
+        <select
+          aria-label={`Assign scene ${scene.scene_number} to a day`}
+          value={value}
+          disabled={busy || !scene.id}
+          onChange={(e) => {
+            if (scene.id && e.target.value !== value) {
+              onMove(scene.id, e.target.value);
+            }
+          }}
+          className="text-[11px] border border-slate-200 rounded-md px-1.5 py-1 bg-white text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed max-w-[110px]"
+        >
+          <option value={UNSCHEDULED}>Unscheduled</option>
+          {days.map((d) => (
+            <option key={d.id} value={d.id}>
+              Day {d.day_number}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }

@@ -42,7 +42,9 @@ from fastapi.responses import FileResponse
 
 from src.models.production_schedule import (
     AssignSceneBody,
+    CreateShootDayBody,
     ImportResponse,
+    UnassignSceneBody,
 )
 from src.services.production_schedule.bridge.compliance_bridge import (
     push_shoot_days_to_calculator,
@@ -267,7 +269,7 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
 
 @router.get(
     "/{production_id}/stripboard",
-    summary="Returns the full stripboard grid for a production",
+    summary="Returns the stripboard: scheduled days plus the Unscheduled bin",
 )
 async def get_stripboard(production_id: str):
     await _load_production_or_404(production_id)
@@ -283,7 +285,7 @@ async def get_stripboard(production_id: str):
         where={"productionId": production_id},
     )
     cm_id_to_name = {cm.id: cm.characterName for cm in cm_rows}
-    return _stripboard_to_json(grid, jur_id_to_name, cm_id_to_name)
+    return _stripboard_payload(scenes, shoot_days, grid, jur_id_to_name, cm_id_to_name)
 
 
 # =============================================================================
@@ -343,6 +345,139 @@ async def assign_scene(production_id: str, body: AssignSceneBody):
     # `body.position` is accepted but currently ignored — there is no
     # `position` column on Scene yet (schema flagged as MVP).
     return updated
+
+
+# =============================================================================
+# 3b. POST /{production_id}/stripboard/unassign
+# =============================================================================
+
+
+@router.post(
+    "/{production_id}/stripboard/unassign",
+    summary="Move a scene back to the Unscheduled bin (clears its shoot day)",
+)
+async def unassign_scene(production_id: str, body: UnassignSceneBody):
+    await _load_production_or_404(production_id)
+
+    scene_row = await prisma.scene.find_unique(where={"id": body.scene_id})
+    if scene_row is None or scene_row.productionId != production_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene {body.scene_id!r} not found in production {production_id!r}",
+        )
+
+    try:
+        updated = await prisma.scene.update(
+            where={"id": body.scene_id},
+            data={"shootDayId": None},
+        )
+    except Exception as exc:
+        logger.exception("stripboard unassign failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not unassign scene: {exc}",
+        )
+
+    # Keep the jurisdiction rollup in sync; non-fatal if it fails.
+    try:
+        await _rollup_jurisdiction_shoot_days(production_id)
+    except Exception:
+        logger.exception("stripboard unassign: jurisdiction rollup failed")
+
+    return updated
+
+
+# =============================================================================
+# 3c. POST /{production_id}/shoot-days   +   DELETE /{production_id}/shoot-days/{id}
+# =============================================================================
+
+
+@router.post(
+    "/{production_id}/shoot-days",
+    summary="Create a new (initially empty) shoot day; day_number is auto-assigned",
+)
+async def create_shoot_day(production_id: str, body: CreateShootDayBody):
+    await _load_production_or_404(production_id)
+
+    # Auto-assign the next day_number = max(existing) + 1. The
+    # (productionId, dayNumber) unique constraint guarantees no collision
+    # for a single create; concurrent creates are not expected in the MVP.
+    try:
+        existing = await prisma.shootday.find_many(
+            where={"productionId": production_id},
+        )
+    except Exception as exc:
+        logger.exception("create shoot day: existing-day load failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not load existing shoot days: {exc}",
+        )
+    next_day_number = (max((d.dayNumber for d in existing), default=0)) + 1
+
+    # Resolve the optional jurisdiction NAME → FK id (same idiom as import).
+    resolved_jid = None
+    if body.jurisdiction_name:
+        jur_rows = await prisma.jurisdiction.find_many()
+        resolved_jid = {j.name: j.id for j in jur_rows}.get(body.jurisdiction_name)
+
+    try:
+        day = await prisma.shootday.create(
+            data={
+                "productionId":    production_id,
+                "dayNumber":       next_day_number,
+                "date":            body.date,
+                "jurisdictionId":  resolved_jid,
+                "callTime":        body.call_time,
+                "location":        body.location,
+                "nearestHospital": body.nearest_hospital,
+                "notes":           body.notes,
+            }
+        )
+    except Exception as exc:
+        logger.exception("create shoot day failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not create shoot day: {exc}",
+        )
+
+    logger.info(
+        "shoot-day created: production=%s day_number=%d id=%s",
+        production_id, next_day_number, day.id,
+    )
+    return day
+
+
+@router.delete(
+    "/{production_id}/shoot-days/{shoot_day_id}",
+    summary="Delete a shoot day; its scenes return to the Unscheduled bin",
+)
+async def delete_shoot_day(production_id: str, shoot_day_id: str):
+    await _load_production_or_404(production_id)
+
+    day_row = await prisma.shootday.find_unique(where={"id": shoot_day_id})
+    if day_row is None or day_row.productionId != production_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"ShootDay {shoot_day_id!r} not found in production {production_id!r}",
+        )
+
+    # Scene.shootDayId has onDelete: SetNull, so deleting the day
+    # automatically returns its scenes to the Unscheduled bin.
+    try:
+        await prisma.shootday.delete(where={"id": shoot_day_id})
+    except Exception as exc:
+        logger.exception("delete shoot day failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Could not delete shoot day: {exc}",
+        )
+
+    try:
+        await _rollup_jurisdiction_shoot_days(production_id)
+    except Exception:
+        logger.exception("delete shoot day: jurisdiction rollup failed")
+
+    return {"deleted": shoot_day_id}
 
 
 # =============================================================================
@@ -804,37 +939,66 @@ def _row_to_jsd(row) -> JurisdictionShootDays:
 # -----------------------------------------------------------------------------
 
 
-# build_stripboard returns Scene OBJECTS inside the per-day "scenes"
-# list. FastAPI's JSON encoder can't serialise dataclasses by default,
-# so flatten via dataclasses.asdict() before returning.
+# Flattens a Scene dataclass to a JSON-serialisable snapshot dict, resolving
+# the raw jurisdiction + cast-member UUIDs to human-readable names. Field
+# NAMES are preserved (`jurisdiction_id`, `cast_ids`) so the dashboard reads
+# them as-is; unknown IDs fall back to the raw value (defensive). Shared by
+# both the scheduled-day buckets and the Unscheduled bin.
+def _scene_snapshot(
+    scene: Scene,
+    jur_id_to_name: Dict[str, str],
+    cm_id_to_name: Dict[str, str],
+) -> Dict[str, Any]:
+    snap = asdict(scene)
+    jid = snap.get("jurisdiction_id")
+    if jid:
+        snap["jurisdiction_id"] = jur_id_to_name.get(jid, jid)
+    cast_ids = snap.get("cast_ids") or []
+    snap["cast_ids"] = [cm_id_to_name.get(c, c) for c in cast_ids]
+    return snap
+
+
+# Builds the full stripboard payload the dashboard consumes:
+#   {
+#     "days": [ {id, day_number, date, jurisdiction, total_pages, scenes:[...]} ],
+#     "unscheduled": { "scenes": [...], "total_pages": float }
+#   }
 #
-# Phase 11.5 fix #1 — jur_id_to_name / cm_id_to_name maps resolve raw
-# UUIDs to human-readable names. Field names (`jurisdiction_id`,
-# `cast_ids`) stay the same so the dashboard reads them as-is. Unknown
-# IDs fall back to the raw value (defensive).
-def _stripboard_to_json(
+# `days` carries the ShootDay.id so the frontend can assign/unassign scenes
+# and delete the day. `unscheduled` holds every scene with no shoot day —
+# this is what makes freshly-imported scenes visible before they're
+# scheduled. `grid` is build_stripboard()'s output (keyed by day_number);
+# we walk shoot_days (not the grid) so the day's id + ordering come straight
+# from the DB rows.
+def _stripboard_payload(
+    scenes: List[Scene],
+    shoot_days: List[ShootDay],
     grid: Dict[int, Dict[str, Any]],
     jur_id_to_name: Dict[str, str] = None,
     cm_id_to_name: Dict[str, str] = None,
-) -> Dict[int, Dict[str, Any]]:
+) -> Dict[str, Any]:
     jur_id_to_name = jur_id_to_name or {}
     cm_id_to_name = cm_id_to_name or {}
-    out: Dict[int, Dict[str, Any]] = {}
-    for day_number, bucket in grid.items():
-        scenes_out = []
-        for s in bucket["scenes"]:
-            snap = asdict(s)
-            jid = snap.get("jurisdiction_id")
-            if jid:
-                snap["jurisdiction_id"] = jur_id_to_name.get(jid, jid)
-            cast_ids = snap.get("cast_ids") or []
-            snap["cast_ids"] = [cm_id_to_name.get(c, c) for c in cast_ids]
-            scenes_out.append(snap)
-        bucket_jur = bucket["jurisdiction"]
-        out[day_number] = {
-            "date":         bucket["date"],
-            "jurisdiction": jur_id_to_name.get(bucket_jur, bucket_jur) if bucket_jur else bucket_jur,
-            "total_pages":  bucket["total_pages"],
-            "scenes":       scenes_out,
-        }
-    return out
+
+    days_out: List[Dict[str, Any]] = []
+    for day in sorted(shoot_days, key=lambda d: d.day_number):
+        bucket = grid.get(day.day_number, {"date": day.date, "jurisdiction": day.jurisdiction_id, "scenes": [], "total_pages": 0.0})
+        raw_jur = bucket.get("jurisdiction")
+        days_out.append({
+            "id":           day.id,
+            "day_number":   day.day_number,
+            "date":         bucket.get("date"),
+            "jurisdiction": jur_id_to_name.get(raw_jur, raw_jur) if raw_jur else raw_jur,
+            "total_pages":  bucket.get("total_pages", 0.0),
+            "scenes":       [_scene_snapshot(s, jur_id_to_name, cm_id_to_name) for s in bucket.get("scenes", [])],
+        })
+
+    unscheduled_scenes = [s for s in scenes if s.shoot_day_id is None]
+    unscheduled_scenes.sort(key=lambda s: s.scene_number or "")
+    return {
+        "days": days_out,
+        "unscheduled": {
+            "scenes":      [_scene_snapshot(s, jur_id_to_name, cm_id_to_name) for s in unscheduled_scenes],
+            "total_pages": sum((s.page_count or 0.0) for s in unscheduled_scenes),
+        },
+    }

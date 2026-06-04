@@ -37,20 +37,39 @@ export interface StripboardSceneSnapshot {
 }
 
 export interface StripboardDay {
+  id: string;
+  day_number: number;
   date: string | null;
   jurisdiction: string | null;
   total_pages: number;
   scenes: StripboardSceneSnapshot[];
 }
 
-// Stripboard is keyed by day_number (an integer the backend serialises as
-// a JSON object key, so we treat it as a string here for safety).
-export type StripboardResponse = Record<string, StripboardDay>;
+export interface UnscheduledBin {
+  scenes: StripboardSceneSnapshot[];
+  total_pages: number;
+}
+
+// New shape: scheduled days (each with its ShootDay id) plus the
+// Unscheduled bin holding every scene not yet assigned to a day.
+export interface StripboardResponse {
+  days: StripboardDay[];
+  unscheduled: UnscheduledBin;
+}
 
 export interface AssignSceneBody {
   scene_id: string;
   shoot_day_id: string;
   position?: number | null;
+}
+
+export interface CreateShootDayBody {
+  date?: string | null;
+  jurisdiction_name?: string | null;
+  location?: string | null;
+  call_time?: string | null;
+  nearest_hospital?: string | null;
+  notes?: string | null;
 }
 
 // DOOD grid: outer key = cast_member.id, inner key = day_number (string in JSON),
@@ -135,6 +154,38 @@ export async function assignScene(
   const r = await apiClient.post(
     `${BASE}/${productionId}/stripboard/assign`,
     body,
+  );
+  return r.data;
+}
+
+// Moves a scene back to the Unscheduled bin (clears its shoot day).
+export async function unassignScene(
+  productionId: string,
+  sceneId: string,
+): Promise<unknown> {
+  const r = await apiClient.post(
+    `${BASE}/${productionId}/stripboard/unassign`,
+    { scene_id: sceneId },
+  );
+  return r.data;
+}
+
+// Creates a new (initially empty) shoot day; day_number is auto-assigned.
+export async function createShootDay(
+  productionId: string,
+  body: CreateShootDayBody = {},
+): Promise<unknown> {
+  const r = await apiClient.post(`${BASE}/${productionId}/shoot-days`, body);
+  return r.data;
+}
+
+// Deletes a shoot day; its scenes return to the Unscheduled bin.
+export async function deleteShootDay(
+  productionId: string,
+  shootDayId: string,
+): Promise<unknown> {
+  const r = await apiClient.delete(
+    `${BASE}/${productionId}/shoot-days/${shootDayId}`,
   );
   return r.data;
 }
