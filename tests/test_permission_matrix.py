@@ -11,7 +11,9 @@ def test_roles_have_permissions():
     data = json.loads(Path("config/roles.json").read_text())
     assert isinstance(data, dict)
     for role, info in data.items():
-        assert "permissions" in info and isinstance(info["permissions"], list), f"Role {role} must declare permissions"
+        assert "permissions" in info and isinstance(
+            info["permissions"], list
+        ), f"Role {role} must declare permissions"
 
 
 def test_no_unbounded_service_roles():
@@ -20,4 +22,6 @@ def test_no_unbounded_service_roles():
     for role, info in data.items():
         if role != "admin":
             perms = info.get("permissions", [])
-            assert "*" not in perms, f"Non-admin role {role} must not have wildcard permissions"
+            assert (
+                "*" not in perms
+            ), f"Non-admin role {role} must not have wildcard permissions"

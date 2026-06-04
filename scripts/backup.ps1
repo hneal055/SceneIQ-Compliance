@@ -29,7 +29,8 @@ if ($DbDumpCmd -ne "") {
         Write-Error "DB dump command failed with exit code $LASTEXITCODE"
         exit 2
     }
-} else {
+}
+else {
     # Placeholder sample content when no DB command supplied
     "-- sample dump --`n" | Out-File -FilePath $dumpFile -Encoding utf8
 }

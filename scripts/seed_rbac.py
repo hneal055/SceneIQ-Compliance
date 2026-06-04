@@ -4,6 +4,7 @@ This is a minimal, non-destructive seeder that reads `config/roles.json`
 and writes an output file `data/roles_seeded.json` when run with `--apply`.
 Run locally to inspect before applying in production.
 """
+
 import argparse
 import json
 from pathlib import Path
