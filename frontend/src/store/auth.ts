@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-const TOKEN_KEY = 'pilotforge_token';
+const TOKEN_KEY = 'sceneiq_token';
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 const API_VERSION = import.meta.env.VITE_API_VERSION || '0.1.0';
 const API_PREFIX = `/api/${API_VERSION}`;
