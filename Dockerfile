@@ -64,5 +64,10 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health', timeout=5)"
 
 # Start application
-CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Apply any pending Prisma migrations before boot so schema changes
+# (e.g. the production-schedule tables) reach the DB on deploy. The CMD
+# previously bypassed start.sh, so `migrate deploy` never ran and new
+# tables silently never landed in prod. `|| echo` keeps startup resilient:
+# a migrate hiccup logs but does not take the whole API down.
+CMD ["sh", "-c", "python -m prisma migrate deploy || echo 'migrate deploy failed — starting anyway'; uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
