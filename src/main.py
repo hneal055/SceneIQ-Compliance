@@ -20,8 +20,28 @@ from src.api.largo import router as largo_router
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-ADMIN_EMAIL = "admin@pilotforge.com"
-ADMIN_PASSWORD = "pilotforge2024"
+ADMIN_EMAIL = "admin@sceneiq.com"
+ADMIN_PASSWORD = "sceneiq2024"
+
+async def _ensure_user_columns() -> None:
+    """Idempotently ensure the account-lockout/profile columns exist on the
+    deployed app's OWN database, before any typed query selects them.
+
+    The Prisma client (regenerated from schema.prisma) SELECTs these columns on
+    every users query, so they must exist or all user queries 500. Running this
+    against prisma's connection guarantees it targets the same DB the app uses,
+    regardless of which database that is.
+    """
+    statements = [
+        'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "failedLoginCount" INTEGER NOT NULL DEFAULT 0',
+        'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "lockedUntil" TIMESTAMP(3)',
+        'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP(3)',
+        'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "fullName" TEXT',
+    ]
+    for sql in statements:
+        await prisma.execute_raw(sql)
+    logger.info("✅ Ensured users lockout/profile columns exist")
+
 
 async def _seed_admin() -> None:
     count = await prisma.user.count()
@@ -38,6 +58,7 @@ async def lifespan(app: FastAPI):
         run_migrations()
         await prisma.connect()
         logger.info("✅ Database connected")
+        await _ensure_user_columns()
         await _seed_admin()
         await seed_all()
     except Exception as e:
