@@ -49,7 +49,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /root/.cache /root/.cache
 
 # Copy application code
-ARG CACHEBUST=1
+ARG CACHEBUST=20260604094458
 COPY . .
 
 # Set Prisma cache environment variables to use /root/.cache
