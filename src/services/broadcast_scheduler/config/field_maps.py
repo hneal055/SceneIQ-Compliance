@@ -16,17 +16,21 @@
 CSV_FIELD_MAP = {
     # Input field name   : Internal standard name
     "Title"              : "title",
+    "title"              : "title",
     "Programme Title"    : "title",
     "Show Title"         : "title",
     "TX Time"            : "tx_time",
+    "tx_time"            : "tx_time",
     "Transmission Time"  : "tx_time",
     "Air Time"           : "tx_time",
     "Duration"           : "duration",
+    "duration"           : "duration",
     "Run Time"           : "duration",
     "Episode"            : "episode_number",
     "Ep No"              : "episode_number",
     "Series"             : "series_number",
     "Channel"            : "channel",
+    "channel"            : "channel",
     "Network"            : "channel",
     "Genre"              : "genre",
     "Category"           : "genre",
@@ -35,7 +39,6 @@ CSV_FIELD_MAP = {
     "Licence Start"      : "rights_start",
     "Licence End"        : "rights_end",
 }
-
 
 # Maps BXF / XML tag names -> internal standard field names.
 XML_FIELD_MAP = {
