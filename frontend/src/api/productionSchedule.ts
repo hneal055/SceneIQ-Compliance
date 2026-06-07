@@ -36,6 +36,12 @@ export interface StripboardSceneSnapshot {
   shoot_day_id: string | null;
 }
 
+export interface CrewCall {
+  department: string | null;
+  name: string | null;
+  call_time: string | null;
+}
+
 export interface StripboardDay {
   id: string;
   day_number: number;
@@ -45,6 +51,7 @@ export interface StripboardDay {
   location: string | null;
   nearest_hospital: string | null;
   notes: string | null;
+  crew_calls: CrewCall[];
   total_pages: number;
   scenes: StripboardSceneSnapshot[];
 }
@@ -78,10 +85,12 @@ export interface CreateShootDayBody {
 
 export interface UpdateShootDayBody {
   date?: string | null;
+  jurisdiction_name?: string | null;
   location?: string | null;
   call_time?: string | null;
   nearest_hospital?: string | null;
   notes?: string | null;
+  crew_calls?: CrewCall[];
 }
 
 // DOOD grid: outer key = cast_member.id, inner key = day_number (string in JSON),

@@ -50,6 +50,11 @@ class ShootDay:
     # Free-text production notes for the day.
     notes: Optional[str] = None
 
+    # Per-day department call times: list of
+    # {"department": str, "name": str, "call_time": str} dicts. Rendered in
+    # the Crew Calls section of the generated call sheet.
+    crew_calls: List[dict] = field(default_factory=list)
+
     # Returns a short summary when the ShootDay is printed (debugging aid).
     def __repr__(self) -> str:
         return (

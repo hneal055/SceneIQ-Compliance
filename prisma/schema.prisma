@@ -523,6 +523,9 @@ model ShootDay {
   location        String?
   nearestHospital String?
   notes           String?
+  /// Per-day department call times: [{ "department", "name", "call_time" }].
+  /// Rendered in the Crew Calls section of the generated call sheet.
+  crewCalls       Json?
   callSheets      CallSheet[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

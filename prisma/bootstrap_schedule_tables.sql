@@ -55,10 +55,15 @@ CREATE TABLE IF NOT EXISTS "shoot_days" (
     "location" TEXT,
     "nearestHospital" TEXT,
     "notes" TEXT,
+    "crewCalls" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "shoot_days_pkey" PRIMARY KEY ("id")
 );
+
+-- crewCalls was added after the initial shoot_days table (Phase: crew calls).
+-- Guarded so it lands on databases whose shoot_days predates the column.
+ALTER TABLE "shoot_days" ADD COLUMN IF NOT EXISTS "crewCalls" JSONB;
 
 CREATE TABLE IF NOT EXISTS "cast_members" (
     "id" TEXT NOT NULL,

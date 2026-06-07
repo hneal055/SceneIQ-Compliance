@@ -45,6 +45,13 @@ class UnassignSceneBody(BaseModel):
     scene_id: str = Field(..., description="Scene.id to move back to Unscheduled")
 
 
+class CrewCallItem(BaseModel):
+    """One row in a shoot day's Crew Calls table."""
+    department: Optional[str] = None
+    name: Optional[str] = None
+    call_time: Optional[str] = Field(None, description="e.g. '05:30 AM'")
+
+
 class CreateShootDayBody(BaseModel):
     """Body for POST /{production_id}/shoot-days. Every field is optional;
     the day_number is assigned automatically (max existing + 1). A blank day
@@ -62,14 +69,20 @@ class CreateShootDayBody(BaseModel):
 
 class UpdateShootDayBody(BaseModel):
     """Body for PATCH /{production_id}/shoot-days/{shoot_day_id}. The edit
-    form always sends every logistics field, so each is overwritten with the
-    supplied value (an empty value clears the field). day_number and scene
-    assignments are managed separately and are not editable here."""
+    form always sends every field, so each is overwritten with the supplied
+    value (an empty value clears the field). day_number and scene assignments
+    are managed separately and are not editable here."""
     date: Optional[str] = Field(None, description="ISO date string (YYYY-MM-DD)")
+    jurisdiction_name: Optional[str] = Field(
+        None, description="Jurisdiction NAME; resolved to a FK id server-side. Empty clears it."
+    )
     location: Optional[str] = None
     call_time: Optional[str] = Field(None, description="e.g. '06:00 AM'")
     nearest_hospital: Optional[str] = None
     notes: Optional[str] = None
+    crew_calls: Optional[List[CrewCallItem]] = Field(
+        None, description="Full replacement list of department call times"
+    )
 
 
 class JurisdictionSummaryRow(BaseModel):

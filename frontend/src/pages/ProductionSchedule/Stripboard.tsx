@@ -35,6 +35,7 @@ import {
   X,
 } from "lucide-react";
 
+import { api } from "../../api";
 import {
   assignScene,
   createShootDay,
@@ -42,11 +43,18 @@ import {
   getStripboard,
   unassignScene,
   updateShootDay,
+  type CrewCall,
   type StripboardDay,
   type StripboardSceneSnapshot,
   type UnscheduledBin,
   type UpdateShootDayBody,
 } from "../../api/productionSchedule";
+
+// Minimal shape the day editor needs from a Jurisdiction.
+interface JurisdictionOption {
+  id: string;
+  name: string;
+}
 
 interface Props {
   productionId: string;
@@ -86,10 +94,29 @@ export default function Stripboard({ productionId }: Props) {
     scenes: [],
     total_pages: 0,
   });
+  const [jurisdictions, setJurisdictions] = useState<JurisdictionOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
+  // Load the jurisdiction list once for the day editor's dropdown.
+  useEffect(() => {
+    let cancelled = false;
+    api.jurisdictions
+      .list()
+      .then((list) => {
+        if (!cancelled) {
+          setJurisdictions(list.map((j) => ({ id: j.id, name: j.name })));
+        }
+      })
+      .catch(() => {
+        /* dropdown just stays empty — editing other fields still works */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const load = useCallback(async () => {
     const data = await getStripboard(productionId);
@@ -270,6 +297,7 @@ export default function Stripboard({ productionId }: Props) {
           key={d.id}
           day={d}
           days={days}
+          jurisdictions={jurisdictions}
           expanded={expanded.has(d.day_number)}
           busy={busy}
           onToggle={() => toggleDay(d.day_number)}
@@ -344,6 +372,7 @@ function UnscheduledBlock({ bin, days, busy, onMove }: UnscheduledBlockProps) {
 interface DayBlockProps {
   day: StripboardDay;
   days: StripboardDay[];
+  jurisdictions: JurisdictionOption[];
   expanded: boolean;
   busy: boolean;
   onToggle: () => void;
@@ -355,6 +384,7 @@ interface DayBlockProps {
 function DayBlock({
   day,
   days,
+  jurisdictions,
   expanded,
   busy,
   onToggle,
@@ -449,6 +479,7 @@ function DayBlock({
       {editing && (
         <DayEditForm
           day={day}
+          jurisdictions={jurisdictions}
           busy={busy}
           onCancel={() => setEditing(false)}
           onSubmit={(body) => {
@@ -491,29 +522,59 @@ function DayBlock({
 
 interface DayEditFormProps {
   day: StripboardDay;
+  jurisdictions: JurisdictionOption[];
   busy: boolean;
   onCancel: () => void;
   onSubmit: (body: UpdateShootDayBody) => void;
 }
 
-function DayEditForm({ day, busy, onCancel, onSubmit }: DayEditFormProps) {
+function DayEditForm({
+  day,
+  jurisdictions,
+  busy,
+  onCancel,
+  onSubmit,
+}: DayEditFormProps) {
   const [date, setDate] = useState(day.date ?? "");
+  // The stripboard returns the jurisdiction NAME; the dropdown is keyed by
+  // name and the backend resolves name → id on save.
+  const [jurisdiction, setJurisdiction] = useState(day.jurisdiction ?? "");
   const [callTime, setCallTime] = useState(day.call_time ?? "");
   const [location, setLocation] = useState(day.location ?? "");
   const [hospital, setHospital] = useState(day.nearest_hospital ?? "");
   const [notes, setNotes] = useState(day.notes ?? "");
+  const [crew, setCrew] = useState<CrewCall[]>(
+    day.crew_calls.length > 0 ? day.crew_calls : [],
+  );
 
   // Empty string → null so the backend clears the column.
   const nz = (v: string) => (v.trim() === "" ? null : v.trim());
 
+  const addCrewRow = () =>
+    setCrew((rows) => [...rows, { department: "", name: "", call_time: "" }]);
+  const removeCrewRow = (i: number) =>
+    setCrew((rows) => rows.filter((_, idx) => idx !== i));
+  const updateCrewRow = (i: number, patch: Partial<CrewCall>) =>
+    setCrew((rows) => rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Drop fully-empty crew rows; keep the rest (any partial row is intentional).
+    const crewClean = crew
+      .map((c) => ({
+        department: nz(c.department ?? ""),
+        name: nz(c.name ?? ""),
+        call_time: nz(c.call_time ?? ""),
+      }))
+      .filter((c) => c.department || c.name || c.call_time);
     onSubmit({
       date: nz(date),
+      jurisdiction_name: nz(jurisdiction),
       call_time: nz(callTime),
       location: nz(location),
       nearest_hospital: nz(hospital),
       notes: nz(notes),
+      crew_calls: crewClean,
     });
   };
 
@@ -536,6 +597,26 @@ function DayEditForm({ day, busy, onCancel, onSubmit }: DayEditFormProps) {
             onChange={(e) => setDate(e.target.value)}
             className={fieldCls}
           />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className={labelCls}>Jurisdiction</span>
+          <select
+            value={jurisdiction}
+            onChange={(e) => setJurisdiction(e.target.value)}
+            className={fieldCls}
+          >
+            <option value="">(none)</option>
+            {/* Keep the current value selectable even if it's not in the list. */}
+            {jurisdiction &&
+              !jurisdictions.some((j) => j.name === jurisdiction) && (
+                <option value={jurisdiction}>{jurisdiction}</option>
+              )}
+            {jurisdictions.map((j) => (
+              <option key={j.id} value={j.name}>
+                {j.name}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="flex flex-col gap-1">
           <span className={labelCls}>Call time</span>
@@ -568,6 +649,7 @@ function DayEditForm({ day, busy, onCancel, onSubmit }: DayEditFormProps) {
           />
         </label>
       </div>
+
       <label className="flex flex-col gap-1">
         <span className={labelCls}>Notes</span>
         <textarea
@@ -578,6 +660,64 @@ function DayEditForm({ day, busy, onCancel, onSubmit }: DayEditFormProps) {
           className={`${fieldCls} resize-y`}
         />
       </label>
+
+      {/* Crew calls editor */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className={labelCls}>Crew calls</span>
+          <button
+            type="button"
+            onClick={addCrewRow}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700"
+          >
+            <Plus size={12} />
+            Add row
+          </button>
+        </div>
+        {crew.length === 0 ? (
+          <p className="text-[11px] text-slate-400 italic">
+            No crew calls yet — add department call times to populate the call
+            sheet's Crew Calls table.
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            {crew.map((row, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={row.department ?? ""}
+                  placeholder="Department"
+                  onChange={(e) => updateCrewRow(i, { department: e.target.value })}
+                  className={`${fieldCls} flex-1`}
+                />
+                <input
+                  type="text"
+                  value={row.name ?? ""}
+                  placeholder="Name (optional)"
+                  onChange={(e) => updateCrewRow(i, { name: e.target.value })}
+                  className={`${fieldCls} flex-1`}
+                />
+                <input
+                  type="text"
+                  value={row.call_time ?? ""}
+                  placeholder="Call time"
+                  onChange={(e) => updateCrewRow(i, { call_time: e.target.value })}
+                  className={`${fieldCls} w-28`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeCrewRow(i)}
+                  title="Remove row"
+                  className="p-1.5 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 shrink-0"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center justify-end gap-2">
         <button
           type="button"

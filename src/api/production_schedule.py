@@ -464,26 +464,49 @@ async def update_shoot_day(
             detail=f"ShootDay {shoot_day_id!r} not found in production {production_id!r}",
         )
 
-    # The edit form sends every logistics field, so overwrite them all
-    # (a blank value clears the field). day_number / jurisdiction / scene
-    # assignments are intentionally not touched here.
+    # Resolve the optional jurisdiction NAME → FK id (same idiom as create).
+    # An empty/blank name clears the day's jurisdiction.
+    resolved_jid = None
+    if body.jurisdiction_name:
+        jur_rows = await prisma.jurisdiction.find_many()
+        resolved_jid = {j.name: j.id for j in jur_rows}.get(body.jurisdiction_name)
+
+    # crew_calls is a full-replacement list; serialise to plain dicts for the
+    # JSON column. None means "not supplied" → leave the existing value alone.
+    crew_calls_json = (
+        [c.model_dump() for c in body.crew_calls]
+        if body.crew_calls is not None
+        else None
+    )
+
+    # The edit form sends every field, so overwrite them all (a blank value
+    # clears the field). scene assignments are managed separately.
+    data = {
+        "date":            body.date,
+        "jurisdictionId":  resolved_jid,
+        "callTime":        body.call_time,
+        "location":        body.location,
+        "nearestHospital": body.nearest_hospital,
+        "notes":           body.notes,
+    }
+    if crew_calls_json is not None:
+        data["crewCalls"] = crew_calls_json
+
     try:
-        updated = await prisma.shootday.update(
-            where={"id": shoot_day_id},
-            data={
-                "date":            body.date,
-                "callTime":        body.call_time,
-                "location":        body.location,
-                "nearestHospital": body.nearest_hospital,
-                "notes":           body.notes,
-            },
-        )
+        updated = await prisma.shootday.update(where={"id": shoot_day_id}, data=data)
     except Exception as exc:
         logger.exception("update shoot day failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Could not update shoot day: {exc}",
         )
+
+    # A jurisdiction change shifts the per-jurisdiction shoot-day counts;
+    # re-roll the tracker. Non-fatal if it fails — the edit already saved.
+    try:
+        await _rollup_jurisdiction_shoot_days(production_id)
+    except Exception:
+        logger.exception("update shoot day: jurisdiction rollup failed")
 
     logger.info("shoot-day updated: production=%s id=%s", production_id, shoot_day_id)
     return updated
@@ -894,9 +917,9 @@ async def _build_call_sheet_for_day(
 
     scenes = [_row_to_scene(r) for r in scene_rows]
     day_dc = _row_to_shoot_day(day_row)
-    # crew_calls is empty for now — no Crew model exists yet. The
-    # exporters handle the empty case gracefully.
-    call_sheet = generate_call_sheet(day_dc, scenes, [], production)
+    # Crew calls are stored per-day on ShootDay.crewCalls (edited from the
+    # stripboard) and flow straight into the call sheet's Crew Calls table.
+    call_sheet = generate_call_sheet(day_dc, scenes, day_dc.crew_calls, production)
 
     # Resolve Scene.cast_ids (CastMember.id FK array) into characterName
     # strings for the rendered snapshot. The generator stays pure (no
@@ -932,6 +955,9 @@ def _row_to_scene(row) -> Scene:
 
 
 def _row_to_shoot_day(row) -> ShootDay:
+    # crewCalls is JSON; prisma-client-py returns it as a list/dict (or None).
+    raw_crew = getattr(row, "crewCalls", None)
+    crew_calls = list(raw_crew) if isinstance(raw_crew, list) else []
     return ShootDay(
         id=row.id,
         production_id=row.productionId,
@@ -943,6 +969,7 @@ def _row_to_shoot_day(row) -> ShootDay:
         location=row.location,
         nearest_hospital=row.nearestHospital,
         notes=row.notes,
+        crew_calls=crew_calls,
     )
 
 
@@ -1035,6 +1062,7 @@ def _stripboard_payload(
             "location":        day.location,
             "nearest_hospital": day.nearest_hospital,
             "notes":           day.notes,
+            "crew_calls":      day.crew_calls,
             "total_pages":     bucket.get("total_pages", 0.0),
             "scenes":          [_scene_snapshot(s, jur_id_to_name, cm_id_to_name) for s in bucket.get("scenes", [])],
         })
