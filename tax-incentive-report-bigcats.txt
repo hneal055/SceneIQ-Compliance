@@ -1,0 +1,15 @@
+TAX INCENTIVE CALCULATION REPORT
+Generated: June 4, 2026
+
+Production:          bigCats
+Jurisdiction:        California
+
+Total Budget:        $125,000,000
+Qualified Expenses:  $100,000,000
+Qualified Ratio:     80% of budget
+Credit Rate:         12%
+Estimated Tax Credit: $12,000,000
+Effective Rate:      9.6%
+
+This estimate is for planning purposes only.
+Consult a qualified production accountant for final tax decisions.

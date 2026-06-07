@@ -1,0 +1,11 @@
+channel,title,tx_time,duration,daypart,format
+HBO,Echoes of the Fallen - Pilot (Premiere),20:00:00,3600,Primetime,HD
+Netflix,Echoes of the Fallen - Pilot (Streaming),20:00:00,3600,Primetime,HD
+PBS,Echoes of the Fallen - Behind the Scenes,22:00:00,1800,Late Fringe,SD
+Amazon,Echoes of the Fallen - Pilot (VOD),0:00:00,3600,VOD,HD
+Hulu,Echoes of the Fallen - Pilot (SVOD),18:00:00,3600,Early Fringe,HD
+BBC America,Echoes of the Fallen - Pilot (Intl Premiere),21:00:00,3600,Primetime,HD
+Apple TV+,Echoes of the Fallen - Pilot (AVOD),9:00:00,3600,Daytime,4K
+Tubi,Echoes of the Fallen - Pilot (Free Stream),14:00:00,3600,Afternoon,SD
+Peacock,Echoes of the Fallen - Pilot (Premium),19:00:00,3600,Access Primetime,HD
+CNN Films,Echoes of the Fallen - Press Screening,11:00:00,3600,Daytime,HD
