@@ -18,6 +18,7 @@ import type {
   ChecklistResponse,
   UserScenario,
   MaximumPossibleCreditResponse,
+  DetectedConflict,
 } from '../types';
 
 import { mockApi } from '../mocks/api';
@@ -528,8 +529,44 @@ export const pendingRulesApi = {
 };
 
 export const getApiUrl = (path: string): string => {
-  const base = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const base = import.meta.env.VITE_API_URL ?? '';
   return base + path;
+};
+
+// Conflict engine (ported from incentives-app). Routes live under
+// /api/0.1.0/conflicts (apiClient prepends the versioned base).
+export const conflictsApi = {
+  list: async (params?: {
+    project_id?: string;
+    conflict_type?: string;
+    unresolved_only?: boolean;
+    limit?: number;
+    skip?: number;
+  }): Promise<{ total: number; conflicts: DetectedConflict[] }> => {
+    const r = await apiClient.get('/conflicts', { params });
+    return r.data;
+  },
+
+  get: async (id: string): Promise<DetectedConflict> => {
+    const r = await apiClient.get(`/conflicts/${id}`);
+    return r.data;
+  },
+
+  resolve: async (
+    id: string,
+    body: { strategy_name: string; resolved_by?: string; notes?: string }
+  ): Promise<DetectedConflict> => {
+    const r = await apiClient.post(`/conflicts/${id}/resolve`, body);
+    return r.data;
+  },
+
+  override: async (
+    id: string,
+    body: { chosen_rule_key: string; chosen_value?: number | null; chosen_by?: string; notes?: string }
+  ): Promise<{ override: object; conflict_id: string }> => {
+    const r = await apiClient.post(`/conflicts/${id}/override`, body);
+    return r.data;
+  },
 };
 
 export default api;

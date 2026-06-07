@@ -77,5 +77,20 @@ logs/
 Dockerfile.dev
 .dockerignore
 
+# Legacy multi-service overhead — unused by the single-service deploy
+# (FastAPI serves the API + built frontend; no nginx/compose/k8s/Render).
+# Kept in the repo for reference but excluded from the image to slim it.
+# NOTE: do NOT ignore backend/ — src/main.py mounts backend/static at /static.
+dashboard-app/
+render.yaml
+nginx.conf
+nginx.railway.conf
+docker-compose.prod.yml
+k8s-deployment.yaml
+start.sh
+start.ps1
+Tax_Incentive_Compliance_Platform/
+backend/app/
+
 # Explicitly include frontend dist
 !frontend/dist

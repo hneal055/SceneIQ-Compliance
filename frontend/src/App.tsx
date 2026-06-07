@@ -12,6 +12,7 @@ import PendingRules from './pages/PendingRules';
 import LocalRules from './pages/LocalRules';
 import ScenarioCalculator from './pages/ScenarioCalculator';
 import Maximizer from './pages/Maximizer';
+import Conflicts from './pages/Conflicts';
 import Admin from './pages/Admin';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
@@ -39,6 +40,7 @@ function App() {
     localRules:      <LocalRules />,
     scenarioCalc:    <ScenarioCalculator />,
     maximizer:       <Maximizer />,
+    conflicts:    <Conflicts />,
     admin:        <Admin />,
     settings:     <Settings />,
   };

@@ -285,3 +285,47 @@ export interface MaximumPossibleCreditResponse {
   best_case_headline: string | null;
   generated_at: string;
 }
+
+// -- Conflict engine (ported from incentives-app) -----------------------------
+
+export interface ConflictResolutionStrategy {
+  id: string;
+  strategyName: string;
+  description: string | null;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface UserConflictOverride {
+  id: string;
+  conflictId: string | null;
+  chosenRuleKey: string;
+  chosenValue: number | null;
+  chosenBy: string | null;
+  chosenAt: string;
+  notes: string | null;
+}
+
+export interface DetectedConflict {
+  id: string;
+  projectId: string | null;
+  sessionId: string | null;
+  jurisdictionId: string;
+  jurisdiction?: { id: string; name: string; code: string; type: string };
+  ruleKey1: string;
+  ruleKey2: string;
+  ruleType: string | null;
+  conflictType: string;
+  value1: number | null;
+  value2: number | null;
+  jurisdictionName1: string | null;
+  jurisdictionName2: string | null;
+  resolutionStrategyId: string | null;
+  resolutionStrategy?: ConflictResolutionStrategy | null;
+  resolvedValue: number | null;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  userOverrides?: UserConflictOverride[];
+}

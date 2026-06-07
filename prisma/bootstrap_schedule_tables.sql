@@ -170,3 +170,74 @@ DO $$ BEGIN
       FOREIGN KEY ("jurisdictionId") REFERENCES "jurisdictions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
   END IF;
 END $$;
+
+-- =============================================================================
+-- Conflict Engine tables (ported from incentives-app, migration
+-- 20260607000002_add_conflict_models). Bootstrapped idempotently here for the
+-- same reason as above AND because the consolidated app may be pointed at a
+-- database (the surviving incentives-api Postgres) whose migration history does
+-- not match this repo. The incentives-api DB may already have these tables
+-- (it shipped conflicts.py), in which case every statement below is a no-op.
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS "conflict_resolution_strategies" (
+    "id" TEXT NOT NULL,
+    "strategyName" TEXT NOT NULL,
+    "description" TEXT,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "conflict_resolution_strategies_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS "detected_conflicts" (
+    "id" TEXT NOT NULL,
+    "projectId" TEXT,
+    "sessionId" TEXT,
+    "jurisdictionId" TEXT NOT NULL,
+    "ruleKey1" TEXT NOT NULL,
+    "ruleKey2" TEXT NOT NULL,
+    "ruleType" TEXT,
+    "conflictType" TEXT NOT NULL,
+    "value1" DECIMAL(65,30),
+    "value2" DECIMAL(65,30),
+    "jurisdictionName1" TEXT,
+    "jurisdictionName2" TEXT,
+    "resolutionStrategyId" TEXT,
+    "resolvedValue" DECIMAL(65,30),
+    "resolvedBy" TEXT,
+    "resolvedAt" TIMESTAMP(3),
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "detected_conflicts_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS "user_conflict_overrides" (
+    "id" TEXT NOT NULL,
+    "conflictId" TEXT,
+    "chosenRuleKey" TEXT NOT NULL,
+    "chosenValue" DECIMAL(65,30),
+    "chosenBy" TEXT,
+    "chosenAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "notes" TEXT,
+    CONSTRAINT "user_conflict_overrides_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "conflict_resolution_strategies_strategyName_key" ON "conflict_resolution_strategies"("strategyName");
+CREATE INDEX IF NOT EXISTS "detected_conflicts_projectId_idx" ON "detected_conflicts"("projectId");
+CREATE INDEX IF NOT EXISTS "detected_conflicts_resolvedAt_idx" ON "detected_conflicts"("resolvedAt");
+CREATE INDEX IF NOT EXISTS "user_conflict_overrides_conflictId_idx" ON "user_conflict_overrides"("conflictId");
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'detected_conflicts_jurisdictionId_fkey') THEN
+    ALTER TABLE "detected_conflicts" ADD CONSTRAINT "detected_conflicts_jurisdictionId_fkey"
+      FOREIGN KEY ("jurisdictionId") REFERENCES "jurisdictions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'detected_conflicts_resolutionStrategyId_fkey') THEN
+    ALTER TABLE "detected_conflicts" ADD CONSTRAINT "detected_conflicts_resolutionStrategyId_fkey"
+      FOREIGN KEY ("resolutionStrategyId") REFERENCES "conflict_resolution_strategies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_conflict_overrides_conflictId_fkey') THEN
+    ALTER TABLE "user_conflict_overrides" ADD CONSTRAINT "user_conflict_overrides_conflictId_fkey"
+      FOREIGN KEY ("conflictId") REFERENCES "detected_conflicts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;

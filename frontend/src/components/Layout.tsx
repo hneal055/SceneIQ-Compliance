@@ -1,4 +1,4 @@
-import { LayoutDashboard, Clapperboard, Calculator, Globe, Bot, Bell, LogOut, FlaskConical, Settings, Link2, ClipboardCheck, BookOpen, Layers, Zap, CalendarClock, CalendarRange } from 'lucide-react';
+import { LayoutDashboard, Clapperboard, Calculator, Globe, Bot, Bell, LogOut, FlaskConical, Settings, Link2, ClipboardCheck, BookOpen, Layers, Zap, CalendarClock, CalendarRange, GitMerge } from 'lucide-react';
 import { useAuthStore } from '../store/auth';
 
 
@@ -21,6 +21,7 @@ const tabs = [
   { id: 'pendingRules', label: 'Rule Review',       icon: ClipboardCheck },
   { id: 'scenarioCalc', label: 'Scenario Calculator', icon: Layers },
   { id: 'maximizer',   label: 'Maximizer',            icon: Zap, badge: 'NEW' },
+  { id: 'conflicts',   label: 'Conflicts',            icon: GitMerge, badge: 'NEW' },
   { id: 'settings', label: 'Notifications', icon: Bell },
 ];
 

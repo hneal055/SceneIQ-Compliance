@@ -50,7 +50,7 @@ function getContextualPrompts(prod: Production): string[] {
 
 const WELCOME = `Welcome to **SceneIQ AI Advisor**. I can help you maximize tax incentives for your productions.\n\nAsk me about jurisdiction comparisons, qualifying expenses, application requirements, or incentive stacking strategies. For more targeted analysis, select a production context in the left panel.`;
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000') as string;
+const API_BASE = (import.meta.env.VITE_API_URL ?? '') as string;
 const API_VERSION = (import.meta.env.VITE_API_VERSION || '0.1.0') as string;
 const TOKEN_KEY = 'sceneiq_token';
 

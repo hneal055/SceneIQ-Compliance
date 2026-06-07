@@ -48,6 +48,9 @@ model Jurisdiction {
   shootDays             ShootDay[]
   jurisdictionShootDays JurisdictionShootDays[]
 
+  // Conflict engine back-relation
+  detectedConflicts     DetectedConflict[]
+
   @@index([parentId])
   @@map("jurisdictions")
 }
@@ -605,4 +608,64 @@ model JurisdictionShootDays {
   @@index([productionId])
   @@index([jurisdictionId])
   @@map("jurisdiction_shoot_days")
+}
+
+// ─── Conflict Engine (ported from incentives-app) ─────────────────────────────
+
+/// Lookup table of the four resolution strategies.
+model ConflictResolutionStrategy {
+  id           String   @id @default(uuid())
+  strategyName String   @unique
+  description  String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  detectedConflicts DetectedConflict[]
+
+  @@map("conflict_resolution_strategies")
+}
+
+/// A rule conflict detected by the stacking engine, optionally resolved.
+model DetectedConflict {
+  id                   String   @id @default(uuid())
+  projectId            String?
+  sessionId            String?
+  jurisdictionId       String
+  jurisdiction         Jurisdiction               @relation(fields: [jurisdictionId], references: [id], onDelete: Restrict)
+  ruleKey1             String
+  ruleKey2             String
+  ruleType             String?
+  conflictType         String
+  value1               Decimal?
+  value2               Decimal?
+  jurisdictionName1    String?
+  jurisdictionName2    String?
+  resolutionStrategyId String?
+  resolutionStrategy   ConflictResolutionStrategy? @relation(fields: [resolutionStrategyId], references: [id], onDelete: SetNull)
+  resolvedValue        Decimal?
+  resolvedBy           String?
+  resolvedAt           DateTime?
+  notes                String?
+  createdAt            DateTime @default(now())
+
+  userOverrides UserConflictOverride[]
+
+  @@index([projectId])
+  @@index([resolvedAt])
+  @@map("detected_conflicts")
+}
+
+/// Manual override recorded when a user selects a specific resolution.
+model UserConflictOverride {
+  id            String           @id @default(uuid())
+  conflictId    String?
+  conflict      DetectedConflict? @relation(fields: [conflictId], references: [id], onDelete: Cascade)
+  chosenRuleKey String
+  chosenValue   Decimal?
+  chosenBy      String?
+  chosenAt      DateTime         @default(now())
+  notes         String?
+
+  @@index([conflictId])
+  @@map("user_conflict_overrides")
 }
