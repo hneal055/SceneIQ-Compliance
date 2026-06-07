@@ -78,4 +78,6 @@ JSON_FIELD_MAP = {
     "rightsEnd"           : "rights_end",
     "assetId"             : "asset_id",
     "contentId"           : "asset_id",
+"Daypart"            : "daypart",
+"daypart"            : "daypart",
 }
