@@ -7,6 +7,7 @@ from src.services.broadcast_scheduler.models.segment import Segment
 CSV_MAX_ROWS = None
 VERBOSE_LOGGING = True
 
+
 def parse_csv_file(file_path, channel_name=None, schedule_date=None):
     file_path = Path(file_path)
 
@@ -26,7 +27,7 @@ def parse_csv_file(file_path, channel_name=None, schedule_date=None):
             for row in reader:
                 if CSV_MAX_ROWS is not None and row_count >= CSV_MAX_ROWS:
                     break
-                
+
                 segment = build_segment_from_row(row)
                 schedule.add_segment(segment)
                 row_count += 1
@@ -39,8 +40,12 @@ def parse_csv_file(file_path, channel_name=None, schedule_date=None):
 
     return schedule
 
+
 def build_segment_from_row(row):
     segment = Segment()
+
+    # DEBUG: Print all headers found in the CSV
+    print(f"DEBUG: CSV Headers found: {list(row.keys())}")
 
     for csv_column, raw_value in row.items():
         if csv_column is None:
@@ -48,15 +53,17 @@ def build_segment_from_row(row):
 
         clean_column = csv_column.strip()
         internal_field = CSV_FIELD_MAP.get(clean_column)
-        
+
+        # DEBUG: See if 'daypart' is being skipped
+        if internal_field == "daypart":
+            print(
+                f"DEBUG: SUCCESS - Found column '{csv_column}' mapping to 'daypart' with value: '{raw_value}'"
+            )
+
         if internal_field is None:
             continue
 
-        # Handle data cleaning
         value = raw_value.strip() if raw_value and raw_value.strip() != "" else None
-        
-        # This dynamic assignment will now correctly set segment.daypart 
-        # because internal_field resolves to 'daypart' via the field map.
         setattr(segment, internal_field, value)
 
     return segment
