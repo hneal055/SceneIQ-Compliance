@@ -38,7 +38,7 @@ CSV_FIELD_MAP = {
     "Rights End"         : "rights_end",
     "Licence Start"      : "rights_start",
     "Licence End"        : "rights_end",
-}
+}   "Daypart"            : "daypart",
 
 # Maps BXF / XML tag names -> internal standard field names.
 XML_FIELD_MAP = {
