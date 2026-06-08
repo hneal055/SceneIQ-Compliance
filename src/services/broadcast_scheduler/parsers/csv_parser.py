@@ -44,26 +44,23 @@ def parse_csv_file(file_path, channel_name=None, schedule_date=None):
 def build_segment_from_row(row):
     segment = Segment()
 
-    # DEBUG: Print all headers found in the CSV
-    print(f"DEBUG: CSV Headers found: {list(row.keys())}")
+    # Create a normalized map for easier lookup (lowercase, stripped)
+    normalized_map = {k.lower().strip(): v for k, v in CSV_FIELD_MAP.items()}
 
     for csv_column, raw_value in row.items():
         if csv_column is None:
             continue
 
-        clean_column = csv_column.strip()
-        internal_field = CSV_FIELD_MAP.get(clean_column)
+        # Normalize the header from the CSV
+        clean_column = csv_column.lower().strip()
+        internal_field = normalized_map.get(clean_column)
 
-        # DEBUG: See if 'daypart' is being skipped
-        if internal_field == "daypart":
-            print(
-                f"DEBUG: SUCCESS - Found column '{csv_column}' mapping to 'daypart' with value: '{raw_value}'"
-            )
+        if internal_field:
+            value = raw_value.strip() if raw_value and raw_value.strip() != "" else None
+            setattr(segment, internal_field, value)
 
-        if internal_field is None:
-            continue
-
-        value = raw_value.strip() if raw_value and raw_value.strip() != "" else None
-        setattr(segment, internal_field, value)
+            # Debug: Confirm it matched
+            if internal_field == "daypart":
+                print(f"DEBUG: MATCHED 'daypart' using header '{csv_column}'")
 
     return segment
