@@ -10,6 +10,7 @@ Auth is applied at the router-aggregation layer (src/api/routes.py); no need
 to repeat it here. All DB calls are wrapped in try/except so a transient
 database problem cannot crash the API.
 """
+
 from __future__ import annotations
 
 import logging
@@ -33,9 +34,9 @@ router = APIRouter(prefix="/schedule", tags=["Schedule Parser"])
 # File-extension -> parser-function dispatch table. .bxf is a SMPTE XML
 # variant, so it shares the XML parser.
 _PARSERS = {
-    ".csv":  ("csv",  parse_csv_file),
-    ".xml":  ("xml",  parse_xml_file),
-    ".bxf":  ("xml",  parse_xml_file),
+    ".csv": ("csv", parse_csv_file),
+    ".xml": ("xml", parse_xml_file),
+    ".bxf": ("xml", parse_xml_file),
     ".json": ("json", parse_json_file),
 }
 
@@ -49,23 +50,23 @@ def _dispatch_parser(filename: str):
 
 # Builds the dict shape the upload endpoint persists to the schedule_events
 # table. Lives in its own helper so the upload endpoint stays readable.
-ddef _segment_to_row(segment, schedule, source_format: str) -> dict:
+def _segment_to_row(segment, schedule, source_format: str) -> dict:
     return {
-        "channel":       (segment.channel or schedule.channel_name or "unknown"),
-        "scheduleDate":  schedule.schedule_date,
-        "sourceFile":    schedule.source_filename or "",
-        "sourceFormat":  source_format,
-        "title":         segment.title or "",
-        "episodeTitle":  segment.episode_title,
+        "channel": (segment.channel or schedule.channel_name or "unknown"),
+        "scheduleDate": schedule.schedule_date,
+        "sourceFile": schedule.source_filename or "",
+        "sourceFormat": source_format,
+        "title": segment.title or "",
+        "episodeTitle": segment.episode_title,
         "episodeNumber": segment.episode_number,
-        "seriesNumber":  segment.series_number,
-        "txTime":        segment.tx_time,
-        "duration":      segment.duration,
-        "genre":         segment.genre,
-        "rightsStart":   segment.rights_start,
-        "rightsEnd":     segment.rights_end,
-        "assetId":       segment.asset_id,
-        "daypart":       getattr(segment, 'daypart', None), # <--- ADD THIS LINE
+        "seriesNumber": segment.series_number,
+        "txTime": segment.tx_time,
+        "duration": segment.duration,
+        "genre": segment.genre,
+        "rightsStart": segment.rights_start,
+        "rightsEnd": segment.rights_end,
+        "assetId": segment.asset_id,
+        "daypart": getattr(segment, "daypart", None),  # <--- ADD THIS LINE
     }
 
 
@@ -129,29 +130,37 @@ async def upload_schedule(file: UploadFile = File(...)):
                 )
                 events_saved += 1
             except Exception:
-                logger.exception("schedule upload: failed to save segment from %s", filename)
+                logger.exception(
+                    "schedule upload: failed to save segment from %s", filename
+                )
 
         logger.info(
             "schedule upload OK: file=%s format=%s segments=%d errors=%d warnings=%d saved=%d",
-            filename, source_format, len(schedule.segments),
-            len(errors), len(warnings), events_saved,
+            filename,
+            source_format,
+            len(schedule.segments),
+            len(errors),
+            len(warnings),
+            events_saved,
         )
 
         return {
-            "channel":         schedule.channel_name,
-            "date":            schedule.schedule_date,
-            "source_format":   source_format,
+            "channel": schedule.channel_name,
+            "date": schedule.schedule_date,
+            "source_format": source_format,
             "segments_parsed": len(schedule.segments),
-            "errors":          errors,
-            "warnings":        warnings,
-            "events_saved":    events_saved,
+            "errors": errors,
+            "warnings": warnings,
+            "events_saved": events_saved,
         }
     finally:
         # Always clean up the temp file, even on exception.
         try:
             tmp_path.unlink(missing_ok=True)
         except OSError:
-            logger.exception("schedule upload: tempfile cleanup failed for %s", tmp_path)
+            logger.exception(
+                "schedule upload: tempfile cleanup failed for %s", tmp_path
+            )
 
 
 @router.get("/events", summary="List saved schedule events")
@@ -192,10 +201,10 @@ async def list_schedule_events(
         )
 
     return {
-        "total":     total,
-        "page":      page,
+        "total": total,
+        "page": page,
         "page_size": page_size,
-        "events":    events,
+        "events": events,
     }
 
 

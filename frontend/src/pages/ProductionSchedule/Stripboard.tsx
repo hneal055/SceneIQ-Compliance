@@ -180,7 +180,7 @@ export default function Stripboard({ productionId }: Props) {
     setAutoScheduling(true);
     try {
       const result = await autoSchedule(productionId, pagesPerDay) as { days_created: number; scenes_assigned: number; message: string };
-      await refresh();
+      await load();
       alert(result.message);
     } catch {
       setError("Auto-schedule failed. Please try again.");
