@@ -945,7 +945,7 @@ async def _build_call_sheet_for_day(
 )
 async def auto_schedule(
     production_id: str,
-    pages_per_day: float = Query(default=8.0, ge=4.0, le=10.0, description="Pages per shoot day (industry standard: 4-10)"),
+    pages_per_day: float = Query(default=8.0, ge=1.0, le=20.0, description="Pages per shoot day (industry standard: 4-10)"),
 ):
     """
     Creates shoot days automatically from unscheduled scenes.
@@ -956,11 +956,19 @@ async def auto_schedule(
         # Load all unscheduled scenes
         scene_rows = await prisma.scene.find_many(
             where={"productionId": production_id, "shootDayId": None},
-            order={"sceneNumber": "asc"},
         )
 
         if not scene_rows:
             return {"days_created": 0, "scenes_assigned": 0, "message": "No unscheduled scenes found"}
+
+        # Sort scenes numerically by scene number where possible
+        def scene_sort_key(s):
+            try:
+                return (0, float(s.sceneNumber or 0))
+            except (ValueError, TypeError):
+                return (1, str(s.sceneNumber or ""))
+
+        scene_rows = sorted(scene_rows, key=scene_sort_key)
 
         # Get current max day number
         existing_days = await prisma.shootday.find_many(
@@ -975,10 +983,17 @@ async def auto_schedule(
         current_day_pages = 0.0
 
         for row in scene_rows:
-            page_count = float(row.pageCount or 0.0)
+            page_count = float(row.pageCount or 0.5)  # Default 0.5 pages if no page count
 
-            # Create a new shoot day if needed
-            if current_day is None or (current_day_pages + page_count > pages_per_day and current_day_pages > 0):
+            # Create a new shoot day if:
+            # - No current day exists yet
+            # - Adding this scene would exceed pages_per_day (and we already have pages)
+            needs_new_day = (
+                current_day is None or
+                (current_day_pages > 0 and current_day_pages + page_count > pages_per_day)
+            )
+
+            if needs_new_day:
                 current_day = await prisma.shootday.create(
                     data={
                         "productionId": production_id,
