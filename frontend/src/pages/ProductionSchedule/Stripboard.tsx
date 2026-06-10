@@ -38,6 +38,7 @@ import {
 import { api } from "../../api";
 import {
   assignScene,
+  autoSchedule,
   createShootDay,
   deleteShootDay,
   getStripboard,
@@ -98,6 +99,8 @@ export default function Stripboard({ productionId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [autoScheduling, setAutoScheduling] = useState(false);
+  const [pagesPerDay, setPagesPerDay] = useState(8);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
   // Load the jurisdiction list once for the day editor's dropdown.
@@ -171,6 +174,20 @@ export default function Stripboard({ productionId }: Props) {
     },
     [load],
   );
+
+  const handleAutoSchedule = async () => {
+    if (autoScheduling) return;
+    setAutoScheduling(true);
+    try {
+      const result = await autoSchedule(productionId, pagesPerDay) as { days_created: number; scenes_assigned: number; message: string };
+      await refresh();
+      alert(result.message);
+    } catch {
+      setError("Auto-schedule failed. Please try again.");
+    } finally {
+      setAutoScheduling(false);
+    }
+  };
 
   const handleNewDay = () =>
     mutate(async () => {

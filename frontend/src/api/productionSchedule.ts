@@ -300,3 +300,17 @@ export function triggerDownload(blob: Blob, filename: string): void {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// Auto-creates shoot days from unscheduled scenes based on pages per day.
+export async function autoSchedule(
+  productionId: string,
+  pagesPerDay: number = 8,
+) {
+  const res = await apiClient.post(
+    `/production-schedule/${productionId}/stripboard/auto-schedule`,
+    null,
+    { params: { pages_per_day: pagesPerDay } },
+  );
+  return res.data;
+}
+
