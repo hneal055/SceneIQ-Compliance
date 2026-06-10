@@ -49,7 +49,7 @@ def _dispatch_parser(filename: str):
 
 # Builds the dict shape the upload endpoint persists to the schedule_events
 # table. Lives in its own helper so the upload endpoint stays readable.
-def _segment_to_row(segment, schedule, source_format: str) -> dict:
+ddef _segment_to_row(segment, schedule, source_format: str) -> dict:
     return {
         "channel":       (segment.channel or schedule.channel_name or "unknown"),
         "scheduleDate":  schedule.schedule_date,
@@ -65,6 +65,7 @@ def _segment_to_row(segment, schedule, source_format: str) -> dict:
         "rightsStart":   segment.rights_start,
         "rightsEnd":     segment.rights_end,
         "assetId":       segment.asset_id,
+        "daypart":       getattr(segment, 'daypart', None), # <--- ADD THIS LINE
     }
 
 

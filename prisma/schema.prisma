@@ -444,7 +444,6 @@ model ScheduleEvent {
   channel       String
   scheduleDate  String?
   sourceFile    String
-  /// "csv" | "xml" | "json"
   sourceFormat  String
   title         String
   episodeTitle  String?
@@ -456,16 +455,14 @@ model ScheduleEvent {
   rightsStart   String?
   rightsEnd     String?
   assetId       String?
-  /// derived from txTime by date_helper (morning/afternoon/etc — populated later)
-  daypart       String?
+  
+  // Ensure this is here!
+  daypart       String? 
+  
   importedAt    DateTime @default(now())
-  /// optional link to SceneIQ Production model (not enforced as FK yet)
   productionId  String?
 
   @@index([channel])
-  @@index([scheduleDate])
-  @@index([sourceFormat])
-  @@index([importedAt])
   @@map("schedule_events")
 }
 
