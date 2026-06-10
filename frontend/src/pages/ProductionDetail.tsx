@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Plus,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import api from '../api';
 import type {
@@ -99,6 +100,9 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   const [rules, setRules] = useState<IncentiveRule[]>([]);
   const [calcResult, setCalcResult] = useState<CalculationResult | null>(null);
   const [calcJurId, setCalcJurId] = useState('');
+  const [budgetEdit, setBudgetEdit] = useState<{ total: string; qualifying: string } | null>(null);
+  const [budgetSaving, setBudgetSaving] = useState(false);
+  const [budgetError, setBudgetError] = useState<string | null>(null);
   const [compliance, setCompliance] = useState<ComplianceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [calcLoading, setCalcLoading] = useState(false);
@@ -147,6 +151,38 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
       .then(data => setExpenses(data))
       .catch(() => {})
       .finally(() => setExpensesLoading(false));
+  }
+
+  async function handleSaveBudget() {
+    if (!budgetEdit || !production) return;
+    setBudgetSaving(true);
+    setBudgetError(null);
+    try {
+      const token = localStorage.getItem('sceneiq_token');
+      const res = await fetch(`/api/0.1.0/productions/${production.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          budgetTotal: parseFloat(budgetEdit.total) || 0,
+          budgetQualifying: budgetEdit.qualifying ? parseFloat(budgetEdit.qualifying) : null,
+        }),
+      });
+      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+      const updated = await res.json();
+      setProduction(p => p ? {
+        ...p,
+        budgetTotal: updated.budgetTotal,
+        budgetQualifying: updated.budgetQualifying,
+      } : p);
+      setBudgetEdit(null);
+    } catch (e) {
+      setBudgetError(e instanceof Error ? e.message : 'Failed to save budget');
+    } finally {
+      setBudgetSaving(false);
+    }
   }
 
   async function handleAddExpense(e: React.FormEvent) {
@@ -216,7 +252,6 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
 
   const totalSpend = expenses.reduce((s, i) => s + i.amount, 0);
   const qualifyingSpend = expenses.reduce((s, i) => s + (i.isQualifying ? i.amount : 0), 0);
-
   const jur = jurisdictions.find(j => j.id === production?.jurisdictionId);
 
   if (loading) {
@@ -246,9 +281,67 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             </p>
           </div>
           <div className="flex items-center gap-5">
+            {/* Budget display / inline edit */}
             <div className="text-right">
               <p className="text-xs text-slate-400 font-medium">Total Budget</p>
-              <p className="text-xl font-bold text-slate-900">{fmt(production.budgetTotal)}</p>
+              {budgetEdit ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="text-left">
+                    <p className="text-[10px] text-slate-400 mb-0.5">Total ($)</p>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={budgetEdit.total}
+                      onChange={e => setBudgetEdit(b => b ? { ...b, total: e.target.value } : b)}
+                      className="w-32 px-2 py-1 border border-slate-300 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] text-slate-400 mb-0.5">Qualifying ($)</p>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={budgetEdit.qualifying}
+                      onChange={e => setBudgetEdit(b => b ? { ...b, qualifying: e.target.value } : b)}
+                      className="w-32 px-2 py-1 border border-slate-300 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="optional"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 pt-4">
+                    <button
+                      onClick={handleSaveBudget}
+                      disabled={budgetSaving}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {budgetSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                      {budgetSaving ? 'Saving…' : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => { setBudgetEdit(null); setBudgetError(null); }}
+                      className="px-3 py-1 bg-slate-100 text-slate-600 rounded text-xs hover:bg-slate-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold text-slate-900">{fmt(production.budgetTotal)}</p>
+                  <button
+                    title="Edit budget"
+                    onClick={() => setBudgetEdit({
+                      total: String(production.budgetTotal),
+                      qualifying: String(production.budgetQualifying ?? ''),
+                    })}
+                    className="text-slate-300 hover:text-blue-500 transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+              {budgetError && <p className="text-xs text-red-600 mt-1">{budgetError}</p>}
             </div>
             {compliance && compliance.total > 0 && (
               <div className="text-right">
@@ -276,6 +369,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
 
       {/* Content */}
       <div className="p-8 max-w-6xl mx-auto">
+
         {/* Overview Tab */}
         {tab === 'overview' && (
           <div className="space-y-6">
@@ -286,16 +380,37 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
               <StatCard label="Incentive Rules" value={String(rules.length)} sub={jur?.name ?? 'No jurisdiction'} />
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-sm font-bold text-slate-900 mb-4">Production Details</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold text-slate-900">Production Details</h2>
+                {!budgetEdit && (
+                  <button
+                    onClick={() => setBudgetEdit({
+                      total: String(production.budgetTotal),
+                      qualifying: String(production.budgetQualifying ?? ''),
+                    })}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
+                  >
+                    <Pencil className="w-3 h-3" /> Edit Budget
+                  </button>
+                )}
+              </div>
               <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 text-sm">
                 {[
-                  ['Title', production.title], ['Type', capitalize(production.productionType)], ['Company', production.productionCompany],
-                  ['Status', STATUS_LABELS[production.status] ?? production.status], ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : '—'],
-                  ['Total Budget', fmt(production.budgetTotal)], ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : '—'],
-                  ['Start Date', production.startDate?.split('T')[0] ?? '—'], ['End Date', production.endDate?.split('T')[0] ?? '—'],
+                  ['Title', production.title],
+                  ['Type', capitalize(production.productionType)],
+                  ['Company', production.productionCompany],
+                  ['Status', STATUS_LABELS[production.status] ?? production.status],
+                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : '—'],
+                  ['Total Budget', fmt(production.budgetTotal)],
+                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : '—'],
+                  ['Start Date', production.startDate?.split('T')[0] ?? '—'],
+                  ['End Date', production.endDate?.split('T')[0] ?? '—'],
                   ['Created', production.createdAt?.split('T')[0] ?? '—'],
                 ].map(([label, value]) => (
-                  <div key={label}><dt className="text-slate-500 font-medium mb-0.5">{label}</dt><dd className="text-slate-900 font-semibold">{value}</dd></div>
+                  <div key={label}>
+                    <dt className="text-slate-500 font-medium mb-0.5">{label}</dt>
+                    <dd className="text-slate-900 font-semibold">{value}</dd>
+                  </div>
                 ))}
               </dl>
             </div>
@@ -305,40 +420,30 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {/* Expenses Tab */}
         {tab === 'expenses' && (
           <div className="space-y-5">
-            {/* Summary bar */}
             <div className="grid grid-cols-3 gap-4">
               <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} line items`} />
               <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
               <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : '—'} />
             </div>
-
-            {/* Toolbar */}
             <div className="flex justify-between items-center gap-3">
               <p className="text-sm text-slate-500">{expenses.length} expense{expenses.length !== 1 ? 's' : ''}</p>
               <div className="flex items-center gap-2">
                 {expenses.length === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => handleGenerateExpenses(false)}
-                    disabled={expenseGenerating}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 disabled:opacity-50"
-                  >
+                  <button type="button" onClick={() => handleGenerateExpenses(false)} disabled={expenseGenerating}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 disabled:opacity-50">
                     {expenseGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                     Generate Line Items
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleGenerateExpenses(true)}
-                    disabled={expenseGenerating}
+                  <button type="button" onClick={() => handleGenerateExpenses(true)} disabled={expenseGenerating}
                     title="Delete all existing expenses and regenerate from budget template"
-                    className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 text-slate-600 text-sm rounded-lg hover:bg-slate-50 disabled:opacity-50"
-                  >
+                    className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 text-slate-600 text-sm rounded-lg hover:bg-slate-50 disabled:opacity-50">
                     {expenseGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                     Regenerate
                   </button>
                 )}
-                <button type="button" onClick={() => setShowAddExpense(v => !v)} className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                <button type="button" onClick={() => setShowAddExpense(v => !v)}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
                   <Plus className="w-4 h-4" />{showAddExpense ? 'Cancel' : 'Add Expense'}
                 </button>
               </div>
@@ -348,8 +453,6 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                 <XCircle className="w-4 h-4 shrink-0" />{generateError}
               </div>
             )}
-
-            {/* Add form */}
             {showAddExpense && (
               <form onSubmit={handleAddExpense} className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
                 <h3 className="text-sm font-bold text-slate-900">New Expense</h3>
@@ -393,8 +496,6 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                 </div>
               </form>
             )}
-
-            {/* Expense list */}
             {expensesLoading ? (
               <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-blue-500" /></div>
             ) : expenses.length === 0 ? (
@@ -469,6 +570,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             </>}
           </div>
         )}
+
       </div>
     </div>
   );
