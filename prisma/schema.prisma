@@ -5,6 +5,7 @@ generator client {
   enable_experimental_decimal = true
 }
 
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -200,7 +201,11 @@ model Production {
   expenses          Expense[]
   complianceItems   ComplianceItem[]
   scenarios         ProductionScenario[]
-
+// Production Graph nodes
+  crewMembers           CrewMember[]
+  productionLocations   ProductionLocation[]
+  budgetLines           BudgetLine[]
+  signals               ProductionSignal[]
   // Production Schedule Engine back-relations
   scenes                Scene[]
   shootDays             ShootDay[]
