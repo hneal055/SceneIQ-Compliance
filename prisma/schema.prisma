@@ -671,3 +671,83 @@ model UserConflictOverride {
   @@index([conflictId])
   @@map("user_conflict_overrides")
 }
+
+model CrewMember {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  name         String
+  role         String
+  department   String
+  union        String?
+  dailyRate    Float?
+  weeklyRate   Float?
+  startDate    DateTime?
+  endDate      DateTime?
+  status       String     @default("active")
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  @@index([productionId])
+  @@index([department])
+  @@map("crew_members")
+}
+
+model ProductionLocation {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  name         String
+  address      String?
+  city         String?
+  state        String?
+  country      String?
+  locationType String
+  permitStatus String?
+  dailyCost    Float?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  @@index([productionId])
+  @@map("production_locations")
+}
+
+model BudgetLine {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  category     String
+  lineItem     String
+  accountCode  String?
+  estimated    Float
+  actual       Float?
+  variance     Float?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  @@index([productionId])
+  @@index([category])
+  @@map("budget_lines")
+}
+
+model ProductionSignal {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  signalType   String
+  severity     String
+  source       String?
+  entityType   String?
+  entityId     String?
+  message      String
+  resolved     Boolean    @default(false)
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  @@index([productionId])
+  @@index([signalType])
+  @@index([severity])
+  @@index([resolved])
+  @@map("production_signals")
+}
