@@ -1,4 +1,4 @@
-"""
+﻿"""
 Main API router - aggregates all route modules
 """
 from fastapi import APIRouter, Depends
@@ -30,6 +30,7 @@ from src.api.production_schedule import router as production_schedule_router
 from src.api.conflicts import router as conflicts_router
 from src.api.pipeline import router as pipeline_router
 from src.api.signals import router as signals_router
+from src.api.atl_btl import router as atl_btl_router
 from src.utils.auth_utils import get_current_user
 
 API_PREFIX = "/api/0.1.0"
@@ -38,10 +39,10 @@ router = APIRouter()
 
 _auth_dep = [Depends(get_current_user)]
 
-# Public — no auth required
+# Public â€” no auth required
 router.include_router(auth_router)
 
-# Protected — JWT required
+# Protected â€” JWT required
 router.include_router(jurisdictions_router, dependencies=_auth_dep)
 router.include_router(incentive_rules_router, dependencies=_auth_dep)
 router.include_router(productions_router, dependencies=_auth_dep)
@@ -67,6 +68,7 @@ router.include_router(production_schedule_router, dependencies=_auth_dep)
 router.include_router(conflicts_router, dependencies=_auth_dep)
 router.include_router(pipeline_router, dependencies=_auth_dep)
 router.include_router(signals_router, dependencies=_auth_dep)
+router.include_router(atl_btl_router, dependencies=_auth_dep)
 
 
 @router.get("/", tags=["Meta"])
@@ -86,3 +88,4 @@ async def api_root():
             "health": "/health",
         },
     }
+
