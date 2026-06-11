@@ -1,4 +1,4 @@
-"""
+﻿"""
 RSS/Atom feed ingestion service.
 
 Fetches each MonitoringSource that has a configured feedUrl, parses it with
@@ -25,7 +25,7 @@ _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _WHITESPACE_RE = re.compile(r"\s+")
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _content_hash(title: str, url: Optional[str], published_raw: str) -> str:
     """SHA-256 fingerprint used for deduplication."""
@@ -59,14 +59,14 @@ def _severity_from_entry(title: str, summary: str) -> str:
     return "info"
 
 
-# ── Core ingestion ────────────────────────────────────────────────────────────
+# â”€â”€ Core ingestion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def ingest_source(source_id: str) -> int:
     """
     Fetch and parse one source's RSS/Atom feed.
     Returns the count of new MonitoringEvent records created.
     """
-    source = await prisma.monitoringsource.find_unique(where={"id": source_id})
+    source = await prisma.monitoring_sources.find_unique(where={"id": source_id})
     if not source or not source.feedUrl or not source.active:
         return 0
 
@@ -88,7 +88,7 @@ async def ingest_source(source_id: str) -> int:
 
     if feed.bozo and not feed.entries:
         logger.warning(f"Malformed or empty feed for {source.name}: {getattr(feed, 'bozo_exception', 'unknown')}")
-        await prisma.monitoringsource.update(
+        await prisma.monitoring_sources.update(
             where={"id": source_id},
             data={"lastFetched": datetime.now(timezone.utc)},
         )
@@ -105,13 +105,13 @@ async def ingest_source(source_id: str) -> int:
         hash_val    = _content_hash(title, url, published_raw)
 
         # Skip duplicates
-        existing = await prisma.monitoringevent.find_first(where={"contentHash": hash_val})
+        existing = await prisma.monitoring_events.find_first(where={"contentHash": hash_val})
         if existing:
             continue
 
         severity = _severity_from_entry(title, summary or "")
 
-        await prisma.monitoringevent.create(data={
+        await prisma.monitoring_events.create(data={
             "sourceId":    source_id,
             "title":       title[:255],
             "summary":     summary,
@@ -134,15 +134,15 @@ async def ingest_source(source_id: str) -> int:
         except Exception as exc:
             logger.warning(f"Notification dispatch failed for event '{title[:60]}': {exc}")
 
-    await prisma.monitoringsource.update(
+    await prisma.monitoring_sources.update(
         where={"id": source_id},
         data={"lastFetched": datetime.now(timezone.utc)},
     )
 
     if new_count:
-        logger.info(f"✅ {source.name}: {new_count} new event(s) ingested")
+        logger.info(f"âœ… {source.name}: {new_count} new event(s) ingested")
     else:
-        logger.info(f"ℹ️  {source.name}: no new events")
+        logger.info(f"â„¹ï¸  {source.name}: no new events")
 
     return new_count
 
@@ -186,13 +186,13 @@ async def ingest_all_sources() -> int:
     Returns the total count of new events created across all sources.
     Called by APScheduler on its cron interval and by the manual API trigger.
     """
-    sources = await prisma.monitoringsource.find_many(
+    sources = await prisma.monitoring_sources.find_many(
         where={"active": True, "feedUrl": {"not": None}},
         order={"createdAt": "asc"},
     )
 
     if not sources:
-        logger.info("No active sources with feedUrl configured — ingestion skipped")
+        logger.info("No active sources with feedUrl configured â€” ingestion skipped")
         return 0
 
     logger.info(f"Starting feed ingestion for {len(sources)} source(s)")
@@ -203,5 +203,7 @@ async def ingest_all_sources() -> int:
         except Exception as exc:
             logger.error(f"Ingestion error for source {source.name}: {exc}", exc_info=True)
 
-    logger.info(f"Feed ingestion complete — {total} new event(s) from {len(sources)} source(s)")
+    logger.info(f"Feed ingestion complete â€” {total} new event(s) from {len(sources)} source(s)")
     return total
+
+

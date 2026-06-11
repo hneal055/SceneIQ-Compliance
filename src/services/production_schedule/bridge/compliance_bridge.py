@@ -1,13 +1,13 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/bridge/compliance_bridge.py
-# Compliance Bridge — pure compute layer between the production schedule
+# Compliance Bridge â€” pure compute layer between the production schedule
 # engine and the SceneIQ compliance stack (Incentive Calculator + MMB
 # Connector).
 #
 # All three functions are pure: they take in-memory lists / dicts and
 # return data structures the Phase 10 router can hand to the
 # calculator, the reconciliation view, or the dashboard. No Prisma
-# calls live here — the router does the DB I/O on both sides.
+# calls live here â€” the router does the DB I/O on both sides.
 #
 # Public functions:
 #   push_shoot_days_to_calculator(production_id, jurisdiction_records)
@@ -17,7 +17,7 @@
 #       and produces a per-jurisdiction variance report.
 #   get_compliance_data_summary(production_id, jurisdiction_records,
 #                               mmb_data=None, credit_estimates=None)
-#       Combined dashboard view per jurisdiction — shoot days, spend,
+#       Combined dashboard view per jurisdiction â€” shoot days, spend,
 #       estimated credit, verification timestamp. Missing downstream
 #       data renders as None, never raises.
 # =============================================================================
@@ -26,7 +26,7 @@
 # Returns the calculator-ready payload for a production:
 #   {jurisdiction_id: {"shoot_days": int, "verified_at": datetime}}
 #
-# Only records where verified_at is not None are included — the brief
+# Only records where verified_at is not None are included â€” the brief
 # is explicit that the calculator must not see unverified counts.
 # `production_id` is kept on the signature for the Phase 10 router
 # contract (the router loads records by production_id before calling).
@@ -84,7 +84,7 @@ def reconcile_with_mmb(production_id, jurisdiction_records, mmb_data):
         rows.append(_reconcile_row(jid, stripboard_days, mmb_days))
         seen.add(jid)
 
-    # MMB-only jurisdictions — production didn't shoot here, but MMB
+    # MMB-only jurisdictions â€” production didn't shoot here, but MMB
     # has spend recorded. Worth flagging via match=False / variance>0.
     for jid, mmb_entry in mmb_data.items():
         if jid in seen:
@@ -107,7 +107,7 @@ def reconcile_with_mmb(production_id, jurisdiction_records, mmb_data):
 #       ...
 #   }
 #
-# Iterates over `jurisdiction_records` only — anomaly cases where MMB
+# Iterates over `jurisdiction_records` only â€” anomaly cases where MMB
 # or estimates have data for jurisdictions the production didn't shoot
 # in are surfaced by reconcile_with_mmb, not here.
 #
@@ -151,3 +151,4 @@ def _reconcile_row(jurisdiction, stripboard_days, mmb_days):
         "match":                      variance == 0,
         "variance":                   variance,
     }
+

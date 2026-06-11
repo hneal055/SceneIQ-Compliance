@@ -1,4 +1,4 @@
-"""
+﻿"""
 Expenses API endpoints
 """
 from fastapi import APIRouter, HTTPException, status
@@ -264,22 +264,22 @@ async def calculate_from_expenses(production_id: str):
     notes = []
     recommendations = []
     
-    notes.append(f"💰 {len(expenses)} expenses totaling ${total_expenses:,.0f}")
-    notes.append(f"✅ Qualifying: ${qualifying_expenses:,.0f} ({qualifying_pct:.1f}%)")
-    notes.append(f"❌ Non-qualifying: ${non_qualifying_expenses:,.0f}")
+    notes.append(f"ðŸ’° {len(expenses)} expenses totaling ${total_expenses:,.0f}")
+    notes.append(f"âœ… Qualifying: ${qualifying_expenses:,.0f} ({qualifying_pct:.1f}%)")
+    notes.append(f"âŒ Non-qualifying: ${non_qualifying_expenses:,.0f}")
     if best_rule.percentage:
-        notes.append(f"📊 Rate: {best_rule.percentage}%")
+        notes.append(f"ðŸ“Š Rate: {best_rule.percentage}%")
     
     if not meets_min and best_rule.minSpend:
         shortage = best_rule.minSpend - qualifying_expenses
-        notes.append(f"⚠️ Below minimum: Need ${shortage:,.0f} more in qualifying expenses")
+        notes.append(f"âš ï¸ Below minimum: Need ${shortage:,.0f} more in qualifying expenses")
         recommendations.append(f"Add ${shortage:,.0f} in qualifying expenses to unlock credit")
     
     if not under_max and best_rule.maxCredit:
-        notes.append(f"ℹ️ Credit capped at maximum of ${best_rule.maxCredit:,.0f}")
+        notes.append(f"â„¹ï¸ Credit capped at maximum of ${best_rule.maxCredit:,.0f}")
     
     if meets_min and best_credit > 0:
-        notes.append(f"💵 Estimated credit: ${best_credit:,.0f}")
+        notes.append(f"ðŸ’µ Estimated credit: ${best_credit:,.0f}")
         recommendations.append(f"Continue tracking expenses - currently at ${best_credit:,.0f} credit")
     
     return ProductionExpenseCalculation(

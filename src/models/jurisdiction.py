@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pydantic models for Jurisdictions
 """
 from pydantic import BaseModel, Field
@@ -47,3 +47,4 @@ class JurisdictionList(BaseModel):
     """Model for list of jurisdictions"""
     total: int
     jurisdictions: list[JurisdictionResponse]
+

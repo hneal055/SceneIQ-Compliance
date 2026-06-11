@@ -1,4 +1,4 @@
-"""
+﻿"""
 Largo / MMB Connector integration endpoint.
 Accepts a project submission and returns incentive analysis.
 """
@@ -151,5 +151,6 @@ async def evaluate_largo_project(project: LargoProject):
         "total_estimated_credits": round(total_credits, 2),
         "recommendations": recommendations,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "powered_by": "SceneIQ Rules Engine v1 — Scene Reader Studio Technologies LLC",
+        "powered_by": "SceneIQ Rules Engine v1 â€” Scene Reader Studio Technologies LLC",
     }
+

@@ -1,9 +1,9 @@
-"""
+﻿"""
 APScheduler setup for background feed ingestion and daily email digest.
 
 Jobs:
-  feed_ingestion   — every 4 hours, ingests all RSS/Atom monitoring sources
-  daily_digest     — every day at 08:00 UTC, sends monitoring digest emails
+  feed_ingestion   â€” every 4 hours, ingests all RSS/Atom monitoring sources
+  daily_digest     â€” every day at 08:00 UTC, sends monitoring digest emails
                      (weekly subscribers receive theirs on Mondays)
 
 Uses AsyncIOScheduler (runs jobs as coroutines on the FastAPI event loop).
@@ -54,7 +54,7 @@ def start_scheduler() -> None:
 
     _scheduler.start()
     logger.info(
-        f"✅ Scheduler started — feed ingestion every {INGEST_INTERVAL_HOURS}h, "
+        f"âœ… Scheduler started â€” feed ingestion every {INGEST_INTERVAL_HOURS}h, "
         f"digest daily at {DIGEST_HOUR_UTC:02d}:00 UTC"
     )
 
@@ -63,4 +63,5 @@ def stop_scheduler() -> None:
     """Gracefully shut down the scheduler. Called at application shutdown."""
     if _scheduler.running:
         _scheduler.shutdown(wait=False)
-        logger.info("✅ Scheduler stopped")
+        logger.info("âœ… Scheduler stopped")
+

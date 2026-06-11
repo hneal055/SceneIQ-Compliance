@@ -1,5 +1,5 @@
-"""
-/maximize  —  SceneIQ Incentive Maximizer API
+﻿"""
+/maximize  â€”  SceneIQ Incentive Maximizer API
 =================================================
 Resolves jurisdiction layers from a lat/lng or explicit codes,
 applies the local_rules stacking engine, and returns a fully-broken-

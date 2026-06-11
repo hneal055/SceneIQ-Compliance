@@ -1,4 +1,4 @@
-"""
+﻿"""
 Rule Engine API
 
 Contract stability:
@@ -65,3 +65,4 @@ async def evaluate_rule_engine(
     except Exception as e:
         logger.exception("Unhandled rule engine error")
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
+

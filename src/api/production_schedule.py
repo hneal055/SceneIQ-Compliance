@@ -1,7 +1,7 @@
-"""
+﻿"""
 Production Schedule Engine API endpoints.
 
-Wires every Phase 2–9 service module into FastAPI:
+Wires every Phase 2â€“9 service module into FastAPI:
   POST   /production-schedule/{production_id}/import
   GET    /production-schedule/{production_id}/stripboard
   POST   /production-schedule/{production_id}/stripboard/assign
@@ -19,7 +19,7 @@ problem cannot crash the API.
 
 Conventions in this file:
   - Importers / generators / trackers / bridge functions are
-    pure-sync (see Phases 2–9); the router calls them directly
+    pure-sync (see Phases 2â€“9); the router calls them directly
     without await.
   - Scene / ShootDay / CastMember / JurisdictionShootDays
     dataclasses are populated from Prisma rows via the small
@@ -85,7 +85,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/production-schedule", tags=["Production Schedule"])
 
 
-# File-extension → importer-function dispatch. Mirrors the broadcast
+# File-extension â†’ importer-function dispatch. Mirrors the broadcast
 # scheduler's pattern in src/api/schedule_parser.py.
 _IMPORTERS = {
     ".csv": ("csv", parse_csv_breakdown),
@@ -141,13 +141,13 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
     try:
         scenes: List[Scene] = importer_fn(tmp_path)
 
-        # Build a name → Jurisdiction.id lookup once so per-scene FK
+        # Build a name â†’ Jurisdiction.id lookup once so per-scene FK
         # resolution is O(1). The importer stashes jurisdiction NAMES
         # in scene.jurisdiction_id (raw pipeline convention).
         jur_rows = await prisma.jurisdiction.find_many()
         name_to_id = {j.name: j.id for j in jur_rows}
 
-        # Phase 11.5 fix #2 — dedup by (productionId, sceneNumber).
+        # Phase 11.5 fix #2 â€” dedup by (productionId, sceneNumber).
         # Load existing scene numbers so re-uploads skip duplicates
         # instead of creating phantom rows.
         existing_scene_rows = await prisma.scene.find_many(
@@ -155,7 +155,7 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
         )
         existing_scene_numbers = {r.sceneNumber for r in existing_scene_rows}
 
-        # Phase 11.5 fix #5 — collect unique cast names across all parsed
+        # Phase 11.5 fix #5 â€” collect unique cast names across all parsed
         # scenes, then ensure a CastMember row exists for each. Scene.castIds
         # is the FK array of CastMember.id values (matches DOOD generator
         # and the Phase 12 call-sheet resolution).
@@ -187,7 +187,7 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
                         cast_name,
                     )
                     warnings.append(
-                        f"Cast member {cast_name!r} could not be created — see server log"
+                        f"Cast member {cast_name!r} could not be created â€” see server log"
                     )
 
         for scene in scenes:
@@ -198,7 +198,7 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
             resolved_jid = name_to_id.get(raw_name) if raw_name else None
             if raw_name and resolved_jid is None:
                 warnings.append(
-                    f"Jurisdiction {raw_name!r} not found in DB — "
+                    f"Jurisdiction {raw_name!r} not found in DB â€” "
                     f"scene {scene.scene_number} persisted with no FK"
                 )
 
@@ -206,11 +206,11 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
             # adding to the set as we go).
             if scene.scene_number and scene.scene_number in existing_scene_numbers:
                 warnings.append(
-                    f"Scene {scene.scene_number!r} already exists for this production — skipped"
+                    f"Scene {scene.scene_number!r} already exists for this production â€” skipped"
                 )
                 continue
 
-            # Fix #5 — rewrite cast names → CastMember.id values for storage.
+            # Fix #5 â€” rewrite cast names â†’ CastMember.id values for storage.
             resolved_cast_ids = [
                 cast_name_to_id[n]
                 for n in (scene.cast_ids or [])
@@ -241,7 +241,7 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
                     scene.scene_number,
                 )
                 warnings.append(
-                    f"Scene {scene.scene_number!r} could not be saved — see server log"
+                    f"Scene {scene.scene_number!r} could not be saved â€” see server log"
                 )
 
         logger.info(
@@ -277,7 +277,7 @@ async def get_stripboard(production_id: str):
     scenes, shoot_days = await _load_scenes_and_shoot_days(production_id)
     grid = build_stripboard(scenes, shoot_days)
 
-    # Phase 11.5 fix #1 — resolve jurisdiction + cast IDs to display
+    # Phase 11.5 fix #1 â€” resolve jurisdiction + cast IDs to display
     # names for the dashboard. Field NAMES are preserved; only values
     # swap. Matches the Phase 12 call-sheet resolution pattern.
     jur_rows = await prisma.jurisdiction.find_many()
@@ -334,7 +334,7 @@ async def assign_scene(production_id: str, body: AssignSceneBody):
             detail=f"Could not assign scene: {exc}",
         )
 
-    # Phase 11.5 fix #3 — roll up the shoot-day count per jurisdiction
+    # Phase 11.5 fix #3 â€” roll up the shoot-day count per jurisdiction
     # into JurisdictionShootDays. Wrapped in try/except so a rollup
     # failure doesn't break the primary assign action; the user's
     # action already succeeded by this point.
@@ -343,7 +343,7 @@ async def assign_scene(production_id: str, body: AssignSceneBody):
     except Exception:
         logger.exception("stripboard assign: jurisdiction rollup failed")
 
-    # `body.position` is accepted but currently ignored — there is no
+    # `body.position` is accepted but currently ignored â€” there is no
     # `position` column on Scene yet (schema flagged as MVP).
     return updated
 
@@ -415,7 +415,7 @@ async def create_shoot_day(production_id: str, body: CreateShootDayBody):
         )
     next_day_number = (max((d.dayNumber for d in existing), default=0)) + 1
 
-    # Resolve the optional jurisdiction NAME → FK id (same idiom as import).
+    # Resolve the optional jurisdiction NAME â†’ FK id (same idiom as import).
     resolved_jid = None
     if body.jurisdiction_name:
         jur_rows = await prisma.jurisdiction.find_many()
@@ -464,7 +464,7 @@ async def update_shoot_day(
             detail=f"ShootDay {shoot_day_id!r} not found in production {production_id!r}",
         )
 
-    # Resolve the optional jurisdiction NAME → FK id (same idiom as create).
+    # Resolve the optional jurisdiction NAME â†’ FK id (same idiom as create).
     # An empty/blank name clears the day's jurisdiction.
     resolved_jid = None
     if body.jurisdiction_name:
@@ -472,7 +472,7 @@ async def update_shoot_day(
         resolved_jid = {j.name: j.id for j in jur_rows}.get(body.jurisdiction_name)
 
     # crew_calls is a full-replacement list; serialise to plain dicts for the
-    # JSON column. None means "not supplied" → leave the existing value alone.
+    # JSON column. None means "not supplied" â†’ leave the existing value alone.
     crew_calls_json = (
         [c.model_dump() for c in body.crew_calls]
         if body.crew_calls is not None
@@ -502,7 +502,7 @@ async def update_shoot_day(
         )
 
     # A jurisdiction change shifts the per-jurisdiction shoot-day counts;
-    # re-roll the tracker. Non-fatal if it fails — the edit already saved.
+    # re-roll the tracker. Non-fatal if it fails â€” the edit already saved.
     try:
         await _rollup_jurisdiction_shoot_days(production_id)
     except Exception:
@@ -562,7 +562,7 @@ async def get_dood(production_id: str):
 
     # Resolve CastMember.id grid keys to character names for the
     # dashboard. Same idiom as the stripboard + call-sheet resolutions.
-    # CSV / PDF exports already use cm.character_name internally —
+    # CSV / PDF exports already use cm.character_name internally â€”
     # only the JSON endpoint leaks raw IDs to the dashboard.
     cm_id_to_name = {cm.id: cm.character_name for cm in cast}
     return {cm_id_to_name.get(k, k): v for k, v in grid.items()}
@@ -579,7 +579,7 @@ async def get_dood(production_id: str):
 )
 async def export_dood(
     production_id: str,
-    format: str = Query("csv", pattern="^(csv|pdf)$"),  # noqa: A002 — match brief
+    format: str = Query("csv", pattern="^(csv|pdf)$"),  # noqa: A002 â€” match brief
 ):
     production = await _load_production_or_404(production_id)
     scenes, shoot_days = await _load_scenes_and_shoot_days(production_id)
@@ -751,7 +751,7 @@ async def push_compliance(production_id: str):
             detail=f"Could not load verified shoot-day records: {exc}",
         )
 
-    # Phase 11.5 fix #4 — filter to verified-only rows in Python (the
+    # Phase 11.5 fix #4 â€” filter to verified-only rows in Python (the
     # prisma-client-py `{"not": None}` filter syntax doesn't work for
     # nullable DateTime; this is what failed in Phase 12). With
     # verifiedAt now nullable, this restores the Phase 9 design intent:
@@ -821,7 +821,7 @@ async def _load_scenes_and_shoot_days(
     )
 
 
-# Phase 11.5 fix #3 — recomputes shoot-day-per-jurisdiction counts
+# Phase 11.5 fix #3 â€” recomputes shoot-day-per-jurisdiction counts
 # and reconciles the JurisdictionShootDays table. Called from
 # assign_scene; safe to call repeatedly. Pure compute is delegated to
 # count_shoot_days_per_jurisdiction(); this function owns the Prisma
@@ -933,7 +933,7 @@ async def _build_call_sheet_for_day(
 
 
 # -----------------------------------------------------------------------------
-# Prisma row → dataclass conversion
+# Prisma row â†’ dataclass conversion
 # -----------------------------------------------------------------------------
 
 
@@ -1091,7 +1091,7 @@ def _row_to_jsd(row) -> JurisdictionShootDays:
 
 
 # -----------------------------------------------------------------------------
-# Stripboard dict → JSON-serialisable dict
+# Stripboard dict â†’ JSON-serialisable dict
 # -----------------------------------------------------------------------------
 
 
@@ -1121,7 +1121,7 @@ def _scene_snapshot(
 #   }
 #
 # `days` carries the ShootDay.id so the frontend can assign/unassign scenes
-# and delete the day. `unscheduled` holds every scene with no shoot day —
+# and delete the day. `unscheduled` holds every scene with no shoot day â€”
 # this is what makes freshly-imported scenes visible before they're
 # scheduled. `grid` is build_stripboard()'s output (keyed by day_number);
 # we walk shoot_days (not the grid) so the day's id + ordering come straight
@@ -1163,3 +1163,4 @@ def _stripboard_payload(
             "total_pages": sum((s.page_count or 0.0) for s in unscheduled_scenes),
         },
     }
+

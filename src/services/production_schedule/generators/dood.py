@@ -1,14 +1,14 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/generators/dood.py
 # Day Out of Days (DOOD) grid generator + CSV / PDF exporters.
 #
 # The DOOD is the industry-standard cast-availability matrix: rows are
 # cast members, columns are shoot days, cells carry one of these codes:
-#   S    Start    — first day the cast member appears
-#   W    Work     — appears in a scene this day
-#   H    Hold     — between first and last day, not working
-#   T    Travel   — manual-override placeholder (never auto-emitted)
-#   F    Finish   — last day the cast member appears
+#   S    Start    â€” first day the cast member appears
+#   W    Work     â€” appears in a scene this day
+#   H    Hold     â€” between first and last day, not working
+#   T    Travel   â€” manual-override placeholder (never auto-emitted)
+#   F    Finish   â€” last day the cast member appears
 #   SW   Start + Work
 #   WF   Work + Finish
 #   SWF  Start + Work + Finish (single-day appearance)
@@ -31,14 +31,14 @@ from reportlab.lib.units import inch
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
-# Default output directory for DOOD exports — created on first write.
+# Default output directory for DOOD exports â€” created on first write.
 _DEFAULT_OUTPUT_DIR = Path("data") / "output" / "reports"
 
 
 # Cell-background palette for the PDF, keyed by code. Codes containing
 # "W" share the light-green Work shade; "H" is the light-yellow Hold
 # shade; pure "S" / "F" (which the auto-generator doesn't emit on their
-# own — they only appear combined with W) get a light-blue shade so a
+# own â€” they only appear combined with W) get a light-blue shade so a
 # manual override stays visually distinct.
 _PDF_CELL_COLORS = {
     "W":   colors.HexColor("#c8e6c9"),
@@ -63,12 +63,12 @@ _PDF_CELL_COLORS = {
 # dict entirely.
 #
 # Arguments:
-#   production_id   — kept on the signature to match the brief's spec /
+#   production_id   â€” kept on the signature to match the brief's spec /
 #                     Phase 10 router contract; unused inside the
 #                     function (everything is derived from the lists).
-#   cast_members    — list of CastMember dataclass objects
-#   shoot_days      — list of ShootDay dataclass objects
-#   scenes          — list of Scene dataclass objects (extends brief)
+#   cast_members    â€” list of CastMember dataclass objects
+#   shoot_days      â€” list of ShootDay dataclass objects
+#   scenes          â€” list of Scene dataclass objects (extends brief)
 def generate_dood(production_id, cast_members, shoot_days, scenes):
     sorted_days = _sort_days(shoot_days)
 
@@ -77,7 +77,7 @@ def generate_dood(production_id, cast_members, shoot_days, scenes):
     for cm in cast_members:
         working_day_numbers = _working_day_numbers(cm, scenes, sorted_days)
         if not working_day_numbers:
-            continue  # non-working cast member — omit from the DOOD
+            continue  # non-working cast member â€” omit from the DOOD
 
         first_day = min(working_day_numbers)
         last_day = max(working_day_numbers)
@@ -86,7 +86,7 @@ def generate_dood(production_id, cast_members, shoot_days, scenes):
         for day in sorted_days:
             n = day.day_number
             if n < first_day or n > last_day:
-                continue  # outside the cast member's window — blank cell
+                continue  # outside the cast member's window â€” blank cell
 
             is_start = n == first_day
             is_finish = n == last_day
@@ -129,7 +129,7 @@ def export_dood_csv(
 
     # utf-8-sig writes a BOM so Excel opens the file with the right
     # encoding even on Windows (matches the broadcast scheduler's
-    # convention — same gotcha, same fix).
+    # convention â€” same gotcha, same fix).
     with open(file_path, mode="w", encoding="utf-8-sig", newline="") as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(_csv_header_row(sorted_days))
@@ -155,7 +155,7 @@ def export_dood_pdf(
     production_id = production_id or "untitled"
     file_path = out_dir / f"dood_{production_id}.pdf"
 
-    # Landscape letter — DOODs are wide tables and portrait crops days.
+    # Landscape letter â€” DOODs are wide tables and portrait crops days.
     doc = SimpleDocTemplate(
         str(file_path),
         pagesize=landscape(letter),
@@ -186,7 +186,7 @@ def export_dood_pdf(
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     story = [
-        Paragraph(f"{title_text} — Day Out of Days", title_style),
+        Paragraph(f"{title_text} â€” Day Out of Days", title_style),
         Paragraph(f"Generated {timestamp}", subtitle_style),
         Spacer(1, 0.1 * inch),
         _build_dood_table(dood_grid, cast_members, sorted_days),
@@ -259,7 +259,7 @@ def _csv_body_row(cast_member, sorted_days, dood_grid):
     return row
 
 
-# Builds the reportlab Table for the PDF — header row + one row per
+# Builds the reportlab Table for the PDF â€” header row + one row per
 # working cast member, with cell-background overrides driven by code.
 def _build_dood_table(dood_grid, cast_members, sorted_days):
     data = [_csv_header_row(sorted_days)]
@@ -317,3 +317,4 @@ def _pdf_footer(canvas, doc):
     page_size = canvas._pagesize
     canvas.drawCentredString(page_size[0] / 2.0, 0.25 * inch, f"Page {doc.page}")
     canvas.restoreState()
+

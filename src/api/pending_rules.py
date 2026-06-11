@@ -1,5 +1,5 @@
-"""
-Pending Rules API — review, approve, and reject Claude-extracted sub-jurisdiction rules.
+﻿"""
+Pending Rules API â€” review, approve, and reject Claude-extracted sub-jurisdiction rules.
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -18,7 +18,7 @@ class ReviewRequest(BaseModel):
     reviewedBy: Optional[str] = None
 
 
-# ── List ──────────────────────────────────────────────────────────────────────
+# â”€â”€ List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("", summary="List pending rules")
 async def list_pending_rules(
@@ -47,7 +47,7 @@ async def list_pending_rules(
     }
 
 
-# ── Single ────────────────────────────────────────────────────────────────────
+# â”€â”€ Single â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/{rule_id}", summary="Get pending rule detail")
 async def get_pending_rule(rule_id: str):
@@ -60,7 +60,7 @@ async def get_pending_rule(rule_id: str):
     return _serialize(rule)
 
 
-# ── Approve ───────────────────────────────────────────────────────────────────
+# â”€â”€ Approve â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.patch("/{rule_id}/approve", summary="Approve pending rule")
 async def approve_rule(rule_id: str, body: ReviewRequest = ReviewRequest()):
@@ -132,11 +132,11 @@ async def approve_rule(rule_id: str, body: ReviewRequest = ReviewRequest()):
         except Exception as e:
             logger.warning(f"Could not promote rule {i+1}: {e}")
 
-    logger.info(f"Approved pending rule {rule_id} — promoted {promoted} local rule(s)")
+    logger.info(f"Approved pending rule {rule_id} â€” promoted {promoted} local rule(s)")
     return {**_serialize(updated), "promotedRules": promoted}
 
 
-# ── Reject ────────────────────────────────────────────────────────────────────
+# â”€â”€ Reject â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.patch("/{rule_id}/reject", summary="Reject pending rule")
 async def reject_rule(rule_id: str, body: ReviewRequest = ReviewRequest()):
@@ -161,7 +161,7 @@ async def reject_rule(rule_id: str, body: ReviewRequest = ReviewRequest()):
     return _serialize(updated)
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _serialize(r) -> dict:
     import json
@@ -185,3 +185,4 @@ def _serialize(r) -> dict:
         "createdAt":      r.createdAt.isoformat() if r.createdAt else None,
         "updatedAt":      r.updatedAt.isoformat() if r.updatedAt else None,
     }
+

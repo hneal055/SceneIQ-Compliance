@@ -1,5 +1,5 @@
-"""
-Compliance checklist — Jurisdiction Requirements API
+﻿"""
+Compliance checklist â€” Jurisdiction Requirements API
 =====================================================
 Routes
 ------
@@ -28,7 +28,7 @@ from src.utils.database import prisma
 router = APIRouter(tags=["Requirements"])
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _get_jurisdiction_or_404(code: str):
     jur = await prisma.jurisdiction.find_unique(where={"code": code})
@@ -51,7 +51,7 @@ def _matches_project_type(applicable_to: list[str], project_type: Optional[str])
     return project_type.lower() in [t.lower() for t in applicable_to]
 
 
-# ── GET checklist ─────────────────────────────────────────────────────────────
+# â”€â”€ GET checklist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get(
     "/jurisdictions/{code}/requirements",
@@ -68,7 +68,7 @@ async def get_requirements(
     Return the compliance checklist for a jurisdiction.
 
     - **code**: Jurisdiction code, e.g. `NY-NASSAU`, `NY-NYC`, `CA`
-    - **project_type**: Optional filter — `film`, `commercial`, `tv_series`, etc.
+    - **project_type**: Optional filter â€” `film`, `commercial`, `tv_series`, etc.
       Requirements with an empty `applicableTo` list always appear.
     - **include_parent**: Also include requirements from the parent jurisdiction
       (e.g. NY state requirements when querying NY-NASSAU). Default `true`.
@@ -162,7 +162,7 @@ async def get_requirements(
     )
 
 
-# ── POST — manual create ──────────────────────────────────────────────────────
+# â”€â”€ POST â€” manual create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.post(
     "/jurisdictions/{code}/requirements",
@@ -199,7 +199,7 @@ async def create_requirement(code: str, body: RequirementCreate):
     return req
 
 
-# ── PATCH ─────────────────────────────────────────────────────────────────────
+# â”€â”€ PATCH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.patch(
     "/requirements/{requirement_id}",
@@ -229,7 +229,7 @@ async def update_requirement(requirement_id: str, body: RequirementUpdate):
     )
 
 
-# ── DELETE ────────────────────────────────────────────────────────────────────
+# â”€â”€ DELETE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.delete(
     "/requirements/{requirement_id}",
@@ -246,3 +246,4 @@ async def delete_requirement(requirement_id: str):
             detail=f"Requirement '{requirement_id}' not found",
         )
     await prisma.jurisdictionrequirement.delete(where={"id": requirement_id})
+

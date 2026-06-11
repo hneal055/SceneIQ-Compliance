@@ -1,5 +1,5 @@
-"""
-Monitoring API endpoints — regulatory feed events and sources.
+﻿"""
+Monitoring API endpoints â€” regulatory feed events and sources.
 """
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/monitoring", tags=["Monitoring"])
 
 
-# ── Request / response models ─────────────────────────────────────────────────
+# â”€â”€ Request / response models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class SourceCreate(BaseModel):
     name: str
@@ -29,7 +29,7 @@ class EventsResponse(BaseModel):
     events: list
 
 
-# ── Events ────────────────────────────────────────────────────────────────────
+# â”€â”€ Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/events", summary="List monitoring events")
 async def list_events(
@@ -38,30 +38,30 @@ async def list_events(
     unread_only: bool = False,
 ):
     where = {"isRead": False} if unread_only else {}
-    events = await prisma.monitoringevent.find_many(
+    events = await prisma.monitoring_events.find_many(
         where=where,
         include={"source": True},
         order={"createdAt": "desc"},
         take=limit,
         skip=skip,
     )
-    total = await prisma.monitoringevent.count(where=where)
-    unread = await prisma.monitoringevent.count(where={"isRead": False})
+    total = await prisma.monitoring_events.count(where=where)
+    unread = await prisma.monitoring_events.count(where={"isRead": False})
     return {"total": total, "unread": unread, "events": events}
 
 
 @router.get("/events/unread-count", summary="Unread event count")
 async def unread_count():
-    count = await prisma.monitoringevent.count(where={"isRead": False})
+    count = await prisma.monitoring_events.count(where={"isRead": False})
     return {"count": count}
 
 
 @router.patch("/events/{event_id}/read", summary="Mark event as read")
 async def mark_read(event_id: str):
-    event = await prisma.monitoringevent.find_unique(where={"id": event_id})
+    event = await prisma.monitoring_events.find_unique(where={"id": event_id})
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
-    updated = await prisma.monitoringevent.update(
+    updated = await prisma.monitoring_events.update(
         where={"id": event_id},
         data={"isRead": True},
     )
@@ -70,18 +70,18 @@ async def mark_read(event_id: str):
 
 @router.post("/events/mark-all-read", summary="Mark all events as read")
 async def mark_all_read():
-    result = await prisma.monitoringevent.update_many(
+    result = await prisma.monitoring_events.update_many(
         where={"isRead": False},
         data={"isRead": True},
     )
     return {"updated": result.count}
 
 
-# ── Sources ───────────────────────────────────────────────────────────────────
+# â”€â”€ Sources â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/sources", summary="List monitoring sources")
 async def list_sources():
-    sources = await prisma.monitoringsource.find_many(
+    sources = await prisma.monitoring_sources.find_many(
         order={"createdAt": "asc"},
     )
     return {"total": len(sources), "sources": sources}
@@ -89,7 +89,7 @@ async def list_sources():
 
 @router.post("/sources", status_code=status.HTTP_201_CREATED, summary="Add monitoring source")
 async def create_source(data: SourceCreate):
-    source = await prisma.monitoringsource.create(
+    source = await prisma.monitoring_sources.create(
         data={
             "name": data.name,
             "url": data.url,
@@ -102,7 +102,7 @@ async def create_source(data: SourceCreate):
     return source
 
 
-# ── Manual ingestion trigger ──────────────────────────────────────────────────
+# â”€â”€ Manual ingestion trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.post("/ingest", summary="Manually trigger feed ingestion across all active sources")
 async def trigger_ingest():
@@ -113,3 +113,5 @@ async def trigger_ingest():
     from src.services.feed_ingestion import ingest_all_sources
     new_events = await ingest_all_sources()
     return {"status": "ok", "new_events": new_events}
+
+

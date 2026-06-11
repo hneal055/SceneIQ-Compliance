@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/models/shoot_day.py
-# The ShootDay dataclass — one shooting day on the stripboard.
+# The ShootDay dataclass â€” one shooting day on the stripboard.
 # Mirrors the `ShootDay` model in prisma/schema.prisma.
 # Holds an ordered set of scenes plus the day-level logistics (call time,
 # location, nearest hospital) that flow into the generated call sheet.
@@ -17,7 +17,7 @@ from src.services.production_schedule.models.scene import Scene
 # a `position` column on Scene and update the stripboard builder.
 @dataclass
 class ShootDay:
-    # 1-based day number in shoot order — e.g. Day 1, Day 2, ...
+    # 1-based day number in shoot order â€” e.g. Day 1, Day 2, ...
     day_number: int
 
     # The Production this day belongs to (set when the day is persisted).
@@ -44,7 +44,7 @@ class ShootDay:
     # Primary shooting location for the day.
     location: Optional[str] = None
 
-    # Nearest hospital — required on every call sheet for safety.
+    # Nearest hospital â€” required on every call sheet for safety.
     nearest_hospital: Optional[str] = None
 
     # Free-text production notes for the day.
@@ -63,3 +63,4 @@ class ShootDay:
             f"scenes={len(self.scenes)}, "
             f"total_pages={self.total_pages!r})"
         )
+

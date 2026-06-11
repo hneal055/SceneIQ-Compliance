@@ -1,10 +1,10 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/processors/transformer.py
 # Cleans and normalises a parsed Schedule so every field has a consistent
 # shape regardless of which parser (CSV / XML / JSON) produced it.
 #
 # Pipeline contract:
-#   - Every field stays a string (or None) after transform — no Python
+#   - Every field stays a string (or None) after transform â€” no Python
 #     int / date objects yet. Keeping strings means the exporter does NOT
 #     need special-case logic for typed values.
 #   - Transformation is in-place: the same Schedule object is mutated
@@ -72,7 +72,7 @@ def transform_segment(segment):
         if value:
             setattr(segment, field_name, strip_to_digits(value))
 
-    # asset_id is opaque — we don't know its format, so leave it alone
+    # asset_id is opaque â€” we don't know its format, so leave it alone
 
 
 # Strips leading/trailing whitespace and collapses runs of internal
@@ -84,7 +84,7 @@ def clean_text(value):
     return re.sub(r"\s+", " ", value).strip()
 
 
-# Strips everything except digits — useful when a CSV cell arrives as
+# Strips everything except digits â€” useful when a CSV cell arrives as
 # "Ep 142" or "Series 12". If the result is empty, returns the original
 # so the validator can flag values that don't contain a number at all.
 def strip_to_digits(value):
@@ -92,3 +92,4 @@ def strip_to_digits(value):
         return value
     digits_only = re.sub(r"[^\d]", "", value)
     return digits_only if digits_only else value
+

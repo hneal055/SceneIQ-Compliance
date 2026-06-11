@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/models/__init__.py
 # Re-exports the dataclass models so importers, generators, and trackers
 # can do `from src.services.production_schedule.models import Scene`.
@@ -19,3 +19,4 @@ __all__ = [
     "CallSheet",
     "JurisdictionShootDays",
 ]
+

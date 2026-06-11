@@ -1,4 +1,4 @@
-"""
+﻿"""
 Schedule Parser API endpoints.
 
 Wires the broadcast_scheduler service module into FastAPI:
@@ -108,7 +108,7 @@ async def upload_schedule(file: UploadFile = File(...)):
             logger.warning("schedule upload: parser returned None for %s", filename)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Could not parse {filename!r} — see server log for details.",
+                detail=f"Could not parse {filename!r} â€” see server log for details.",
             )
 
         # Stamp the original upload name onto the Schedule so saved rows
@@ -229,3 +229,4 @@ async def delete_schedule_event(event_id: str):
         )
 
     return {"deleted": True, "id": event_id}
+

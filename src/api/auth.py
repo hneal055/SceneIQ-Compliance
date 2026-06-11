@@ -1,4 +1,4 @@
-"""Authentication endpoints: login + me."""
+﻿"""Authentication endpoints: login + me."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ async def _authenticate(email: str, password: str) -> Token:
         )
         raise _INVALID_CREDENTIALS
 
-    # Success — clear any failure state and stamp last login.
+    # Success â€” clear any failure state and stamp last login.
     await prisma.user.update(
         where={"id": user.id},
         data={
@@ -83,7 +83,7 @@ async def _authenticate(email: str, password: str) -> Token:
 
 @router.post("/token", response_model=Token, include_in_schema=False)
 async def token(request: Request):
-    """OAuth2 password flow — used by Swagger UI Authorize button.
+    """OAuth2 password flow â€” used by Swagger UI Authorize button.
     Accepts application/x-www-form-urlencoded (username + password fields).
     """
     form = await request.form()
@@ -110,3 +110,4 @@ async def me(current_user: TokenData = Depends(get_current_user)):
         role=user.role,
         isActive=user.isActive,
     )
+

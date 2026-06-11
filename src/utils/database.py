@@ -1,4 +1,4 @@
-"""
+﻿"""
 Database connection module for SceneIQ
 """
 from prisma import Prisma
@@ -15,3 +15,4 @@ async def connect_db():
 async def disconnect_db():
     """Disconnect from database"""
     await prisma.disconnect()
+

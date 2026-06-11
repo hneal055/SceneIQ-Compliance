@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pipeline Orchestrator
 Accepts a screenplay script, runs schedule + incentive analysis,
 and returns a unified production intelligence report.
@@ -53,7 +53,7 @@ async def orchestrate(req: OrchestrateRequest):
     4. Return unified report
     """
     try:
-        # ── Script parsing ────────────────────────────────────────────────
+        # â”€â”€ Script parsing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         script_text = req.script or ""
         words       = len(script_text.split())
         lines       = len(script_text.splitlines())
@@ -75,7 +75,7 @@ async def orchestrate(req: OrchestrateRequest):
             "qualifying_spend": qualifying_spend,
         }
 
-        # ── Incentive analysis ────────────────────────────────────────────
+        # â”€â”€ Incentive analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         incentive_summary = {
             "jurisdictions_analyzed": len(req.jurisdiction_codes) if req.jurisdiction_codes else 0,
             "estimated_qualifying_spend": qualifying_spend,
@@ -119,16 +119,16 @@ async def orchestrate(req: OrchestrateRequest):
                 incentive_summary["best_credit"]         = best["estimated_credit"]
                 incentive_summary["jurisdiction_results"] = jurisdiction_results
 
-        # ── Recommendations ───────────────────────────────────────────────
+        # â”€â”€ Recommendations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         recommendations = []
         if est_pages < 80:
-            recommendations.append("Script is under 80 pages — consider expanding for feature-length qualification in most jurisdictions.")
+            recommendations.append("Script is under 80 pages â€” consider expanding for feature-length qualification in most jurisdictions.")
         if est_pages > 120:
-            recommendations.append("Script exceeds 120 pages — review pacing for commercial viability.")
+            recommendations.append("Script exceeds 120 pages â€” review pacing for commercial viability.")
         if jurisdiction_results:
-            recommendations.append(f"Best incentive option: {jurisdiction_results[0]['jurisdiction']} at {jurisdiction_results[0]['rate']}% — estimated credit ${jurisdiction_results[0]['estimated_credit']:,.0f}.")
+            recommendations.append(f"Best incentive option: {jurisdiction_results[0]['jurisdiction']} at {jurisdiction_results[0]['rate']}% â€” estimated credit ${jurisdiction_results[0]['estimated_credit']:,.0f}.")
         if qualifying_spend < 500_000:
-            recommendations.append("Qualifying spend below $500K — many state programs have minimum spend requirements. Review eligibility carefully.")
+            recommendations.append("Qualifying spend below $500K â€” many state programs have minimum spend requirements. Review eligibility carefully.")
         recommendations.append("Run the Compliance Checker after jurisdiction selection to verify all requirements.")
         recommendations.append("Use the Incentive Calculator for precise credit modeling with actual expense line items.")
 
@@ -180,7 +180,7 @@ async def generate_pipeline_report(result: dict):
 
         story.append(Paragraph("Script Analysis", pdf_generator.styles['SectionHeader']))
         stats_data = [
-            ["Estimated Pages",    str(stats.get("estimated_pages", "—"))],
+            ["Estimated Pages",    str(stats.get("estimated_pages", "â€”"))],
             ["Word Count",         f"{stats.get('word_count', 0):,}"],
             ["Estimated Budget",   f"${stats.get('estimated_budget', 0):,.0f}"],
             ["Qualifying Spend",   f"${stats.get('qualifying_spend', 0):,.0f}"],
@@ -214,7 +214,7 @@ async def generate_pipeline_report(result: dict):
 
         story.append(Paragraph("Recommendations", pdf_generator.styles['SectionHeader']))
         for rec in recs:
-            story.append(Paragraph(f"• {rec}", pdf_generator.styles['Normal']))
+            story.append(Paragraph(f"â€¢ {rec}", pdf_generator.styles['Normal']))
             story.append(Spacer(1, 4))
 
         doc.build(story)
@@ -232,3 +232,4 @@ async def generate_pipeline_report(result: dict):
     except Exception as e:
         logger.error("Report generation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+

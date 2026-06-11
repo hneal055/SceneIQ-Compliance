@@ -1,4 +1,4 @@
-"""
+﻿"""
 Rule Engine Models (MVP)
 
 Goal:
@@ -86,3 +86,4 @@ class EvaluateResponse(BaseModel):
     breakdown: List[RuleBreakdown]
     warnings: List[str] = Field(default_factory=list)
     meta: Dict[str, Any] = Field(default_factory=dict)
+

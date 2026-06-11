@@ -1,4 +1,4 @@
-"""
+﻿"""
 FORCE RESET DATABASE - COMPLETE CLEAN REBUILD
 WARNING: This will DELETE ALL EXISTING DATA and recreate the database from scratch
 """
@@ -10,16 +10,16 @@ import time
 def drop_and_recreate_database():
     """Completely drop and recreate the database"""
     print("=" * 60)
-    print("⚠️  DATABASE FORCE RESET - ALL DATA WILL BE LOST!")
+    print("âš ï¸  DATABASE FORCE RESET - ALL DATA WILL BE LOST!")
     print("=" * 60)
     
     # Get confirmation
     confirm = input("Are you sure you want to DELETE ALL DATA and recreate? (type 'YES' to confirm): ")
     if confirm != "YES":
-        print("❌ Operation cancelled")
+        print("âŒ Operation cancelled")
         return False
     
-    print("\n🚀 Starting complete database reset...")
+    print("\nðŸš€ Starting complete database reset...")
     
     # Connection parameters
     db_params = {
@@ -49,12 +49,12 @@ def drop_and_recreate_database():
         # Step 3: Drop the database if it exists
         print("3. Dropping database if exists...")
         cursor.execute("DROP DATABASE IF EXISTS tax_incentive_db;")
-        print("   ✅ Database dropped")
+        print("   âœ… Database dropped")
         
         # Step 4: Create a fresh database
         print("4. Creating new database...")
         cursor.execute("CREATE DATABASE tax_incentive_db;")
-        print("   ✅ Database created")
+        print("   âœ… Database created")
         
         cursor.close()
         connection.close()
@@ -94,7 +94,7 @@ def drop_and_recreate_database():
                 notes TEXT
             )
         """)
-        print("   ✅ Created 'clients' table")
+        print("   âœ… Created 'clients' table")
         
         # Incentives table
         cursor.execute("""
@@ -125,7 +125,7 @@ def drop_and_recreate_database():
                 CONSTRAINT check_dates CHECK (start_date <= end_date)
             )
         """)
-        print("   ✅ Created 'incentives' table")
+        print("   âœ… Created 'incentives' table")
         
         # Compliance Reports table
         cursor.execute("""
@@ -153,7 +153,7 @@ def drop_and_recreate_database():
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        print("   ✅ Created 'compliance_reports' table")
+        print("   âœ… Created 'compliance_reports' table")
         
         # Expenses table
         cursor.execute("""
@@ -178,7 +178,7 @@ def drop_and_recreate_database():
                 CONSTRAINT positive_amount CHECK (amount > 0)
             )
         """)
-        print("   ✅ Created 'expenses' table")
+        print("   âœ… Created 'expenses' table")
         
         # Documents table
         cursor.execute("""
@@ -198,7 +198,7 @@ def drop_and_recreate_database():
                 tags TEXT[]
             )
         """)
-        print("   ✅ Created 'documents' table")
+        print("   âœ… Created 'documents' table")
         
         # Audit Log table
         cursor.execute("""
@@ -215,7 +215,7 @@ def drop_and_recreate_database():
                 user_agent TEXT
             )
         """)
-        print("   ✅ Created 'audit_log' table")
+        print("   âœ… Created 'audit_log' table")
         
         # Users table (if not using external auth)
         cursor.execute("""
@@ -233,7 +233,7 @@ def drop_and_recreate_database():
                 password_hash VARCHAR(255)
             )
         """)
-        print("   ✅ Created 'users' table")
+        print("   âœ… Created 'users' table")
         
         # Create indexes for better performance
         print("7. Creating indexes...")
@@ -255,7 +255,7 @@ def drop_and_recreate_database():
         
         for i, index_sql in enumerate(indexes, 1):
             cursor.execute(index_sql)
-            print(f"   ✅ Created index {i}/{len(indexes)}")
+            print(f"   âœ… Created index {i}/{len(indexes)}")
         
         # Step 8: Insert comprehensive sample data
         print("\n8. Inserting comprehensive sample data...")
@@ -270,7 +270,7 @@ def drop_and_recreate_database():
                 ('bob.wilson', 'bob.wilson@taxincentive.com', 'Bob Wilson', 'analyst', 'Audit')
             ON CONFLICT (username) DO NOTHING;
         """)
-        print("   ✅ Inserted sample users")
+        print("   âœ… Inserted sample users")
         
         # Insert sample clients
         cursor.execute("""
@@ -288,7 +288,7 @@ def drop_and_recreate_database():
                 ('A24 Films', '90-1234567', 'Independent Film', 'Daniel Moore', 'daniel@a24.com', '(555) 012-3456', 'New York', 'NY', 'active')
             ON CONFLICT (tax_id) DO NOTHING;
         """)
-        print("   ✅ Inserted 10 sample clients")
+        print("   âœ… Inserted 10 sample clients")
         
         # Insert sample incentives
         cursor.execute("""
@@ -309,7 +309,7 @@ def drop_and_recreate_database():
                 (10, 'Diversity & Inclusion Credit', 'Diversity Credit', 'New York', 300000.00, 300000.00, 150000.00, '2024-03-15', NULL, 'under_review')
             ON CONFLICT DO NOTHING;
         """)
-        print("   ✅ Inserted 13 sample incentives")
+        print("   âœ… Inserted 13 sample incentives")
         
         # Insert sample expenses
         cursor.execute("""
@@ -327,7 +327,7 @@ def drop_and_recreate_database():
                 (7, 10, 'Infrastructure', 'Rural Development', 'Temporary infrastructure setup', 250000.00, '2024-02-15', 'Construction Services', TRUE)
             ON CONFLICT DO NOTHING;
         """)
-        print("   ✅ Inserted 10 sample expenses")
+        print("   âœ… Inserted 10 sample expenses")
         
         # Insert sample compliance reports
         cursor.execute("""
@@ -340,13 +340,13 @@ def drop_and_recreate_database():
                 (5, 'Q1 2024 Compliance Report', 'Q1', 2024, 'Q1', 1500000.00, 750000.00, 76.3, 'non_compliant')
             ON CONFLICT DO NOTHING;
         """)
-        print("   ✅ Inserted 5 sample compliance reports")
+        print("   âœ… Inserted 5 sample compliance reports")
         
         # Commit all changes
         connection.commit()
         
         print("\n" + "=" * 60)
-        print("✅ DATABASE RESET COMPLETE!")
+        print("âœ… DATABASE RESET COMPLETE!")
         print("=" * 60)
         
         # Display summary
@@ -362,11 +362,11 @@ def drop_and_recreate_database():
         cursor.execute("SELECT COUNT(*) as count FROM compliance_reports")
         reports = cursor.fetchone()[0]
         
-        print(f"\n📊 Database Summary:")
-        print(f"   • Clients: {clients}")
-        print(f"   • Incentives: {incentives}")
-        print(f"   • Expenses: {expenses}")
-        print(f"   • Compliance Reports: {reports}")
+        print(f"\nðŸ“Š Database Summary:")
+        print(f"   â€¢ Clients: {clients}")
+        print(f"   â€¢ Incentives: {incentives}")
+        print(f"   â€¢ Expenses: {expenses}")
+        print(f"   â€¢ Compliance Reports: {reports}")
         
         cursor.close()
         connection.close()
@@ -374,8 +374,8 @@ def drop_and_recreate_database():
         return True
         
     except Exception as e:
-        print(f"\n❌ ERROR: {e}")
-        print("\n🔧 Troubleshooting steps:")
+        print(f"\nâŒ ERROR: {e}")
+        print("\nðŸ”§ Troubleshooting steps:")
         print("   1. Make sure PostgreSQL is running")
         print("   2. Check if Docker container 'tax-incentive-db' is running")
         print("   3. Verify credentials in the script")
@@ -392,7 +392,7 @@ if __name__ == "__main__":
     try:
         import psycopg2
     except ImportError:
-        print("❌ psycopg2-binary is not installed")
+        print("âŒ psycopg2-binary is not installed")
         print("   Install it with: pip install psycopg2-binary")
         sys.exit(1)
     
@@ -400,17 +400,17 @@ if __name__ == "__main__":
     success = drop_and_recreate_database()
     
     if success:
-        print("\n🎉 Database is ready for the Tax Incentive Compliance Platform!")
-        print("\n🔗 Connection Details:")
+        print("\nðŸŽ‰ Database is ready for the Tax Incentive Compliance Platform!")
+        print("\nðŸ”— Connection Details:")
         print("   Host: localhost")
         print("   Port: 5432")
         print("   Database: tax_incentive_db")
         print("   Username: postgres")
         print("   Password: postgres")
-        print("\n🚀 Next steps:")
+        print("\nðŸš€ Next steps:")
         print("   1. Restart your FastAPI application")
         print("   2. Visit http://localhost:8000/docs")
         print("   3. Start using the platform!")
     else:
-        print("\n❌ Database reset failed")
+        print("\nâŒ Database reset failed")
         sys.exit(1)

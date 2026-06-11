@@ -1,10 +1,10 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/importers/mms_importer.py
 # Reads a Movie Magic Scheduling .mms (XML) file and returns a list of
 # Scene objects.
 #
 # .mms files are XML. Root element is typically <BreakdownBook> or
-# <Schedule>; scenes are <BreakdownSheet> children. The tag→field map
+# <Schedule>; scenes are <BreakdownSheet> children. The tagâ†’field map
 # lives in src/services/production_schedule/config/field_maps.py
 # (MMS_FIELD_MAP).
 #
@@ -14,8 +14,8 @@
 #     try/except wrapping, find_event_list pattern)
 #
 # Two field-map values trigger specialised parsers:
-#   "scene_heading"  → _parse_scene_heading()  (loc_type + location + time_of_day)
-#   "cast"           → _extract_cast()         (list[str] of character names)
+#   "scene_heading"  â†’ _parse_scene_heading()  (loc_type + location + time_of_day)
+#   "cast"           â†’ _extract_cast()         (list[str] of character names)
 #
 # NOTE on raw-string semantics (same as CSV importer):
 #   - Scene.jurisdiction_id temporarily holds a raw name string from
@@ -47,7 +47,7 @@ def parse_mms_file(file_path):
         print(f"[MMS] Reading breakdown: {file_path.name}")
 
     # All file I/O and XML parsing is wrapped so a missing or malformed
-    # file cannot crash the caller — log and return [].
+    # file cannot crash the caller â€” log and return [].
     try:
         with open(file_path, mode="r", encoding="utf-8") as mms_file:
             data = xmltodict.parse(mms_file.read())
@@ -62,7 +62,7 @@ def parse_mms_file(file_path):
         return []
 
     # xmltodict returns {root_tag: contents}. We don't care what the root
-    # tag is called — strip the wrapper and hand the contents off.
+    # tag is called â€” strip the wrapper and hand the contents off.
     if not isinstance(data, dict) or len(data) != 1:
         print("[MMS] ERROR: expected a single root element")
         return []
@@ -104,7 +104,7 @@ def find_scenes_in_mms(root_content):
             # with valid MMS, but a ragged file shouldn't crash us).
             return [item for item in value if isinstance(item, dict)]
         if isinstance(value, dict):
-            return [value]  # single scene — wrap so the caller can iterate
+            return [value]  # single scene â€” wrap so the caller can iterate
 
     return []
 
@@ -114,9 +114,9 @@ def find_scenes_in_mms(root_content):
 # (an element without one is unusable and the spec says to skip).
 #
 # Three field-map values are routed through specialised parsers:
-#   "scene_heading" → _parse_scene_heading()
-#   "cast"          → _extract_cast()
-#   "page_count"    → float() in try/except
+#   "scene_heading" â†’ _parse_scene_heading()
+#   "cast"          â†’ _extract_cast()
+#   "page_count"    â†’ float() in try/except
 # Everything else is treated as a plain string field.
 def build_scene_from_mms_element(element, element_number=None):
     if not isinstance(element, dict):
@@ -134,9 +134,9 @@ def build_scene_from_mms_element(element, element_number=None):
 
         internal_field = MMS_FIELD_MAP.get(xml_tag)
         if internal_field is None:
-            continue  # this tag isn't in our map — silently ignore
+            continue  # this tag isn't in our map â€” silently ignore
 
-        # Special routes — defer parsing until we've walked the whole
+        # Special routes â€” defer parsing until we've walked the whole
         # element, since heading + explicit Location can disagree and
         # the explicit tag should win.
         if internal_field == "scene_heading":
@@ -149,7 +149,7 @@ def build_scene_from_mms_element(element, element_number=None):
             continue
 
         # Everything else expects simple <Tag>text</Tag>. xmltodict gives
-        # a dict for elements with children/attributes — for non-special
+        # a dict for elements with children/attributes â€” for non-special
         # fields we don't try to descend; skip defensively.
         if not isinstance(raw_value, (str, type(None))):
             continue
@@ -163,7 +163,7 @@ def build_scene_from_mms_element(element, element_number=None):
 
         cleaned[internal_field] = value
 
-    # Apply heading parse (if any) — but never overwrite an explicit
+    # Apply heading parse (if any) â€” but never overwrite an explicit
     # <Location>/<SetName> tag.
     if heading_text:
         hd_loc_type, hd_location, hd_time = parse_scene_heading_text(heading_text)
@@ -174,12 +174,12 @@ def build_scene_from_mms_element(element, element_number=None):
         if hd_location and not cleaned.get("location"):
             cleaned["location"] = hd_location
 
-    # A scene without a number is unusable — skip with a warning.
+    # A scene without a number is unusable â€” skip with a warning.
     scene_number = cleaned.get("scene_number")
     if not scene_number:
         if VERBOSE_LOGGING:
             where = f"element {element_number}" if element_number else "element"
-            print(f"[MMS] WARNING: skipping {where} — no scene number")
+            print(f"[MMS] WARNING: skipping {where} â€” no scene number")
         return None
 
     # Convert page_count to float. Bad values log and become None
@@ -193,7 +193,7 @@ def build_scene_from_mms_element(element, element_number=None):
             if VERBOSE_LOGGING:
                 print(
                     f"[MMS] WARNING: scene {scene_number}: "
-                    f"could not parse page count {raw_pages!r} — leaving blank"
+                    f"could not parse page count {raw_pages!r} â€” leaving blank"
                 )
 
     cast_ids = _extract_cast(cast_value)
@@ -212,20 +212,20 @@ def build_scene_from_mms_element(element, element_number=None):
 
 
 # -----------------------------------------------------------------------------
-# Helpers (private — leading underscore by Python convention)
+# Helpers (private â€” leading underscore by Python convention)
 # -----------------------------------------------------------------------------
 
 
 # Pulls a list of character names out of the xmltodict shape of an
 # <ElementList>/<Characters>/<Cast>/<Talent> tag. Handles three shapes:
-#   - str   : <ElementList>MARSH, ROOKIE</ElementList> → ["MARSH", "ROOKIE"]
+#   - str   : <ElementList>MARSH, ROOKIE</ElementList> â†’ ["MARSH", "ROOKIE"]
 #             (comma-separated, since some MMS exporters inline the cast)
 #   - dict  : single child wrapped, e.g.
 #                <ElementList><Element>MARSH</Element></ElementList>
 #             becomes {"Element": "MARSH"}
 #   - list  : multi children, e.g.
 #                <ElementList><Element>A</Element><Element>B</Element></ElementList>
-#             becomes {"Element": ["A", "B"]} — we recurse into the list.
+#             becomes {"Element": ["A", "B"]} â€” we recurse into the list.
 # Falsy / empty values are dropped. Always returns a list (possibly empty).
 def _extract_cast(value):
     if value is None:
@@ -239,7 +239,7 @@ def _extract_cast(value):
         return [piece for piece in pieces if piece]
 
     if isinstance(value, dict):
-        # Common single-wrapper child names — recurse into them.
+        # Common single-wrapper child names â€” recurse into them.
         for key in ("Element", "Character", "CastMember", "Item", "Name"):
             if key in value:
                 return _extract_cast(value[key])
@@ -257,3 +257,4 @@ def _extract_cast(value):
         return out
 
     return []
+

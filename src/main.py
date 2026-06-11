@@ -1,4 +1,4 @@
-"""
+﻿"""
 SceneIQ - Tax Incentive Intelligence for Film & TV
 """
 from contextlib import asynccontextmanager
@@ -40,41 +40,41 @@ async def _ensure_user_columns() -> None:
     ]
     for sql in statements:
         await prisma.execute_raw(sql)
-    logger.info("✅ Ensured users lockout/profile columns exist")
+    logger.info("âœ… Ensured users lockout/profile columns exist")
 
 
 async def _seed_admin() -> None:
-    count = await prisma.user.count()
+    count = await prisma.users.count()
     if count == 0:
-        await prisma.user.create(data={"email": ADMIN_EMAIL, "passwordHash": hash_password(ADMIN_PASSWORD), "role": "admin", "isActive": True})
-        logger.info(f"✅ Admin user created: {ADMIN_EMAIL}")
+        await prisma.users.create(data={"email": ADMIN_EMAIL, "passwordHash": hash_password(ADMIN_PASSWORD), "role": "admin", "isActive": True})
+        logger.info(f"âœ… Admin user created: {ADMIN_EMAIL}")
     else:
-        logger.info("ℹ️  Admin user already exists — skipping seed")
+        logger.info("â„¹ï¸  Admin user already exists â€” skipping seed")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("🎬 Starting SceneIQ")
+    logger.info("ðŸŽ¬ Starting SceneIQ")
     try:
         run_migrations()
         await prisma.connect()
-        logger.info("✅ Database connected")
+        logger.info("âœ… Database connected")
         await _ensure_user_columns()
         await _seed_admin()
         await seed_all()
     except Exception as e:
-        logger.warning(f"⚠️  Database init failed: {e}")
+        logger.warning(f"âš ï¸  Database init failed: {e}")
     try:
         start_scheduler()
     except Exception as e:
-        logger.error(f"❌ Scheduler failed to start: {e}")
+        logger.error(f"âŒ Scheduler failed to start: {e}")
     yield
-    logger.info("🛑 Shutting down SceneIQ")
+    logger.info("ðŸ›‘ Shutting down SceneIQ")
     stop_scheduler()
     try:
         if prisma.is_connected():
             await prisma.disconnect()
     except Exception as e:
-        logger.error(f"❌ Database disconnection failed: {e}")
+        logger.error(f"âŒ Database disconnection failed: {e}")
 
 app = FastAPI(
     title="SceneIQ API",
@@ -107,17 +107,19 @@ async def health_check():
 backend_static = Path(__file__).parent.parent / "backend" / "static"
 if backend_static.exists():
     app.mount("/static", StaticFiles(directory=str(backend_static)), name="static")
-    logger.info(f"✅ Static demo pages mounted from {backend_static}")
+    logger.info(f"âœ… Static demo pages mounted from {backend_static}")
 else:
-    logger.warning(f"⚠️  Backend static directory not found at {backend_static}")
+    logger.warning(f"âš ï¸  Backend static directory not found at {backend_static}")
 
 frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
 if frontend_dist.exists():
     app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")
-    logger.info(f"✅ Frontend mounted from {frontend_dist}")
+    logger.info(f"âœ… Frontend mounted from {frontend_dist}")
 else:
-    logger.warning("⚠️  Frontend dist not found")
+    logger.warning("âš ï¸  Frontend dist not found")
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("src.main:app", host=settings.APP_HOST, port=settings.APP_PORT, log_level=settings.LOG_LEVEL.lower())
+
+

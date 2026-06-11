@@ -1,5 +1,5 @@
-"""
-Notification Preferences API — per-user email alert subscriptions and report schedule.
+﻿"""
+Notification Preferences API â€” per-user email alert subscriptions and report schedule.
 """
 import logging
 from typing import Literal
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
-# ── Pydantic models ───────────────────────────────────────────────────────────
+# â”€â”€ Pydantic models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class PrefUpsert(BaseModel):
     emailAddress:    str
@@ -24,7 +24,7 @@ class PrefUpsert(BaseModel):
     reportFrequency: Literal["daily", "weekly", "never"] = "never"
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/preferences", summary="Get current user's notification preferences")
 async def get_preferences(current_user: TokenData = Depends(get_current_user)):
@@ -78,3 +78,4 @@ async def delete_preferences(current_user: TokenData = Depends(get_current_user)
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No preferences found")
     await prisma.notificationpreference.delete(where={"userId": current_user.sub})
     return None
+

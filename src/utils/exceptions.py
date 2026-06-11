@@ -1,4 +1,4 @@
-"""
+﻿"""
 Custom Exception Classes and Error Handlers for SceneIQ
 Provides consistent error responses across the API
 """
@@ -213,3 +213,4 @@ def setup_exception_handlers(app: FastAPI) -> None:
                 correlation_id=correlation_id
             )
         )
+

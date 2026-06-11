@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/generators/call_sheet.py
 # Call sheet builder + PDF / JSON exporters.
 #
@@ -13,7 +13,7 @@
 #
 # Public functions:
 #   generate_call_sheet(shoot_day, scenes, crew_calls, production)
-#       Returns a populated CallSheet object — no DB writes.
+#       Returns a populated CallSheet object â€” no DB writes.
 #   export_call_sheet_pdf(call_sheet, *, production_title=None, episode=None,
 #                         output_dir=None)
 #       Writes a portrait-letter PDF and returns the file path.
@@ -45,27 +45,27 @@ from reportlab.platypus import (
 from src.services.production_schedule.models.call_sheet import CallSheet
 
 
-# Default output directory for call-sheet exports — created on first write.
+# Default output directory for call-sheet exports â€” created on first write.
 _DEFAULT_OUTPUT_DIR = Path("data") / "output" / "reports"
 
 
 # Builds a CallSheet from one shoot day plus the scenes scheduled on it.
 #
 # Arguments:
-#   shoot_day   — ShootDay dataclass (must have .id, .day_number).
+#   shoot_day   â€” ShootDay dataclass (must have .id, .day_number).
 #                 .date / .call_time / .location / .nearest_hospital
 #                 default through to the CallSheet when present.
-#   scenes      — list of Scene dataclasses scheduled on this shoot day.
-#                 The caller is expected to filter — generate_call_sheet
+#   scenes      â€” list of Scene dataclasses scheduled on this shoot day.
+#                 The caller is expected to filter â€” generate_call_sheet
 #                 takes the list as-is and snapshots it.
-#   crew_calls  — list of dicts: {"department": str, "name": str,
+#   crew_calls  â€” list of dicts: {"department": str, "name": str,
 #                 "call_time": str}. Stored verbatim on
 #                 CallSheet.crew_calls so the PDF can render the table
 #                 directly from the saved object.
-#   production  — object with .id and .title (other fields ignored
+#   production  â€” object with .id and .title (other fields ignored
 #                 here; PDF rendering pulls cosmetic fields separately).
 #
-# Returns the CallSheet object. Does NOT persist to the DB — the
+# Returns the CallSheet object. Does NOT persist to the DB â€” the
 # Phase 10 router handles `await prisma.callsheet.create(...)`.
 def generate_call_sheet(shoot_day, scenes, crew_calls, production):
     scene_snapshots = [_scene_snapshot(s) for s in scenes]
@@ -79,7 +79,7 @@ def generate_call_sheet(shoot_day, scenes, crew_calls, production):
         general_call=getattr(shoot_day, "call_time", None),
         location=getattr(shoot_day, "location", None),
         nearest_hospital=getattr(shoot_day, "nearest_hospital", None),
-        weather=None,  # placeholder — populated manually or via weather API later
+        weather=None,  # placeholder â€” populated manually or via weather API later
         scenes=scene_snapshots,
         crew_calls=crew_snapshots,
     )
@@ -96,13 +96,13 @@ def export_call_sheet_json(call_sheet):
 # the resolved file path as a string.
 #
 # Sections (in order):
-#   1. Header        — production title, episode, day number, date
-#   2. General call  — large prominent time
-#   3. Location      — name and address
-#   4. Hospital      — name and address
-#   5. Weather       — placeholder text
-#   6. Scene list    — 7-column table
-#   7. Crew calls    — 3-column table
+#   1. Header        â€” production title, episode, day number, date
+#   2. General call  â€” large prominent time
+#   3. Location      â€” name and address
+#   4. Hospital      â€” name and address
+#   5. Weather       â€” placeholder text
+#   6. Scene list    â€” 7-column table
+#   7. Crew calls    â€” 3-column table
 def export_call_sheet_pdf(
     call_sheet,
     *,
@@ -138,7 +138,7 @@ def export_call_sheet_pdf(
 
 
 # -----------------------------------------------------------------------------
-# Private helpers — snapshot shapes
+# Private helpers â€” snapshot shapes
 # -----------------------------------------------------------------------------
 
 
@@ -170,7 +170,7 @@ def _crew_snapshot(crew_call: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # -----------------------------------------------------------------------------
-# Private helpers — PDF assembly
+# Private helpers â€” PDF assembly
 # -----------------------------------------------------------------------------
 
 
@@ -234,11 +234,11 @@ def _build_styles():
 
 def _header_section(call_sheet, production_title, episode, styles) -> List:
     title_text = production_title or call_sheet.production_id or "Production"
-    date_text = call_sheet.date or "—"
+    date_text = call_sheet.date or "â€”"
     bits = [f"Day {call_sheet.day_number}", date_text]
     if episode:
         bits.insert(0, f"Episode {episode}")
-    subtitle = "  ·  ".join(bits)
+    subtitle = "  Â·  ".join(bits)
     return [
         Paragraph(title_text, styles["title"]),
         Paragraph(subtitle, styles["subtitle"]),
@@ -246,7 +246,7 @@ def _header_section(call_sheet, production_title, episode, styles) -> List:
 
 
 def _general_call_section(call_sheet, styles) -> List:
-    call_time = call_sheet.general_call or "—"
+    call_time = call_sheet.general_call or "â€”"
     return [
         Paragraph("General Call", styles["section_header"]),
         Paragraph(call_time, styles["general_call"]),
@@ -302,7 +302,7 @@ def _scene_list_section(call_sheet, styles) -> List:
         )
 
     if not body_rows:
-        body_rows = [["—", "(no scenes scheduled)", "", "", "", "", ""]]
+        body_rows = [["â€”", "(no scenes scheduled)", "", "", "", "", ""]]
 
     table = Table([header_row] + body_rows, repeatRows=1, colWidths=[
         0.6 * inch, 1.9 * inch, 1.4 * inch, 0.55 * inch, 0.65 * inch, 0.45 * inch, 1.7 * inch
@@ -328,7 +328,7 @@ def _crew_calls_section(call_sheet, styles) -> List:
     ]
 
     if not body_rows:
-        body_rows = [["—", "(no crew calls set)", ""]]
+        body_rows = [["â€”", "(no crew calls set)", ""]]
 
     table = Table([header_row] + body_rows, repeatRows=1, colWidths=[
         2.0 * inch, 2.8 * inch, 1.4 * inch,
@@ -384,3 +384,4 @@ def _pdf_footer(canvas, doc):
     page_size = canvas._pagesize
     canvas.drawCentredString(page_size[0] / 2.0, 0.3 * inch, f"Page {doc.page}")
     canvas.restoreState()
+

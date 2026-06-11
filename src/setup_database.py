@@ -1,4 +1,4 @@
-"""
+﻿"""
 SceneIQ Database Setup Script
 Creates database, runs migrations, and seeds initial data
 """
@@ -30,30 +30,31 @@ INCENTIVE_RULES = [
 ]
 
 async def setup():
-    print("🎬 SceneIQ Database Setup")
+    print("ðŸŽ¬ SceneIQ Database Setup")
     print("=" * 50)
     prisma = Prisma()
     await prisma.connect()
     try:
-        print("\n📍 Creating jurisdictions...")
+        print("\nðŸ“ Creating jurisdictions...")
         jurisdiction_map = {}
         for jur_data in JURISDICTIONS:
             jur = await prisma.jurisdiction.create(data={"name": jur_data["name"], "code": jur_data["code"], "country": jur_data["country"], "type": jur_data["type"], "active": True})
             jurisdiction_map[jur.code] = jur.id
-            print(f"  ✓ {jur.name} ({jur.code})")
-        print(f"✅ Created {len(JURISDICTIONS)} jurisdictions\n")
-        print("📋 Creating incentive rules...")
+            print(f"  âœ“ {jur.name} ({jur.code})")
+        print(f"âœ… Created {len(JURISDICTIONS)} jurisdictions\n")
+        print("ðŸ“‹ Creating incentive rules...")
         for rule_data in INCENTIVE_RULES:
             jurisdiction_id = jurisdiction_map.get(rule_data["jurisdiction_code"])
             if not jurisdiction_id:
                 continue
             await prisma.incentiverule.create(data={"jurisdictionId": jurisdiction_id, "ruleName": rule_data["ruleName"], "ruleCode": rule_data["ruleCode"], "incentiveType": rule_data["incentiveType"], "percentage": rule_data.get("percentage"), "minSpend": rule_data.get("minSpend"), "maxCredit": rule_data.get("maxCredit"), "eligibleExpenses": rule_data["eligibleExpenses"], "excludedExpenses": rule_data["excludedExpenses"], "effectiveDate": datetime.now(), "active": True})
-            print(f"  ✓ {rule_data['ruleName']}")
-        print(f"✅ Created {len(INCENTIVE_RULES)} incentive rules\n")
+            print(f"  âœ“ {rule_data['ruleName']}")
+        print(f"âœ… Created {len(INCENTIVE_RULES)} incentive rules\n")
         print("=" * 50)
-        print("✅ Setup complete! SceneIQ is ready!")
+        print("âœ… Setup complete! SceneIQ is ready!")
     finally:
         await prisma.disconnect()
 
 if __name__ == "__main__":
     asyncio.run(setup())
+

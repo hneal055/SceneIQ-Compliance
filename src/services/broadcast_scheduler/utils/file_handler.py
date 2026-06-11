@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/utils/file_handler.py
 # File and folder operations shared across the parser.
 #
 # Unlike the standalone parser this came from, no path defaults are baked
-# in — archive_dir is a required argument so SceneIQ can decide where to
+# in â€” archive_dir is a required argument so SceneIQ can decide where to
 # move files (or skip archiving entirely).
 # =============================================================================
 
@@ -21,8 +21,8 @@ VERBOSE_LOGGING = True
 # input_dir returns an empty list (logged) rather than raising.
 #
 # Arguments:
-#   input_dir   — folder to scan (string or Path)
-#   extensions  — iterable of extensions to match, e.g. [".csv"], [".xml", ".bxf"]
+#   input_dir   â€” folder to scan (string or Path)
+#   extensions  â€” iterable of extensions to match, e.g. [".csv"], [".xml", ".bxf"]
 def list_input_files(input_dir, extensions):
     input_dir = Path(input_dir)
 
@@ -55,8 +55,8 @@ def list_input_files(input_dir, extensions):
 # on failure (logged).
 #
 # Arguments:
-#   file_path   — file to move (string or Path)
-#   archive_dir — destination folder (REQUIRED — caller must specify)
+#   file_path   â€” file to move (string or Path)
+#   archive_dir â€” destination folder (REQUIRED â€” caller must specify)
 def archive_file(file_path, archive_dir):
     file_path = Path(file_path)
 
@@ -67,7 +67,7 @@ def archive_file(file_path, archive_dir):
     archive_dir = Path(archive_dir)
 
     if not file_path.exists():
-        print(f"[FILES] ERROR: cannot archive — file not found: {file_path}")
+        print(f"[FILES] ERROR: cannot archive â€” file not found: {file_path}")
         return None
 
     try:
@@ -98,8 +98,9 @@ def archive_file(file_path, archive_dir):
 
 
 # Light wrapper around mkdir(parents=True, exist_ok=True). Returns the
-# Path so callers can chain — e.g. out_dir = ensure_folder_exists(...).
+# Path so callers can chain â€” e.g. out_dir = ensure_folder_exists(...).
 def ensure_folder_exists(folder_path):
     folder_path = Path(folder_path)
     folder_path.mkdir(parents=True, exist_ok=True)
     return folder_path
+

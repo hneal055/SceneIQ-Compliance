@@ -1,4 +1,4 @@
-"""
+﻿"""
 Production API endpoints
 """
 from fastapi import APIRouter, HTTPException, status
@@ -184,3 +184,4 @@ async def delete_production(production_id: str):
     )
     
     return None
+

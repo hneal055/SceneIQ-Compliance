@@ -1,8 +1,8 @@
-"""
+﻿"""
 Pydantic models for the Production Schedule Engine API
 (src/api/production_schedule.py).
 
-Kept deliberately minimal — only the shapes where `response_model=`
+Kept deliberately minimal â€” only the shapes where `response_model=`
 helps Swagger documentation. Dynamic dict responses (stripboard grid,
 DOOD grid, jurisdiction summary list) come back as plain `dict` /
 `list` so we don't have to mirror every Prisma model in Pydantic.
@@ -31,16 +31,16 @@ class AssignSceneBody(BaseModel):
     """Body for POST /{production_id}/stripboard/assign."""
     scene_id: str = Field(..., description="Scene.id to assign")
     shoot_day_id: str = Field(..., description="ShootDay.id to assign the scene to")
-    # `position` is accepted for forward compat but currently a no-op —
+    # `position` is accepted for forward compat but currently a no-op â€”
     # the Scene model has no `position` column yet (see schema MVP note).
     position: Optional[int] = Field(
         None,
-        description="Reserved for future explicit ordering — currently ignored",
+        description="Reserved for future explicit ordering â€” currently ignored",
     )
 
 
 class UnassignSceneBody(BaseModel):
-    """Body for POST /{production_id}/stripboard/unassign — moves a scene
+    """Body for POST /{production_id}/stripboard/unassign â€” moves a scene
     back to the Unscheduled bin by clearing its shootDayId."""
     scene_id: str = Field(..., description="Scene.id to move back to Unscheduled")
 
@@ -55,7 +55,7 @@ class CrewCallItem(BaseModel):
 class CreateShootDayBody(BaseModel):
     """Body for POST /{production_id}/shoot-days. Every field is optional;
     the day_number is assigned automatically (max existing + 1). A blank day
-    is created when no fields are supplied — the user fills it in by assigning
+    is created when no fields are supplied â€” the user fills it in by assigning
     scenes from the Unscheduled bin."""
     date: Optional[str] = Field(None, description="ISO date string (YYYY-MM-DD)")
     jurisdiction_name: Optional[str] = Field(
@@ -91,3 +91,4 @@ class JurisdictionSummaryRow(BaseModel):
     jurisdiction_name: str
     shoot_days: int
     verified_at: Optional[datetime] = None
+

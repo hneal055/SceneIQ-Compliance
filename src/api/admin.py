@@ -1,5 +1,5 @@
-"""
-Admin API — user management (list, create, update role/status, delete).
+﻿"""
+Admin API â€” user management (list, create, update role/status, delete).
 All endpoints require admin role.
 """
 import logging
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
-# ── Auth dependency ───────────────────────────────────────────────────────────
+# â”€â”€ Auth dependency â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _require_admin(current_user: TokenData = Depends(get_current_user)) -> TokenData:
     if current_user.role != "admin":
@@ -24,7 +24,7 @@ def _require_admin(current_user: TokenData = Depends(get_current_user)) -> Token
     return current_user
 
 
-# ── Pydantic models ───────────────────────────────────────────────────────────
+# â”€â”€ Pydantic models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class UserCreate(BaseModel):
     email:    str
@@ -38,7 +38,7 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/users", summary="List all users")
 async def list_users(_: TokenData = Depends(_require_admin)):
@@ -138,3 +138,4 @@ async def delete_user(
     await prisma.user.delete(where={"id": user_id})
     logger.info(f"Admin deleted user: {user.email}")
     return None
+

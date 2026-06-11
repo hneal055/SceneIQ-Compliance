@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/utils/timecode.py
 # Reusable helpers for broadcast timecodes in HH:MM:SS:FF form.
 #
@@ -10,7 +10,7 @@
 import re
 
 
-# Strict HH:MM:SS:FF — exactly two digits per part. Compiled once at module
+# Strict HH:MM:SS:FF â€” exactly two digits per part. Compiled once at module
 # load so callers don't pay re-compile cost per call.
 _TIMECODE_PATTERN = re.compile(r"^\d{2}:\d{2}:\d{2}:\d{2}$")
 
@@ -37,3 +37,4 @@ def normalise_timecode(value):
         return ":".join(f"{int(part):02d}" for part in parts)
     except ValueError:
         return value
+

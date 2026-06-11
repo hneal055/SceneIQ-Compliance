@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/importers/_heading.py
 # Shared scene-heading parser used by both the MMS and FDX importers.
 #
@@ -9,13 +9,13 @@
 #
 # Lifted out of mms_importer.py in Phase 4 so fdx_importer.py can share
 # it. Leading-underscore module name signals: private to the importers
-# package — callers outside this package should not import it directly.
+# package â€” callers outside this package should not import it directly.
 # =============================================================================
 
 
 # Parses a scene heading like "INT. POLICE STATION - DAY" into
 # (loc_type, location, time_of_day). Returns (None, None, None) for
-# headings we can't make sense of — never raises.
+# headings we can't make sense of â€” never raises.
 #
 # Recognises:
 #   loc_type    : INT, EXT, INT/EXT, EXT/INT, I/E
@@ -60,7 +60,7 @@ def parse_scene_heading_text(text):
             location = remainder or None
             break
     if loc_type is None:
-        # No recognisable INT/EXT prefix — treat the whole head as location.
+        # No recognisable INT/EXT prefix â€” treat the whole head as location.
         location = head_part or None
 
     time_of_day = _TIME_TOKENS.get(tail_part)
@@ -84,3 +84,4 @@ _TIME_TOKENS = {
     "EVENING": "EVENING",
     "CONTINUOUS": "CONTINUOUS",
 }
+

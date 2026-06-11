@@ -1,5 +1,5 @@
-"""
-Email service — sends transactional and digest emails via SMTP.
+﻿"""
+Email service â€” sends transactional and digest emails via SMTP.
 
 Configuration (all via environment / .env):
   SMTP_HOST      e.g. smtp.sendgrid.net or smtp.gmail.com
@@ -33,7 +33,7 @@ def send_email(to: str, subject: str, html: str, text: str | None = None) -> boo
     if not settings.SMTP_HOST:
         logger.info(
             f"[email no-op] to={to!r} subject={subject!r} "
-            "(SMTP_HOST not configured — set in .env to enable real delivery)"
+            "(SMTP_HOST not configured â€” set in .env to enable real delivery)"
         )
         return False
 
@@ -68,3 +68,4 @@ def send_email(to: str, subject: str, html: str, text: str | None = None) -> boo
 def send_emails_bulk(recipients: list[str], subject: str, html: str, text: str | None = None) -> int:
     """Send the same email to multiple recipients. Returns success count."""
     return sum(send_email(r, subject, html, text) for r in recipients)
+

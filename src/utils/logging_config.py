@@ -1,4 +1,4 @@
-"""
+﻿"""
 Structured Logging Configuration for SceneIQ
 Provides JSON-formatted logs with correlation IDs for tracing
 """
@@ -85,3 +85,4 @@ def setup_logging(log_level: str = "INFO", json_format: bool = True) -> logging.
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance with the given name"""
     return logging.getLogger(name)
+

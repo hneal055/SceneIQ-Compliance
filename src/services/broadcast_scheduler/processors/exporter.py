@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/processors/exporter.py
 # Writes a Schedule out to disk as CSV, JSON, or XML.
 #
 # Unlike the standalone parser this came from, no path defaults are baked
-# in — output_dir is a required argument so SceneIQ can decide where to
+# in â€” output_dir is a required argument so SceneIQ can decide where to
 # write (e.g. a temp folder per request, or never call this at all because
 # the data is being persisted to PostgreSQL instead).
 # =============================================================================
@@ -36,20 +36,20 @@ EXPORT_FIELDS = [
 ]
 
 
-# Top-level entry point — writes the given Schedule out to disk.
+# Top-level entry point â€” writes the given Schedule out to disk.
 # Returns the Path of the written file on success, or None on failure.
 #
 # Arguments:
-#   schedule       — the Schedule to write
-#   output_dir     — folder for the output file (REQUIRED — caller decides)
-#   export_format  — "csv", "json", or "xml" (defaults to DEFAULT_EXPORT_FORMAT)
-#   filename       — output filename (defaults to "{source-stem}_parsed.{ext}")
+#   schedule       â€” the Schedule to write
+#   output_dir     â€” folder for the output file (REQUIRED â€” caller decides)
+#   export_format  â€” "csv", "json", or "xml" (defaults to DEFAULT_EXPORT_FORMAT)
+#   filename       â€” output filename (defaults to "{source-stem}_parsed.{ext}")
 def export_schedule(schedule, output_dir, export_format=None, filename=None):
     if schedule is None:
-        print("[EXPORT] ERROR: Schedule is None — nothing to export")
+        print("[EXPORT] ERROR: Schedule is None â€” nothing to export")
         return None
     if not schedule.segments:
-        print("[EXPORT] ERROR: Schedule has no segments — nothing to export")
+        print("[EXPORT] ERROR: Schedule has no segments â€” nothing to export")
         return None
     if output_dir is None:
         print("[EXPORT] ERROR: output_dir is required (caller must specify)")
@@ -174,3 +174,4 @@ def export_to_xml(schedule, output_path):
 # e.g. tx_time -> TxTime, episode_number -> EpisodeNumber, asset_id -> AssetId.
 def field_to_xml_tag(field_name):
     return "".join(part.capitalize() for part in field_name.split("_"))
+

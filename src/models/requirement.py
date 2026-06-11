@@ -1,4 +1,4 @@
-"""Pydantic models for JurisdictionRequirement."""
+﻿"""Pydantic models for JurisdictionRequirement."""
 
 from __future__ import annotations
 
@@ -68,3 +68,4 @@ class ChecklistResponse(BaseModel):
     total: int
     byCategory: dict  # category -> count
     requirements: List[ChecklistItem]
+

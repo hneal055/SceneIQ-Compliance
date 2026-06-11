@@ -1,13 +1,13 @@
-"""
-User Scenarios API — per-user Maximizer scenario persistence.
+﻿"""
+User Scenarios API â€” per-user Maximizer scenario persistence.
 
 Replaces localStorage with DB-backed storage so scenarios survive across
 devices and sessions. Tied to the authenticated user via JWT.
 
 Endpoints:
-  GET    /scenarios         → list all scenarios for current user
-  POST   /scenarios         → create a new scenario
-  DELETE /scenarios/{id}    → delete a scenario (must belong to current user)
+  GET    /scenarios         â†’ list all scenarios for current user
+  POST   /scenarios         â†’ create a new scenario
+  DELETE /scenarios/{id}    â†’ delete a scenario (must belong to current user)
 """
 import logging
 from datetime import datetime, timezone
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/scenarios", tags=["Scenarios"])
 
 
-# ── Pydantic models ───────────────────────────────────────────────────────────
+# â”€â”€ Pydantic models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class ScenarioCreate(BaseModel):
     name:        str         = Field(..., min_length=1, max_length=120)
@@ -40,7 +40,7 @@ class ScenarioOut(BaseModel):
     spend:       str
     projectType: str
     splitSpend:  dict
-    savedAt:     str          # ISO string — matches SavedScenario.savedAt in frontend
+    savedAt:     str          # ISO string â€” matches SavedScenario.savedAt in frontend
 
     model_config = {"from_attributes": True}
 
@@ -57,7 +57,7 @@ def _to_out(row) -> ScenarioOut:
     )
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("", summary="List current user's saved scenarios")
 async def list_scenarios(current_user: TokenData = Depends(get_current_user)):
@@ -98,3 +98,4 @@ async def delete_scenario(
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Not your scenario")
     await prisma.userscenario.delete(where={"id": scenario_id})
     return None
+

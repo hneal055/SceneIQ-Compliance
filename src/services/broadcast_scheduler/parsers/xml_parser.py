@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/parsers/xml_parser.py
 # Reads an XML or BXF rundown file and returns a populated Schedule object.
 #
@@ -27,10 +27,10 @@ VERBOSE_LOGGING = True
 # Returns None if the file cannot be opened or parsed.
 #
 # Arguments:
-#   file_path      — path to the XML or BXF file (string or Path)
-#   channel_name   — optional channel name to stamp on the Schedule;
+#   file_path      â€” path to the XML or BXF file (string or Path)
+#   channel_name   â€” optional channel name to stamp on the Schedule;
 #                    if not provided we try to pick it up from the root element
-#   schedule_date  — optional date string to stamp on the Schedule
+#   schedule_date  â€” optional date string to stamp on the Schedule
 def parse_xml_file(file_path, channel_name=None, schedule_date=None):
     file_path = Path(file_path)
 
@@ -38,7 +38,7 @@ def parse_xml_file(file_path, channel_name=None, schedule_date=None):
         print(f"[XML] Reading file: {file_path.name}")
 
     # All file I/O and parsing is wrapped in try/except so a missing or
-    # malformed file cannot crash the whole pipeline — we log and return None.
+    # malformed file cannot crash the whole pipeline â€” we log and return None.
     try:
         with open(file_path, mode="r", encoding="utf-8") as xml_file:
             data = xmltodict.parse(xml_file.read())
@@ -53,7 +53,7 @@ def parse_xml_file(file_path, channel_name=None, schedule_date=None):
         return None
 
     # xmltodict returns {root_tag: <contents>}. We don't care what the root
-    # tag is called — just unwrap to its contents.
+    # tag is called â€” just unwrap to its contents.
     if len(data) != 1:
         print("[XML] ERROR: expected a single root element")
         return None
@@ -64,7 +64,7 @@ def parse_xml_file(file_path, channel_name=None, schedule_date=None):
         return None
 
     # xmltodict marks XML attributes with a leading '@'. If the root has
-    # channel/date attributes, pick them up — but the caller's explicit
+    # channel/date attributes, pick them up â€” but the caller's explicit
     # arguments always win.
     detected_channel = root_content.get("@channel")
     detected_date = root_content.get("@date")
@@ -97,7 +97,7 @@ def find_event_list(root_content):
         if isinstance(value, list):
             return value
         if isinstance(value, dict):
-            return [value]  # single event — wrap it so callers can iterate
+            return [value]  # single event â€” wrap it so callers can iterate
     return []
 
 
@@ -116,13 +116,13 @@ def build_segment_from_element(element):
 
         # xmltodict gives the text content directly for simple <Tag>text</Tag>
         # elements, but a dict for elements with children or attributes.
-        # We only handle simple text tags in this Phase — skip anything else.
+        # We only handle simple text tags in this Phase â€” skip anything else.
         if not isinstance(raw_value, (str, type(None))):
             continue
 
         internal_field = XML_FIELD_MAP.get(xml_tag)
         if internal_field is None:
-            continue  # this tag isn't in our map — ignore it
+            continue  # this tag isn't in our map â€” ignore it
 
         # Clean the text: strip whitespace, convert empty to None so the
         # model stays clean and downstream code never has to handle "".
@@ -139,3 +139,4 @@ def build_segment_from_element(element):
         setattr(segment, internal_field, value)
 
     return segment
+

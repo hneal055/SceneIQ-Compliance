@@ -1,5 +1,5 @@
-"""
-Local Rules API — CRUD for county/city/town-level incentive rules.
+﻿"""
+Local Rules API â€” CRUD for county/city/town-level incentive rules.
 These are rules that have been approved from pending_rules or entered manually.
 """
 from fastapi import APIRouter, HTTPException
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/local-rules", tags=["Local Rules"])
 
 
-# ── Models ────────────────────────────────────────────────────────────────────
+# â”€â”€ Models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class LocalRuleCreate(BaseModel):
     jurisdictionId: str
@@ -45,7 +45,7 @@ class LocalRuleUpdate(BaseModel):
     active: Optional[bool] = None
 
 
-# ── List ──────────────────────────────────────────────────────────────────────
+# â”€â”€ List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("", summary="List local rules")
 async def list_local_rules(
@@ -87,7 +87,7 @@ async def list_local_rules(
     }
 
 
-# ── By jurisdiction ───────────────────────────────────────────────────────────
+# â”€â”€ By jurisdiction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/by-jurisdiction/{jurisdiction_code}", summary="Get all local rules for a jurisdiction")
 async def rules_by_jurisdiction(jurisdiction_code: str, active_only: bool = True):
@@ -115,7 +115,7 @@ async def rules_by_jurisdiction(jurisdiction_code: str, active_only: bool = True
     }
 
 
-# ── Single ────────────────────────────────────────────────────────────────────
+# â”€â”€ Single â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/{rule_id}", summary="Get local rule detail")
 async def get_local_rule(rule_id: str):
@@ -128,7 +128,7 @@ async def get_local_rule(rule_id: str):
     return _serialize(rule)
 
 
-# ── Create ────────────────────────────────────────────────────────────────────
+# â”€â”€ Create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.post("", summary="Create local rule manually", status_code=201)
 async def create_local_rule(body: LocalRuleCreate):
@@ -164,7 +164,7 @@ async def create_local_rule(body: LocalRuleCreate):
     return _serialize(rule)
 
 
-# ── Update ────────────────────────────────────────────────────────────────────
+# â”€â”€ Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.patch("/{rule_id}", summary="Update local rule")
 async def update_local_rule(rule_id: str, body: LocalRuleUpdate):
@@ -195,7 +195,7 @@ async def update_local_rule(rule_id: str, body: LocalRuleUpdate):
     return _serialize(updated)
 
 
-# ── Delete (soft) ─────────────────────────────────────────────────────────────
+# â”€â”€ Delete (soft) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.delete("/{rule_id}", summary="Deactivate local rule")
 async def delete_local_rule(rule_id: str):
@@ -210,7 +210,7 @@ async def delete_local_rule(rule_id: str):
     return {"message": "Local rule deactivated"}
 
 
-# ── Summary stats ─────────────────────────────────────────────────────────────
+# â”€â”€ Summary stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/stats/summary", summary="Local rules summary stats")
 async def local_rules_stats():
@@ -230,7 +230,7 @@ async def local_rules_stats():
     }
 
 
-# ── Helper ────────────────────────────────────────────────────────────────────
+# â”€â”€ Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _serialize(r) -> dict:
     return {
@@ -253,3 +253,4 @@ def _serialize(r) -> dict:
         "createdAt":      r.createdAt.isoformat() if r.createdAt else None,
         "updatedAt":      r.updatedAt.isoformat() if r.updatedAt else None,
     }
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pydantic models for Incentive Rules
 
 Key fix: 

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Security Module for SceneIQ
 Provides input validation, rate limiting, and security headers
 """
@@ -265,3 +265,4 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             )
         
         return await call_next(request)
+

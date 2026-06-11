@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/models/jurisdiction_shoot_days.py
-# The JurisdictionShootDays dataclass — aggregate shoot-day counts per
+# The JurisdictionShootDays dataclass â€” aggregate shoot-day counts per
 # jurisdiction for a production. Mirrors the prisma model of the same name.
 # Populated by the JurisdictionShootDayTracker and consumed by the
 # ComplianceBridge to feed the Incentive Calculator.
@@ -12,7 +12,7 @@ from typing import Optional
 
 
 # One row per (production, jurisdiction) pair. `verified_at` is only set
-# when a user explicitly clicks "Verify" in the dashboard — the
+# when a user explicitly clicks "Verify" in the dashboard â€” the
 # ComplianceBridge ignores rows that have not been verified.
 @dataclass
 class JurisdictionShootDays:
@@ -40,3 +40,4 @@ class JurisdictionShootDays:
             f"shoot_days={self.shoot_days}, "
             f"verified_at={self.verified_at!r})"
         )
+

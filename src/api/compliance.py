@@ -1,5 +1,5 @@
-"""
-Compliance Checklist API — per-production requirement tracking.
+﻿"""
+Compliance Checklist API â€” per-production requirement tracking.
 """
 import logging
 from typing import Optional
@@ -13,7 +13,7 @@ from src.utils.database import prisma
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Compliance"])
 
-# ── Standard checklist items generated for every production ──────────────────
+# â”€â”€ Standard checklist items generated for every production â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _STANDARD_ITEMS: list[dict] = [
     # Registration
@@ -36,7 +36,7 @@ _STANDARD_ITEMS: list[dict] = [
 ]
 
 
-# ── Pydantic models ───────────────────────────────────────────────────────────
+# â”€â”€ Pydantic models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class ItemCreate(BaseModel):
     label:    str
@@ -53,7 +53,7 @@ class ItemUpdate(BaseModel):
     dueDate:   Optional[str] = None
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.get("/productions/{production_id}/compliance", summary="List compliance checklist")
 async def list_compliance(production_id: str):
@@ -177,3 +177,4 @@ async def delete_item(item_id: str):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Compliance item not found")
     await prisma.complianceitem.delete(where={"id": item_id})
     return None
+

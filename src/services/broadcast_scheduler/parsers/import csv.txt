@@ -1,0 +1,76 @@
+import csv
+import logging
+from pathlib import Path
+import re
+from datetime import datetime
+
+# Configure logging to help debug the Daypart issue
+logging.basicConfig(level=logging.INFO)
+
+
+def extract_date_from_filename(filepath):
+    stem = Path(filepath).stem
+
+    # Combined pattern matching for efficiency
+    patterns = [
+        r"(20\d{2})[-_](0[1-9]|1[0-2])[-_](0[1-9]|[12]\d|3[01])",  # YYYY-MM-DD
+        r"(0[1-9]|[12]\d|3[01])[-_](0[1-9]|1[0-2])[-_](20\d{2})",  # DD-MM-YYYY
+        r"(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])",  # YYYYMMDD
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, stem)
+        if match:
+            # Normalize to YYYY-MM-DD
+            groups = match.groups()
+            if "-" in pattern or "_" in pattern:
+                # Handle YYYY-MM-DD or DD-MM-YYYY logic
+                if groups[0].startswith("20"):
+                    return f"{groups[0]}-{groups[1]}-{groups[2]}"
+                return f"{groups[2]}-{groups[1]}-{groups[0]}"
+            return f"{groups[0]}-{groups[1]}-{groups[2]}"
+    return None
+
+
+def parse_csv_file(filepath):
+    """Parses the CSV and extracts Daypart with robust mapping."""
+
+    # 1. Extract Date
+    schedule_date = extract_date_from_filename(filepath)
+    logging.info(f"Processing file: {filepath} | Extracted Date: {schedule_date}")
+
+    parsed_data = []
+
+    with open(filepath, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+
+        # Log detected headers to identify why Daypart might be failing
+        logging.info(f"DEBUG: Headers found in CSV: {reader.fieldnames}")
+
+        for row in reader:
+            # 2. Robust Daypart Mapping
+            # This checks common variations of the header name
+            daypart = (
+                row.get("Daypart")
+                or row.get("daypart")
+                or row.get("DAYPART")
+                or row.get("Day Part")
+                or row.get("Time Period")
+            )
+
+            if not daypart:
+                logging.warning(f"Missing Daypart in row: {row}")
+
+            # 3. Construct Data Object
+            entry = {
+                "schedule_date": schedule_date,
+                "daypart": daypart,
+                "raw_data": row,  # Keep original data for reference
+            }
+            parsed_data.append(entry)
+
+    return parsed_data
+
+
+# Example of how you would call this in your main loop:
+# results = parse_csv_file("path/to/your/file.csv")

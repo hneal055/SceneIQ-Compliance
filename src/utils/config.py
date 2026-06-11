@@ -1,4 +1,4 @@
-"""
+﻿"""
 Central config (Phase 1 spine)
 
 Rule: Anything referenced during import/app startup MUST have a default.
@@ -58,10 +58,10 @@ class Settings(BaseSettings):
     # Phase 2+ (optional for Phase 1)
     DATABASE_URL: Optional[str] = Field(default=None)
 
-    # Phase C — AI Summarization
+    # Phase C â€” AI Summarization
     ANTHROPIC_API_KEY: Optional[str] = Field(default=None)
 
-    # Phase E — Email / SMTP
+    # Phase E â€” Email / SMTP
     SMTP_HOST: str = Field(default="")
     SMTP_PORT: int = Field(default=587)
     SMTP_USER: str = Field(default="")
@@ -106,4 +106,5 @@ def require_database_url() -> str:
             "Set it in .env (see .env.example)."
         )
     return settings.DATABASE_URL
+
 

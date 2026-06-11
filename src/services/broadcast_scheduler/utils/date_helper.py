@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/utils/date_helper.py
 # Reusable helpers for date strings used across the parser.
 #
@@ -42,3 +42,4 @@ def normalise_date(value):
         return parsed.strftime(DATE_FORMAT)
     except (ValueError, TypeError, OverflowError):
         return None
+

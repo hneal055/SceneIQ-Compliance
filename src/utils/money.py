@@ -1,4 +1,4 @@
-# src/utils/money.py
+﻿# src/utils/money.py
 from decimal import Decimal, ROUND_HALF_UP
 
 CENT = Decimal("0.01")
@@ -10,3 +10,4 @@ def D(x) -> Decimal:
 def money(x) -> Decimal:
     # round to cents using standard HALF_UP currency rounding
     return D(x).quantize(CENT, rounding=ROUND_HALF_UP)
+

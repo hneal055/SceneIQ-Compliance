@@ -1,5 +1,5 @@
-"""
-AI Advisor API — Anthropic-powered chat proxy with streaming and event summarization.
+﻿"""
+AI Advisor API â€” Anthropic-powered chat proxy with streaming and event summarization.
 Falls back to scripted keyword-matched responses when no API key is configured,
 preserving the full SSE streaming experience for demos.
 """
@@ -28,7 +28,7 @@ Your expertise includes:
 - Application documentation requirements and submission timelines
 - Budget optimization strategies for maximum incentive yield
 
-Always provide specific, actionable information. Include credit rates, thresholds, and program names when relevant. Format responses with markdown for readability. Note that tax laws change — recommend consulting a production accountant for final compliance decisions."""
+Always provide specific, actionable information. Include credit rates, thresholds, and program names when relevant. Format responses with markdown for readability. Note that tax laws change â€” recommend consulting a production accountant for final compliance decisions."""
 
 SUMMARIZATION_SYSTEM = (
     "You are a regulatory intelligence analyst specializing in film and television "
@@ -38,7 +38,7 @@ SUMMARIZATION_SYSTEM = (
 )
 
 
-# ── Pydantic models ───────────────────────────────────────────────────────────
+# â”€â”€ Pydantic models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class ChatMessage(BaseModel):
     role: str   # "user" | "assistant"
@@ -50,7 +50,7 @@ class ChatRequest(BaseModel):
     production_id: Optional[str] = None
 
 
-# ── Scripted demo responses (used when ANTHROPIC_API_KEY is not set) ──────────
+# â”€â”€ Scripted demo responses (used when ANTHROPIC_API_KEY is not set) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _SCRIPTED: list[tuple[list[str], str]] = [
     (["georgia", "expens", "qualif"], (
@@ -69,28 +69,28 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "**Requirements:**\n"
         "- Minimum $1M qualified spend\n"
         "- 75% of principal photography must occur in California\n"
-        "- Competitive allocation — projects are scored and ranked\n\n"
+        "- Competitive allocation â€” projects are scored and ranked\n\n"
         "**Eligible:** Below-the-line labor, equipment, locations, post-production.\n\n"
         "**Max credit:** $25M per project. Apply through the California Film Commission."
     )),
     (["new york", " ny ", "new york film"], (
         "**New York Film Tax Credit**\n\n"
-        "New York provides a **25–35% credit** on qualified below-the-line costs.\n\n"
+        "New York provides a **25â€“35% credit** on qualified below-the-line costs.\n\n"
         "**Base rate:** 25% statewide\n"
         "**Upstate bonus:** Additional 10% for productions outside NYC\n\n"
         "**Requirements:**\n"
         "- Minimum $1M qualified spend\n"
         "- 75% of shooting days in New York\n"
-        "- Non-competitive — credits issued as earned\n\n"
+        "- Non-competitive â€” credits issued as earned\n\n"
         "**Max credit:** $7M per project. Applications accepted year-round."
     )),
     (["new mexico", " nm "], (
         "**New Mexico Film Production Tax Credit**\n\n"
-        "New Mexico offers a **25–35% refundable credit** — one of the most competitive programs in the US:\n\n"
+        "New Mexico offers a **25â€“35% refundable credit** â€” one of the most competitive programs in the US:\n\n"
         "**Base credit:** 25% on all qualified production expenditures (QPF)\n"
         "**Rural uplift:** +5% for productions shooting 60+ miles outside Santa Fe or Albuquerque city limits\n"
         "**TV series uplift:** +5% for scripted series of 6+ consecutive episodes with significant NM spend\n\n"
-        "**No minimum spend threshold** — accessible to indie and large-budget productions alike. "
+        "**No minimum spend threshold** â€” accessible to indie and large-budget productions alike. "
         "Credits are fully **refundable** (the state pays the difference as cash even with no NM tax liability).\n\n"
         "Administered by the New Mexico Film Office (nmfilm.com)."
     )),
@@ -102,8 +102,8 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "- **+5% music content bonus** for productions with 50%+ Louisiana-sourced music\n"
         "- **VFX bonus:** additional incentive for qualifying visual effects work\n\n"
         "**Requirements:** Minimum $300k qualified spend.\n\n"
-        "Credits are **fully transferable** and can be sold at 85–90 cents on the dollar for "
-        "immediate cash — ideal for productions without significant Louisiana tax liability.\n\n"
+        "Credits are **fully transferable** and can be sold at 85â€“90 cents on the dollar for "
+        "immediate cash â€” ideal for productions without significant Louisiana tax liability.\n\n"
         "Applications handled by the Louisiana Office of Entertainment Industry Development."
     )),
     (["texas", " tx "], (
@@ -126,7 +126,7 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "- Texas base grant: up to 22.5%\n"
         "- San Antonio local: 14%\n"
         "- **Combined maximum: 36.5%** on fully qualified spend\n\n"
-        "*Note: filmsanantonio.com promotes \"up to 45% combined\" — the verified math is 14% + 22.5% = 36.5%. "
+        "*Note: filmsanantonio.com promotes \"up to 45% combined\" â€” the verified math is 14% + 22.5% = 36.5%. "
         "Always use the conservative figure for budgeting.*\n\n"
         "**Permit requirement:** Productions shooting on any of 250+ City of San Antonio-owned properties "
         "must obtain a film permit through the San Antonio Film Commission."
@@ -134,13 +134,13 @@ _SCRIPTED: list[tuple[list[str], str]] = [
     (["uk", "united kingdom", "avec", "bfi"], (
         "**UK Audio-Visual Expenditure Credit (AVEC)**\n\n"
         "The UK replaced its old Film Tax Relief with AVEC in January 2024. The new rate is "
-        "**34% on qualifying UK core expenditure** (QUCE) — up from the previous 25%.\n\n"
+        "**34% on qualifying UK core expenditure** (QUCE) â€” up from the previous 25%.\n\n"
         "**Requirements:**\n"
         "- Pass the BFI Cultural Test (minimum 18/35 points)\n"
         "- At least 10% of core expenditure must be UK spend\n"
         "- No minimum spend threshold\n\n"
         "**Rates by category:**\n"
-        "- Film & High-End TV (≥ £1M/episode): **34%**\n"
+        "- Film & High-End TV (â‰¥ Â£1M/episode): **34%**\n"
         "- Animation & Children's TV: **39%**\n\n"
         "The credit is payable through HMRC and can be claimed during or after production."
     )),
@@ -148,7 +148,7 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "**Canadian Provincial Film Incentives**\n\n"
         "Canada's three largest provinces offer some of the world's strongest credits:\n\n"
         "**British Columbia:** 28% basic production services tax credit + 6% distant location bonus\n"
-        "**Ontario:** 21.5% OFTTC + 18% OPSTC for foreign productions — stackable\n"
+        "**Ontario:** 21.5% OFTTC + 18% OPSTC for foreign productions â€” stackable\n"
         "**Quebec:** 20% QPSP on all eligible Quebec spend; 32% on Quebec resident labor\n\n"
         "All provinces offer additional bonuses for visual effects, animation, and regional shoots."
     )),
@@ -174,19 +174,19 @@ _SCRIPTED: list[tuple[list[str], str]] = [
     )),
     (["hawaii", " hi "], (
         "**Hawaii Film Production Tax Credit**\n\n"
-        "Hawaii offers a **20–25% refundable tax credit** on qualified Hawaii expenditures.\n\n"
+        "Hawaii offers a **20â€“25% refundable tax credit** on qualified Hawaii expenditures.\n\n"
         "**Rates:**\n"
         "- **20%** for productions on Oahu (Honolulu)\n"
-        "- **25%** for productions on neighbor islands (Maui, Big Island, Kauai) — +5% uplift\n\n"
+        "- **25%** for productions on neighbor islands (Maui, Big Island, Kauai) â€” +5% uplift\n\n"
         "**Requirements:**\n"
         "- No minimum spend threshold\n"
         "- Must be a qualified production (film, TV, commercial, digital media)\n"
-        "- Credits are refundable — paid as cash if they exceed Hawaii tax liability\n\n"
+        "- Credits are refundable â€” paid as cash if they exceed Hawaii tax liability\n\n"
         "Administered by the Hawaii Film Office (filmoffice.hawaii.gov)."
     )),
     (["illinois", " il "], (
         "**Illinois Film Services Tax Credit**\n\n"
-        "Illinois offers a **30–45% refundable tax credit** — one of the highest rates in the US with **no credit cap**.\n\n"
+        "Illinois offers a **30â€“45% refundable tax credit** â€” one of the highest rates in the US with **no credit cap**.\n\n"
         "**Base rate:** 30% on all Illinois qualified production expenditures\n"
         "**Bonuses (stackable):**\n"
         "- **+5%** Illinois Film Green Sustainability Plan compliance\n"
@@ -200,7 +200,7 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "Michigan offers a **30% rebate** on qualified Michigan production expenditures.\n\n"
         "**Requirements:**\n"
         "- Minimum $50K qualified Michigan spend\n"
-        "- Rebate is refundable — paid as cash\n"
+        "- Rebate is refundable â€” paid as cash\n"
         "- Must register with the Michigan Film Office before principal photography\n\n"
         "**Detroit** has an active local film commission with studio infrastructure. "
         "Grand Rapids (Film GR) provides West Michigan production support.\n\n"
@@ -231,7 +231,7 @@ _SCRIPTED: list[tuple[list[str], str]] = [
     )),
     (["new jersey", " nj "], (
         "**New Jersey Film Tax Credit**\n\n"
-        "New Jersey offers a **30–35% refundable tax credit** on qualified New Jersey expenditures.\n\n"
+        "New Jersey offers a **30â€“35% refundable tax credit** on qualified New Jersey expenditures.\n\n"
         "**Base rate:** 30% on all qualified NJ production spend\n"
         "**Diversity bonus:** +5% for productions that meet NJ diversity and inclusion criteria\n\n"
         "**Requirements:**\n"
@@ -247,7 +247,7 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "**Requirements:**\n"
         "- Minimum $75K qualified Oregon spend (reduced to $1K for Oregon-based companies)\n"
         "- Rebate paid after completion and audit\n"
-        "- Program has an annual budget cap — apply early in the fiscal year\n\n"
+        "- Program has an annual budget cap â€” apply early in the fiscal year\n\n"
         "Portland has an active film office (portland.gov/film) supporting urban and Pacific Northwest shoots. "
         "Oregon's diverse landscapes (coast, mountains, high desert, old-growth forest) support a wide range of productions.\n\n"
         "Administered by Oregon Film (oregonfilm.org)."
@@ -258,14 +258,14 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "**Requirements:**\n"
         "- Minimum $100K qualified PA spend\n"
         "- 60% of total production budget must be spent in Pennsylvania\n"
-        "- Credits are transferable — can be sold to PA taxpayers\n\n"
+        "- Credits are transferable â€” can be sold to PA taxpayers\n\n"
         "**Key locations:** Philadelphia (PA-PHILADELPHIA film office), Pittsburgh, Lancaster County. "
         "Philadelphia's diverse architecture and proximity to New York make it a popular NYC stand-in.\n\n"
         "Administered by the Pennsylvania Film Office (filmpa.com)."
     )),
     (["virginia", " va "], (
         "**Virginia Film Tax Credit**\n\n"
-        "Virginia offers a **20–30% refundable tax credit** on qualified Virginia expenditures.\n\n"
+        "Virginia offers a **20â€“30% refundable tax credit** on qualified Virginia expenditures.\n\n"
         "**Base rate:** 20% on all qualified Virginia production spend\n"
         "**Rural enhanced credit:** +10% for productions shooting in qualifying rural Virginia areas "
         "(Shenandoah Valley, Southwest Virginia, Eastern Shore)\n\n"
@@ -277,18 +277,18 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "Administered by the Virginia Film Office (film.virginia.org)."
     )),
     (["highest", "best", "compare", "which jurisd", "top state", "most competitive"], (
-        "**Top Film Incentive Jurisdictions — 2026**\n\n"
+        "**Top Film Incentive Jurisdictions â€” 2026**\n\n"
         "| Jurisdiction | Rate | Min Spend | Notes |\n"
         "|---|---|---|---|\n"
-        "| New Mexico | 25–40% | None | Fully refundable; TV series bonus |\n"
+        "| New Mexico | 25â€“40% | None | Fully refundable; TV series bonus |\n"
         "| New Zealand | 40% | NZD $15M | NZSPG grant |\n"
-        "| UK | 34% | None | AVEC — cultural test (raised from 25%) |\n"
+        "| UK | 34% | None | AVEC â€” cultural test (raised from 25%) |\n"
         "| Montana | 35% | $50K | Labor-based credit |\n"
         "| Ireland | 32% | None | Section 481 |\n"
-        "| Illinois | 30–45% | $50K | No credit cap |\n"
-        "| Georgia | 20–30% | $500K | Logo bonus available |\n"
+        "| Illinois | 30â€“45% | $50K | No credit cap |\n"
+        "| Georgia | 20â€“30% | $500K | Logo bonus available |\n"
         "| Louisiana | 25%+15% | $300K | Transferable credits |\n"
-        "| New York | 25–35% | $1M | Upstate bonus |\n"
+        "| New York | 25â€“35% | $1M | Upstate bonus |\n"
         "| California | 25% | $1M | $330M annual allocation |\n\n"
         "The best jurisdiction depends on your budget, shooting locations, and crew residency. "
         "SceneIQ's calculator can run a side-by-side comparison for your specific production."
@@ -296,13 +296,13 @@ _SCRIPTED: list[tuple[list[str], str]] = [
     (["stack", "federal", "section 181", "181 "], (
         "**Stacking Federal + State Incentives**\n\n"
         "**Section 181 (Federal):** Allows 100% first-year deduction for productions up to $15M "
-        "($20M in qualifying low-income communities). No application required — taken on your federal return.\n\n"
+        "($20M in qualifying low-income communities). No application required â€” taken on your federal return.\n\n"
         "**How stacking works:**\n"
         "1. Section 181 reduces your federal taxable income\n"
         "2. State tax credit directly offsets your state tax liability\n"
-        "3. Both are claimed independently — they don't reduce each other\n\n"
+        "3. Both are claimed independently â€” they don't reduce each other\n\n"
         "**Example:** A $5M production in Georgia could claim 181 federally AND the 30% Georgia "
-        "credit — effectively double-dipping on a legitimate, IRS-sanctioned basis."
+        "credit â€” effectively double-dipping on a legitimate, IRS-sanctioned basis."
     )),
     (["document", "application", "require", "checklist", "submit"], (
         "**Standard Application Requirements**\n\n"
@@ -316,11 +316,11 @@ _SCRIPTED: list[tuple[list[str], str]] = [
         "- Payroll records with residency verification for each crew member\n"
         "- Vendor invoices for all qualified expenditures\n"
         "- SAG/AFTRA contracts (if applicable)\n\n"
-        "Most states allow electronic filing. Allow 60–120 days for credit certification."
+        "Most states allow electronic filing. Allow 60â€“120 days for credit certification."
     )),
     (["ireland", " ie ", "section 481"], (
         "**Ireland Section 481 Film Tax Credit**\n\n"
-        "Ireland offers a **32% credit** on eligible Irish expenditure — one of the highest rates in Europe.\n\n"
+        "Ireland offers a **32% credit** on eligible Irish expenditure â€” one of the highest rates in Europe.\n\n"
         "**Requirements:**\n"
         "- No minimum spend threshold\n"
         "- Production must have cultural or creative merit\n"
@@ -352,12 +352,12 @@ _DEFAULT_RESPONSE = (
     "**SceneIQ AI Advisor**\n\n"
     "I'm your expert guide to film and television tax incentives across 35+ jurisdictions.\n\n"
     "I can help you with:\n\n"
-    "- **Jurisdiction comparisons** — credit rates, caps, and eligibility across US states and international programs\n"
-    "- **Qualifying expenses** — exactly what counts toward your incentive base in each state\n"
-    "- **Application requirements** — documentation, timelines, and pre-certification steps\n"
-    "- **Incentive stacking** — combining Section 181 with state credits for maximum yield\n"
-    "- **Budget optimization** — structuring your spend to maximize the credit\n\n"
-    "Try asking about Georgia, New Mexico, California, New York, Louisiana, Texas, or the UK — "
+    "- **Jurisdiction comparisons** â€” credit rates, caps, and eligibility across US states and international programs\n"
+    "- **Qualifying expenses** â€” exactly what counts toward your incentive base in each state\n"
+    "- **Application requirements** â€” documentation, timelines, and pre-certification steps\n"
+    "- **Incentive stacking** â€” combining Section 181 with state credits for maximum yield\n"
+    "- **Budget optimization** â€” structuring your spend to maximize the credit\n\n"
+    "Try asking about Georgia, New Mexico, California, New York, Louisiana, Texas, or the UK â€” "
     "or ask me to compare jurisdictions for your specific budget."
 )
 
@@ -385,7 +385,7 @@ async def _stream_scripted(text: str) -> AsyncGenerator[str, None]:
     yield "data: [DONE]\n\n"
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _get_client():
     """Return an AsyncAnthropic client, or None to use scripted demo responses."""
@@ -396,7 +396,7 @@ def _get_client():
         import anthropic
         return anthropic.AsyncAnthropic(api_key=api_key)
     except ImportError:
-        logger.warning("anthropic package not installed — falling back to scripted responses")
+        logger.warning("anthropic package not installed â€” falling back to scripted responses")
         return None
 
 
@@ -439,7 +439,7 @@ async def _stream_chunks(messages: list[dict], system: str) -> AsyncGenerator[st
     client = _get_client()
     if client is None:
         last_user = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
-        logger.info("ANTHROPIC_API_KEY not set — using scripted demo response")
+        logger.info("ANTHROPIC_API_KEY not set â€” using scripted demo response")
         async for chunk in _stream_scripted(_scripted_response(last_user)):
             yield chunk
         return
@@ -460,7 +460,7 @@ async def _stream_chunks(messages: list[dict], system: str) -> AsyncGenerator[st
         yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
 
-# ── Endpoints ─────────────────────────────────────────────────────────────────
+# â”€â”€ Endpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.post("/chat", summary="Streaming AI advisor chat")
 async def chat(req: ChatRequest):
@@ -493,14 +493,14 @@ async def summarize_event(event_id: str):
     2-3 sentence summary, and store the result in `MonitoringEvent.summary`.
     Returns the updated event record.
     """
-    event = await prisma.monitoringevent.find_unique(where={"id": event_id})
+    event = await prisma.monitoring_events.find_unique(where={"id": event_id})
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
     client = _get_client()
     if client is None:
         summary_text = f"Regulatory update: {event.title}. Review the source for full details on jurisdictional impact and compliance requirements."
-        updated = await prisma.monitoringevent.update(where={"id": event_id}, data={"summary": summary_text})
+        updated = await prisma.monitoring_events.update(where={"id": event_id}, data={"summary": summary_text})
         return updated
 
     content_parts = [f"Title: {event.title}"]
@@ -518,7 +518,7 @@ async def summarize_event(event_id: str):
         )
         summary_text = response.content[0].text
 
-        updated = await prisma.monitoringevent.update(
+        updated = await prisma.monitoring_events.update(
             where={"id": event_id},
             data={"summary": summary_text},
         )
@@ -532,3 +532,4 @@ async def summarize_event(event_id: str):
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Summarization failed: {str(e)}",
         )
+

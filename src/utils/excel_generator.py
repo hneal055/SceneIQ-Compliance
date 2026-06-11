@@ -1,4 +1,4 @@
-"""
+﻿"""
 Excel Export Generator
 Professional Excel spreadsheet generation for tax incentive data
 """
@@ -207,7 +207,7 @@ class ExcelExportGenerator:
         self._style_header_row(ws, 13)
         
         for req in requirements:
-            status_symbol = '✓' if req['status'] == 'met' else ('?' if req['status'] == 'unknown' else '✗')
+            status_symbol = 'âœ“' if req['status'] == 'met' else ('?' if req['status'] == 'unknown' else 'âœ—')
             ws.append([
                 status_symbol,
                 req['requirement'].replace('_', ' ').title(),

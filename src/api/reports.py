@@ -1,4 +1,4 @@
-"""
+﻿"""
 Reports API endpoints - PDF Report Generation
 """
 from fastapi import APIRouter, HTTPException, status

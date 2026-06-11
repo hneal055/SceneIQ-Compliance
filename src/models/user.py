@@ -1,4 +1,4 @@
-"""Pydantic models for authentication."""
+﻿"""Pydantic models for authentication."""
 
 from __future__ import annotations
 
@@ -26,3 +26,4 @@ class TokenData(BaseModel):
     sub: str
     email: str
     role: str
+

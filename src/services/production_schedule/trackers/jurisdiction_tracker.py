@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/trackers/jurisdiction_tracker.py
 # Jurisdiction Shoot Day Tracker.
 #
@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 
 
 # Counts how many ShootDays fall under each jurisdiction for a
-# production. Days whose `jurisdiction_id is None` are excluded —
+# production. Days whose `jurisdiction_id is None` are excluded â€”
 # they haven't been assigned to a jurisdiction yet and including them
 # would arbitrarily inflate one bucket.
 #
@@ -58,7 +58,7 @@ def count_shoot_days_per_jurisdiction(production_id, shoot_days):
 # `jurisdictions` is an optional list of objects exposing .id and .name;
 # the function builds a {.id -> .name} lookup so the summary can show
 # human-readable names. When the lookup is absent or doesn't contain a
-# match, `jurisdiction_name` falls back to `jurisdiction_id` — which in
+# match, `jurisdiction_name` falls back to `jurisdiction_id` â€” which in
 # our in-memory pipeline is a raw name string anyway (the Phase 10
 # router resolves names to real Jurisdiction.id FKs at persist time).
 #
@@ -84,7 +84,7 @@ def get_jurisdiction_summary(production_id, records, jurisdictions=None):
 
 
 # Marks every record's verified_at as `now` (defaults to UTC now).
-# Mutates each record AND returns the list — same idiom as
+# Mutates each record AND returns the list â€” same idiom as
 # assign_scene_to_day in the stripboard module.
 #
 # `now` is injectable so tests can pin a deterministic timestamp.
@@ -93,3 +93,4 @@ def verify_shoot_days(production_id, records, *, now=None):
     for rec in records:
         rec.verified_at = timestamp
     return records
+

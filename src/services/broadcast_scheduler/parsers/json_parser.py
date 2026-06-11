@@ -1,10 +1,10 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/parsers/json_parser.py
 # Reads a JSON schedule feed and returns a populated Schedule object.
 #
 # The mapping from JSON keys to internal field names lives in
 # src/services/broadcast_scheduler/config/field_maps.py (JSON_FIELD_MAP).
-# To support a new JSON key variant, edit that map — you do NOT need to
+# To support a new JSON key variant, edit that map â€” you do NOT need to
 # change this file.
 #
 # This parser handles two common JSON shapes:
@@ -29,10 +29,10 @@ VERBOSE_LOGGING = True
 # Returns None if the file cannot be opened or parsed.
 #
 # Arguments:
-#   file_path      — path to the JSON file (string or Path)
-#   channel_name   — optional channel name to stamp on the Schedule;
+#   file_path      â€” path to the JSON file (string or Path)
+#   channel_name   â€” optional channel name to stamp on the Schedule;
 #                    if not provided we try to pick it up from the JSON
-#   schedule_date  — optional date string to stamp on the Schedule
+#   schedule_date  â€” optional date string to stamp on the Schedule
 def parse_json_file(file_path, channel_name=None, schedule_date=None):
     file_path = Path(file_path)
 
@@ -40,7 +40,7 @@ def parse_json_file(file_path, channel_name=None, schedule_date=None):
         print(f"[JSON] Reading file: {file_path.name}")
 
     # All file I/O and parsing is wrapped in try/except so a missing or
-    # malformed file cannot crash the whole pipeline — we log and return None.
+    # malformed file cannot crash the whole pipeline â€” we log and return None.
     try:
         with open(file_path, mode="r", encoding="utf-8") as json_file:
             data = json.load(json_file)
@@ -51,7 +51,7 @@ def parse_json_file(file_path, channel_name=None, schedule_date=None):
         print(f"[JSON] ERROR: permission denied opening: {file_path}")
         return None
     except json.JSONDecodeError as error:
-        # Most common real-world JSON problem — give a friendly message
+        # Most common real-world JSON problem â€” give a friendly message
         # that includes the line/column so the user can find the typo.
         print(f"[JSON] ERROR: invalid JSON at line {error.lineno}, column {error.colno}: {error.msg}")
         return None
@@ -64,10 +64,10 @@ def parse_json_file(file_path, channel_name=None, schedule_date=None):
     detected_date = None
 
     if isinstance(data, list):
-        # Bare list of segments at root — no metadata available.
+        # Bare list of segments at root â€” no metadata available.
         segments_data = data
     elif isinstance(data, dict):
-        # Wrapped object — pull channel/date from the root, find the list.
+        # Wrapped object â€” pull channel/date from the root, find the list.
         detected_channel = data.get("channel")
         detected_date = data.get("date")
         segments_data = find_segments_list(data)
@@ -103,7 +103,7 @@ def find_segments_list(root_data):
 # Converts one JSON object (a dict of {key: value}) into a Segment,
 # translating keys via JSON_FIELD_MAP.
 #
-# JSON values can be native int/float/bool/None — unlike CSV (always
+# JSON values can be native int/float/bool/None â€” unlike CSV (always
 # strings) and XML (also strings via xmltodict). For consistency across
 # parsers, we convert every non-None scalar to a string here.
 def build_segment_from_item(item):
@@ -114,21 +114,21 @@ def build_segment_from_item(item):
     for json_key, raw_value in item.items():
         internal_field = JSON_FIELD_MAP.get(json_key)
         if internal_field is None:
-            continue  # this key isn't in our map — ignore it
+            continue  # this key isn't in our map â€” ignore it
 
         # Convert each possible JSON value type to our consistent
         # str-or-None representation.
         if raw_value is None:
             value = None
         elif isinstance(raw_value, (dict, list)):
-            # Nested complex values aren't handled this phase — skip silently.
+            # Nested complex values aren't handled this phase â€” skip silently.
             continue
         elif isinstance(raw_value, str):
             value = raw_value.strip()
             if value == "":
                 value = None
         else:
-            # int / float / bool — convert to string for cross-parser parity
+            # int / float / bool â€” convert to string for cross-parser parity
             value = str(raw_value)
 
         # Set the matching attribute on the Segment object. setattr() is the
@@ -137,3 +137,4 @@ def build_segment_from_item(item):
         setattr(segment, internal_field, value)
 
     return segment
+

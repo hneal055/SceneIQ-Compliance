@@ -1,11 +1,11 @@
-"""
-Stacking Engine API — combine state + sub-jurisdiction incentives for a production scenario.
+﻿"""
+Stacking Engine API â€” combine state + sub-jurisdiction incentives for a production scenario.
 
 POST /stacking-engine/calculate
-  → Returns a full incentive stack: state base + county bonuses, total value, warnings.
+  â†’ Returns a full incentive stack: state base + county bonuses, total value, warnings.
 
 POST /stacking-engine/compare
-  → Compare two or more jurisdiction stacks side by side.
+  â†’ Compare two or more jurisdiction stacks side by side.
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/stacking-engine", tags=["Stacking Engine"])
 
 
-# ── Request / response models ──────────────────────────────────────────────────
+# â”€â”€ Request / response models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class ScenarioInput(BaseModel):
     production_id:       Optional[str] = None
@@ -64,7 +64,7 @@ class CompareRequest(BaseModel):
     scenarios: list[ScenarioInput] = Field(..., min_length=2, max_length=6)
 
 
-# ── Core stacking logic ───────────────────────────────────────────────────────
+# â”€â”€ Core stacking logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _parse_date(s: Optional[str]) -> Optional[date]:
     if not s:
@@ -89,7 +89,7 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
     warnings: list[str] = []
     layers: list[StackLayer] = []
 
-    # ── 1. Look up jurisdiction ───────────────────────────────────────────────
+    # â”€â”€ 1. Look up jurisdiction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     jur = await prisma.jurisdiction.find_unique(
         where={"code": scenario.jurisdiction_code},
         include={
@@ -99,14 +99,14 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
     )
 
     if not jur:
-        # Try as a sub-jurisdiction (county/city) — look up parent
+        # Try as a sub-jurisdiction (county/city) â€” look up parent
         jur = await prisma.jurisdiction.find_first(
             where={"code": scenario.jurisdiction_code},
         )
         if not jur:
             raise HTTPException(status_code=404, detail=f"Jurisdiction '{scenario.jurisdiction_code}' not found")
 
-    # ── 2. If this is a sub-jurisdiction, also load parent state rules ────────
+    # â”€â”€ 2. If this is a sub-jurisdiction, also load parent state rules â”€â”€â”€â”€â”€â”€â”€â”€
     parent_rules = []
     if jur.parentId:
         parent = await prisma.jurisdiction.find_unique(
@@ -125,7 +125,7 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
                     if not rule.active:
                         continue
                     if not _is_active_on(rule.effectiveDate, rule.expirationDate, today):
-                        warnings.append(f"State rule '{rule.ruleName}' is outside its effective date range — skipped")
+                        warnings.append(f"State rule '{rule.ruleName}' is outside its effective date range â€” skipped")
                         continue
                     incentive = _calc_incentive(rule.percentage, rule.fixedAmount, rule.maxCredit, qs)
                     if incentive > 0:
@@ -141,20 +141,20 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
                             notes=f"Inherited from {parent.name} (additive policy)",
                         ))
 
-    # ── 3. State-level incentive rules ────────────────────────────────────────
+    # â”€â”€ 3. State-level incentive rules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     state_rules = jur.incentiveRules or []
     for rule in state_rules:
         if not rule.active:
             continue
         if not _is_active_on(rule.effectiveDate, rule.expirationDate, today):
-            warnings.append(f"Rule '{rule.ruleName}' is outside its effective date range — skipped")
+            warnings.append(f"Rule '{rule.ruleName}' is outside its effective date range â€” skipped")
             continue
 
         # Min spend check
         if rule.minSpend and qs < Decimal(str(rule.minSpend)):
             warnings.append(
                 f"Rule '{rule.ruleName}' requires min spend ${rule.minSpend:,.0f} "
-                f"— qualified spend ${float(qs):,.0f} is below threshold"
+                f"â€” qualified spend ${float(qs):,.0f} is below threshold"
             )
             continue
 
@@ -171,16 +171,16 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
                 incentive_value=float(incentive),
             ))
 
-    # ── 4. Local rules (county/city approved rules) ───────────────────────────
+    # â”€â”€ 4. Local rules (county/city approved rules) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local_rules = jur.localRules or []
     active_local = [r for r in local_rules if r.active]
 
     if not active_local and not jur.parentId:
-        warnings.append("No local rules found for this jurisdiction — only state rules applied")
+        warnings.append("No local rules found for this jurisdiction â€” only state rules applied")
 
     for rule in active_local:
         if not _is_active_on(rule.effectiveDate, rule.expirationDate, today):
-            warnings.append(f"Local rule '{rule.name}' is expired or not yet effective — skipped")
+            warnings.append(f"Local rule '{rule.name}' is expired or not yet effective â€” skipped")
             continue
 
         # Local hire check
@@ -189,7 +189,7 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
             if "local hire" in req_lower or "local crew" in req_lower:
                 if scenario.local_hire_percent < 75:
                     warnings.append(
-                        f"Local rule '{rule.name}' may require local hire — "
+                        f"Local rule '{rule.name}' may require local hire â€” "
                         f"provided {scenario.local_hire_percent:.0f}% (verify requirement)"
                     )
 
@@ -207,7 +207,7 @@ async def _compute_stack(scenario: ScenarioInput) -> StackResult:
                 notes=f"Extracted by {rule.extractedBy}" if rule.extractedBy != "manual" else None,
             ))
 
-    # ── 5. Aggregate ──────────────────────────────────────────────────────────
+    # â”€â”€ 5. Aggregate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     total = sum(Decimal(str(l.incentive_value)) for l in layers)
     effective_rate = float(total / qs) if qs > 0 else 0.0
 
@@ -244,7 +244,7 @@ def _calc_incentive(
     return value
 
 
-# ── Endpoints ─────────────────────────────────────────────────────────────────
+# â”€â”€ Endpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @router.post("/calculate", summary="Calculate full incentive stack for a scenario")
 async def calculate_stack(request: CalculateRequest):
@@ -292,3 +292,4 @@ async def jurisdictions_with_local_rules():
         """
     )
     return {"jurisdictions": results}
+

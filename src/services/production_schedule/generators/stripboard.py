@@ -1,8 +1,8 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/generators/stripboard.py
 # Pure in-memory stripboard builder.
 #
-# The stripboard organises Scene objects into ShootDays — the schedule
+# The stripboard organises Scene objects into ShootDays â€” the schedule
 # of which scenes shoot on which day. None of these functions touch the
 # database; the Phase 10 router loads scenes/shoot_days from Prisma,
 # calls these functions, and writes the result back.
@@ -21,7 +21,7 @@
 #
 # NOTE on brief signatures:
 #   reorder_scenes_in_day and get_stripboard_summary in the brief take
-#   only IDs. Since Phase 5 stays in-memory (no DB layer yet — that
+#   only IDs. Since Phase 5 stays in-memory (no DB layer yet â€” that
 #   lives in Phase 10's router), this module extends both signatures
 #   with the in-memory `scenes` / `shoot_days` lists they need to
 #   operate on. The router will load those lists from the DB by
@@ -32,19 +32,19 @@
 # Builds the full stripboard structure from in-memory scenes and shoot_days.
 #
 # Returns a dict keyed by ShootDay.day_number. Each value is a dict with:
-#   "date"          — the shoot day's date string (or None)
-#   "jurisdiction"  — the shoot day's jurisdiction_id (raw name string
+#   "date"          â€” the shoot day's date string (or None)
+#   "jurisdiction"  â€” the shoot day's jurisdiction_id (raw name string
 #                     pending router-side FK resolution)
-#   "scenes"        — the scenes assigned to that day, sorted by scene_number
-#   "total_pages"   — sum of those scenes' page_count values (None treated as 0)
+#   "scenes"        â€” the scenes assigned to that day, sorted by scene_number
+#   "total_pages"   â€” sum of those scenes' page_count values (None treated as 0)
 #
 # Outer-dict insertion order mirrors the input shoot_days list. Scenes whose
-# shoot_day_id matches no provided day are silently excluded — they're
+# shoot_day_id matches no provided day are silently excluded â€” they're
 # "unassigned" until the caller assigns them.
 def build_stripboard(scenes, shoot_days):
     stripboard = {}
 
-    # Group scenes by shoot_day_id in a single pass — cheaper than O(N*D).
+    # Group scenes by shoot_day_id in a single pass â€” cheaper than O(N*D).
     scenes_by_day_id = {}
     for scene in scenes:
         if scene.shoot_day_id is None:
@@ -53,7 +53,7 @@ def build_stripboard(scenes, shoot_days):
 
     for shoot_day in shoot_days:
         # Sort scenes within the day by scene_number. Lexicographic is fine
-        # for the MVP — natural sort over mixed strings like "12A" or
+        # for the MVP â€” natural sort over mixed strings like "12A" or
         # "INSERT-3" is a future improvement, and reorder_scenes_in_day
         # lets the caller impose an explicit order when it matters.
         day_scenes = sorted(
@@ -74,7 +74,7 @@ def build_stripboard(scenes, shoot_days):
 
 # Links a Scene to a ShootDay by setting scene.shoot_day_id. If
 # shoot_day.id is None (e.g. a fresh dataclass not yet persisted),
-# scene.shoot_day_id becomes None too — callers should give shoot_days
+# scene.shoot_day_id becomes None too â€” callers should give shoot_days
 # stable ids before assigning (the Phase 10 router does this by
 # persisting the ShootDay first, then assigning scenes to its returned id).
 def assign_scene_to_day(scene, shoot_day):
@@ -99,7 +99,7 @@ def calculate_day_pages(shoot_day, scenes):
 #   - Scenes belonging to shoot_day_id appear in the exact order of
 #     scene_ids_ordered.
 #   - Any scenes belonging to shoot_day_id but NOT in scene_ids_ordered
-#     are appended in their original relative order (defensive — caller
+#     are appended in their original relative order (defensive â€” caller
 #     shouldn't drop scenes by omission).
 #   - Scenes belonging to other shoot days, or unassigned scenes, pass
 #     through in their original relative order, interleaved with the
@@ -144,13 +144,13 @@ def reorder_scenes_in_day(shoot_day_id, scene_ids_ordered, scenes):
 
 
 # Returns aggregate counts for the stripboard:
-#   total_shoot_days              — len(shoot_days)
-#   total_scenes                  — len(scenes) (assigned or not)
-#   total_pages                   — sum of page_count across all scenes
-#   shoot_days_per_jurisdiction   — dict[jurisdiction_id, day_count]
+#   total_shoot_days              â€” len(shoot_days)
+#   total_scenes                  â€” len(scenes) (assigned or not)
+#   total_pages                   â€” sum of page_count across all scenes
+#   shoot_days_per_jurisdiction   â€” dict[jurisdiction_id, day_count]
 #
 # `jurisdiction_id` on each shoot_day is a raw name string in our
-# in-memory pipeline (the router resolves names → real FK ids before
+# in-memory pipeline (the router resolves names â†’ real FK ids before
 # persisting). Days with no jurisdiction (jurisdiction_id is None) are
 # grouped under the key None.
 def get_stripboard_summary(scenes, shoot_days):
@@ -167,3 +167,4 @@ def get_stripboard_summary(scenes, shoot_days):
         "total_pages": total_pages,
         "shoot_days_per_jurisdiction": by_jurisdiction,
     }
+

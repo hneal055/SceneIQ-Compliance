@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # ADD TO: src/services/production_schedule/config/field_maps.py
 # Append this block after MMS_FIELD_MAP
 # =============================================================================
@@ -24,3 +24,4 @@ FDX_CHARACTER_PARENTHETICALS = [
     "(CONT'D)",     # Continued
     "(PRE-LAP)",    # Pre-lap audio
 ]
+

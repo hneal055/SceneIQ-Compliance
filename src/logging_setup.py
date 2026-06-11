@@ -1,4 +1,4 @@
-New-Item -ItemType Directory -Force .\src,.\logs | Out-Null; @'
+﻿New-Item -ItemType Directory -Force .\src,.\logs | Out-Null; @'
 from __future__ import annotations
 
 import logging
@@ -51,3 +51,4 @@ def setup_logging(level: str = "INFO") -> Path:
     _CONFIGURED = True
     return log_file
 '@ | Out-File -Encoding utf8 -NoNewline .\src\logging_setup.py
+

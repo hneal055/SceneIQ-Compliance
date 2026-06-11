@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/models/scene.py
-# The Scene dataclass — one scene from a script breakdown.
+# The Scene dataclass â€” one scene from a script breakdown.
 # Mirrors the `Scene` model in prisma/schema.prisma.
 # A Scene is a PRODUCTION SHOOTING scene (location, int/ext, day/night, cast)
-# — NOT a broadcast/playout record. See ScheduleEvent for the broadcast side.
+# â€” NOT a broadcast/playout record. See ScheduleEvent for the broadcast side.
 # =============================================================================
 
 from dataclasses import dataclass, field
@@ -24,10 +24,10 @@ class Scene:
     # Database primary key. None until the scene is saved.
     id: Optional[str] = None
 
-    # Short scene title or slugline — e.g. "POLICE STATION - INTERROGATION".
+    # Short scene title or slugline â€” e.g. "POLICE STATION - INTERROGATION".
     title: Optional[str] = None
 
-    # Location name as it appears in the breakdown — e.g. "POLICE STATION".
+    # Location name as it appears in the breakdown â€” e.g. "POLICE STATION".
     location: Optional[str] = None
 
     # "INT" | "EXT" | "INT/EXT"
@@ -61,3 +61,4 @@ class Scene:
             f"time={self.time_of_day!r}, "
             f"pages={self.page_count!r})"
         )
+

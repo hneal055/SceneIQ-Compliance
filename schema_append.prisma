@@ -1,0 +1,88 @@
+// ============================================================
+// PRODUCTION GRAPH — Phase 2 additions
+// Append these four models to the bottom of schema.prisma
+// ============================================================
+
+model CrewMember {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  name         String
+  role         String
+  department   String
+  union        String?
+  dailyRate    Float?
+  weeklyRate   Float?
+  startDate    DateTime?
+  endDate      DateTime?
+  status       String     @default("active") // active / released / hold
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([productionId])
+  @@index([department])
+  @@map("crew_members")
+}
+
+model ProductionLocation {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  name         String
+  address      String?
+  city         String?
+  state        String?
+  country      String?
+  locationType String     // stage / practical / exterior / studio / backlot
+  permitStatus String?    // pending / approved / denied
+  dailyCost    Float?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([productionId])
+  @@map("production_locations")
+}
+
+model BudgetLine {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  category     String     // ATL / BTL / POST / OTHER
+  lineItem     String
+  accountCode  String?
+  estimated    Float
+  actual       Float?
+  variance     Float?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([productionId])
+  @@index([category])
+  @@map("budget_lines")
+}
+
+model ProductionSignal {
+  id           String     @id @default(uuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  signalType   String     // budget_drift / ot_spike / weather_risk / schedule_slip / vfx_inflation / crew_conflict / location_issue
+  severity     String     // low / medium / high / critical
+  source       String?    // aura / compliance / budget / manual
+  entityType   String?    // scene / crew / location / budget_line
+  entityId     String?
+  message      String
+  resolved     Boolean    @default(false)
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([productionId])
+  @@index([signalType])
+  @@index([severity])
+  @@index([resolved])
+  @@map("production_signals")
+}

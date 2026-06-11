@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pydantic models for PDF Report Generation
 """
 from pydantic import BaseModel, Field

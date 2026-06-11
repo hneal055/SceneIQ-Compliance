@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/processors/validator.py
 # Checks a (preferably already-transformed) Schedule for missing required
 # fields and badly-shaped timecodes / dates.
@@ -32,7 +32,7 @@ def validate_schedule(schedule):
 
     if schedule is None:
         issues.append(_make_issue("error", None, None,
-                                  "Schedule is None — parsing likely failed"))
+                                  "Schedule is None â€” parsing likely failed"))
         return issues
 
     if not schedule.channel_name:
@@ -56,7 +56,7 @@ def validate_schedule(schedule):
             has_error = any(item["level"] == "error" for item in segment_issues)
             if has_error:
                 if VERBOSE_LOGGING:
-                    print(f"[VALIDATE] STOP_ON_VALIDATION_ERROR set — halted at segment {index}")
+                    print(f"[VALIDATE] STOP_ON_VALIDATION_ERROR set â€” halted at segment {index}")
                 break
 
     if VERBOSE_LOGGING:
@@ -89,7 +89,7 @@ def validate_segment(segment, index):
         issues.append(_make_issue("error", index, "duration",
                                   f"invalid duration format: {segment.duration!r}"))
 
-    # Optional: rights dates — warn (not error) if present but unparseable
+    # Optional: rights dates â€” warn (not error) if present but unparseable
     if segment.rights_start and not is_valid_date(segment.rights_start):
         issues.append(_make_issue("warning", index, "rights_start",
                                   f"invalid date format: {segment.rights_start!r}"))
@@ -97,7 +97,7 @@ def validate_segment(segment, index):
         issues.append(_make_issue("warning", index, "rights_end",
                                   f"invalid date format: {segment.rights_end!r}"))
 
-    # Optional: episode / series numbers — warn if present but not digits-only
+    # Optional: episode / series numbers â€” warn if present but not digits-only
     for field_name in ("episode_number", "series_number"):
         value = getattr(segment, field_name, None)
         if value and not value.isdigit():
@@ -115,3 +115,4 @@ def _make_issue(level, segment_index, field, message):
         "field": field,
         "message": message,
     }
+

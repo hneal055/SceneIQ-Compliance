@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/models/schedule.py
-# The Schedule class — represents a full broadcast rundown for one channel/day.
+# The Schedule class â€” represents a full broadcast rundown for one channel/day.
 # A Schedule holds a list of Segment objects in transmission order.
 # =============================================================================
 
@@ -29,3 +29,4 @@ class Schedule:
             f"date={self.schedule_date!r}, "
             f"segments={len(self.segments)})"
         )
+

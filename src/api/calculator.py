@@ -1,4 +1,4 @@
-"""
+﻿"""
 Calculator API endpoints - Tax credit calculations
 """
 from fastapi import APIRouter, HTTPException, status
@@ -34,7 +34,7 @@ class QuickCalcRequest(BaseModel):
     jurisdiction_id: str
 
 
-@router.post("", summary="Quick calculation: production + jurisdiction → incentive estimate")
+@router.post("", summary="Quick calculation: production + jurisdiction â†’ incentive estimate")
 async def calculate_quick(request: QuickCalcRequest):
     """
     Calculate estimated tax credit given a production ID and jurisdiction ID.
@@ -146,13 +146,13 @@ async def calculate_simple(request: SimpleCalculateRequest):
     # Generate notes
     notes = []
     if not meets_minimum:
-        notes.append(f"⚠️ Does not meet minimum spend requirement of ${rule.minSpend:,.0f}")
+        notes.append(f"âš ï¸ Does not meet minimum spend requirement of ${rule.minSpend:,.0f}")
     if not under_maximum:
-        notes.append(f"ℹ️ Credit capped at maximum of ${rule.maxCredit:,.0f}")
+        notes.append(f"â„¹ï¸ Credit capped at maximum of ${rule.maxCredit:,.0f}")
     if rule.percentage:
-        notes.append(f"💡 Rate: {rule.percentage}% of qualifying budget")
+        notes.append(f"ðŸ’¡ Rate: {rule.percentage}% of qualifying budget")
     if requirements:
-        notes.append(f"📋 Additional requirements apply - see requirements field")
+        notes.append(f"ðŸ“‹ Additional requirements apply - see requirements field")
     
     return SimpleCalculateResponse(
         jurisdiction=jurisdiction.name,
@@ -296,11 +296,11 @@ async def calculate_compare(request: CompareCalculateRequest):
     
     # Generate notes
     notes = []
-    notes.append(f"🏆 Best option: {best['jurisdiction']} with ${best['estimatedCredit']:,.0f} credit")
-    notes.append(f"💰 Saves ${savings_vs_worst:,.0f} vs lowest option ({worst['jurisdiction']})")
+    notes.append(f"ðŸ† Best option: {best['jurisdiction']} with ${best['estimatedCredit']:,.0f} credit")
+    notes.append(f"ðŸ’° Saves ${savings_vs_worst:,.0f} vs lowest option ({worst['jurisdiction']})")
     
     if best["percentage"]:
-        notes.append(f"📊 Top rate: {best['percentage']}% ({best['ruleName']})")
+        notes.append(f"ðŸ“Š Top rate: {best['percentage']}% ({best['ruleName']})")
     
     return CompareCalculateResponse(
         totalBudget=request.productionBudget,
@@ -482,7 +482,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes=f"Budget of ${budget:,.0f} is below minimum"
             ))
             requirements_not_met += 1
-            action_items.append(f"❌ Increase budget to at least ${rule.minSpend:,.0f}")
+            action_items.append(f"âŒ Increase budget to at least ${rule.minSpend:,.0f}")
         else:
             requirement_checks.append(RequirementCheck(
                 requirement="minimum_spend",
@@ -493,7 +493,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes="Budget not provided"
             ))
             requirements_unknown += 1
-            action_items.append("⚠️ Provide production budget for verification")
+            action_items.append("âš ï¸ Provide production budget for verification")
     
     # Check 2: Shoot Days (if in requirements)
     if "minShootDays" in requirements_data:
@@ -520,7 +520,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes=f"Only {request.shootDays} days planned"
             ))
             requirements_not_met += 1
-            action_items.append(f"❌ Extend shoot schedule to at least {min_days} days")
+            action_items.append(f"âŒ Extend shoot schedule to at least {min_days} days")
         else:
             requirement_checks.append(RequirementCheck(
                 requirement="minimum_shoot_days",
@@ -531,7 +531,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes="Shoot days not provided"
             ))
             requirements_unknown += 1
-            action_items.append("⚠️ Provide shoot schedule for verification")
+            action_items.append("âš ï¸ Provide shoot schedule for verification")
     
     # Check 3: Local Hiring Percentage
     local_hire_keys = ["californiaResidents", "georgiaResident", "localHirePercentage", 
@@ -562,7 +562,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                         notes=f"Only {request.localHirePercentage}% local hiring planned"
                     ))
                     requirements_not_met += 1
-                    action_items.append(f"❌ Increase local hiring to {required_pct}%")
+                    action_items.append(f"âŒ Increase local hiring to {required_pct}%")
             else:
                 requirement_checks.append(RequirementCheck(
                     requirement="local_hiring",
@@ -573,7 +573,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                     notes="Local hiring percentage not provided"
                 ))
                 requirements_unknown += 1
-                action_items.append(f"⚠️ Confirm {required_pct}% local hiring commitment")
+                action_items.append(f"âš ï¸ Confirm {required_pct}% local hiring commitment")
             break
     
     # Check 4: Promotional Logo
@@ -598,7 +598,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes="Logo not planned for credits"
             ))
             requirements_not_met += 1
-            action_items.append(f"❌ Add {jurisdiction.name} logo to end credits")
+            action_items.append(f"âŒ Add {jurisdiction.name} logo to end credits")
         else:
             requirement_checks.append(RequirementCheck(
                 requirement="promotional_logo",
@@ -608,7 +608,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes="Logo placement not confirmed"
             ))
             requirements_unknown += 1
-            action_items.append(f"⚠️ Confirm {jurisdiction.name} logo placement in credits")
+            action_items.append(f"âš ï¸ Confirm {jurisdiction.name} logo placement in credits")
     
     # Check 5: Cultural Test
     if "culturalTest" in requirements_data:
@@ -632,7 +632,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes="Cultural test not passed"
             ))
             requirements_not_met += 1
-            warnings.append("⚠️ Cultural test failure may disqualify production")
+            warnings.append("âš ï¸ Cultural test failure may disqualify production")
         else:
             requirement_checks.append(RequirementCheck(
                 requirement="cultural_test",
@@ -642,7 +642,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                 notes="Cultural test status unknown"
             ))
             requirements_unknown += 1
-            action_items.append("⚠️ Submit cultural test application")
+            action_items.append("âš ï¸ Submit cultural test application")
     
     # Check 6: Relocating Production
     if "relocatingProject" in requirements_data:
@@ -669,7 +669,7 @@ async def check_compliance(request: ComplianceCheckRequest):
                     notes="This program requires relocating production"
                 ))
                 requirements_not_met += 1
-                warnings.append("❌ This program is only for relocating productions")
+                warnings.append("âŒ This program is only for relocating productions")
         else:
             requirement_checks.append(RequirementCheck(
                 requirement="relocating_production",
@@ -694,25 +694,25 @@ async def check_compliance(request: ComplianceCheckRequest):
     
     if total_requirements == 0:
         overall_status = "insufficient_data"
-        next_steps.append("📋 Provide production details for full compliance check")
+        next_steps.append("ðŸ“‹ Provide production details for full compliance check")
     elif requirements_not_met > 0:
         overall_status = "non_compliant"
-        next_steps.append("❌ Address all failed requirements before applying")
-        next_steps.append(f"📧 Contact {jurisdiction.name} Film Office for guidance")
+        next_steps.append("âŒ Address all failed requirements before applying")
+        next_steps.append(f"ðŸ“§ Contact {jurisdiction.name} Film Office for guidance")
     elif requirements_unknown > 0:
         overall_status = "partial"
-        next_steps.append("⚠️ Confirm all unknown requirements")
-        next_steps.append("📝 Gather missing documentation")
+        next_steps.append("âš ï¸ Confirm all unknown requirements")
+        next_steps.append("ðŸ“ Gather missing documentation")
     else:
         overall_status = "compliant"
-        next_steps.append(f"✅ Production qualifies for {rule.ruleName}")
-        next_steps.append(f"💰 Estimated credit: ${estimated_credit:,.0f}" if estimated_credit else "")
-        next_steps.append(f"📋 Submit application to {jurisdiction.name} Film Office")
-        next_steps.append("📄 Prepare required documentation")
+        next_steps.append(f"âœ… Production qualifies for {rule.ruleName}")
+        next_steps.append(f"ðŸ’° Estimated credit: ${estimated_credit:,.0f}" if estimated_credit else "")
+        next_steps.append(f"ðŸ“‹ Submit application to {jurisdiction.name} Film Office")
+        next_steps.append("ðŸ“„ Prepare required documentation")
     
     # Add warnings for close calls
     if budget and rule.minSpend and budget < (rule.minSpend * 1.1):
-        warnings.append(f"⚠️ Budget is close to minimum threshold (${rule.minSpend:,.0f})")
+        warnings.append(f"âš ï¸ Budget is close to minimum threshold (${rule.minSpend:,.0f})")
     
     return ComplianceCheckResponse(
         overallCompliance=overall_status,
@@ -795,15 +795,15 @@ async def get_date_based_rules(request: DateBasedRulesRequest):
     # Generate notes
     notes = []
     if len(active_rules) > 0:
-        notes.append(f"✅ {len(active_rules)} program(s) available on {request.productionDate}")
+        notes.append(f"âœ… {len(active_rules)} program(s) available on {request.productionDate}")
     else:
-        notes.append(f"⚠️ No programs available on {request.productionDate}")
+        notes.append(f"âš ï¸ No programs available on {request.productionDate}")
     
     if len(upcoming_rules) > 0:
-        notes.append(f"📅 {len(upcoming_rules)} program(s) launching soon")
+        notes.append(f"ðŸ“… {len(upcoming_rules)} program(s) launching soon")
     
     if len(expired_rules) > 0:
-        notes.append(f"⏱️ {len(expired_rules)} program(s) recently expired")
+        notes.append(f"â±ï¸ {len(expired_rules)} program(s) recently expired")
     
     return DateBasedRulesResponse(
         jurisdiction=jurisdiction.name,
@@ -937,13 +937,13 @@ async def calculate_scenarios(request: ScenarioCalculateRequest):
             
             notes = []
             if best_rule.percentage:
-                notes.append(f"💰 {best_rule.percentage}% rate")
+                notes.append(f"ðŸ’° {best_rule.percentage}% rate")
             if best_credit > 0:
-                notes.append(f"💵 ${best_credit:,.0f} estimated credit")
+                notes.append(f"ðŸ’µ ${best_credit:,.0f} estimated credit")
             if not meets_reqs:
-                notes.append("⚠️ Does not meet minimum requirements")
+                notes.append("âš ï¸ Does not meet minimum requirements")
             if is_expired:
-                notes.append("⏱️ Rule expired - included for comparison")
+                notes.append("â±ï¸ Rule expired - included for comparison")
             
             scenario_results.append(ScenarioResult(
                 scenarioName=scenario_name,
@@ -970,17 +970,17 @@ async def calculate_scenarios(request: ScenarioCalculateRequest):
     
     # Generate recommendations
     recommendations = []
-    recommendations.append(f"🏆 Best scenario: {best.scenarioName} with ${best.estimatedCredit:,.0f}")
+    recommendations.append(f"ðŸ† Best scenario: {best.scenarioName} with ${best.estimatedCredit:,.0f}")
     
     if savings_diff > 0:
-        recommendations.append(f"💰 Optimization potential: ${savings_diff:,.0f} between best and worst scenario")
+        recommendations.append(f"ðŸ’° Optimization potential: ${savings_diff:,.0f} between best and worst scenario")
     
     if best.estimatedCredit > request.productionBudget * 0.25:
-        recommendations.append(f"✨ Excellent credit rate: {best.effectiveRate:.1f}% effective rate")
+        recommendations.append(f"âœ¨ Excellent credit rate: {best.effectiveRate:.1f}% effective rate")
     
     # Check for date-based opportunities
     if expired_count > 0:
-        recommendations.append(f"⏱️ {expired_count} expired program(s) - check if renewal is planned")
+        recommendations.append(f"â±ï¸ {expired_count} expired program(s) - check if renewal is planned")
     
     return ScenarioCalculateResponse(
         jurisdiction=jurisdiction.name,
@@ -994,5 +994,6 @@ async def calculate_scenarios(request: ScenarioCalculateRequest):
         availableRules=len(available_rules),
         expiredRules=expired_count
     )
+
 
 

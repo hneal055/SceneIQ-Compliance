@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FinalDraft DocumentType="Script" Template="No" Version="4">
+  <Content>
+    <Paragraph Type="Scene Heading" Number="1">
+      <SceneProperties Title="HARBOUR AT DAWN - BODY DISCOVERED" PageCount="2.0" Pages="2" InternalTitle="EXT. HARBOUR DOCKS - DAWN" Cast="MARSH,ROOKIE" Location="Harbour Docks" DayNight="DAWN" IntExt="EXT">
+        <Jurisdiction>Georgia</Jurisdiction>
+        <Notes>Opening crane shot</Notes>
+      </SceneProperties>
+      <Text>EXT. HARBOUR DOCKS - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="2">
+      <SceneProperties Title="PRECINCT BRIEFING" PageCount="1.5" Pages="1-2" InternalTitle="INT. POLICE PRECINCT - DAY" Cast="MARSH,ROOKIE,CAPTAIN HOLT,DISPATCH" Location="Police Precinct" DayNight="DAY" IntExt="INT">
+        <Jurisdiction>Georgia</Jurisdiction>
+        <Notes>Exposition scene</Notes>
+      </SceneProperties>
+      <Text>INT. POLICE PRECINCT - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="3">
+      <SceneProperties Title="HARBOUR MASTER INTERVIEW" PageCount="1.0" Pages="1" InternalTitle="EXT. HARBOUR MASTER OFFICE - DAY" Cast="MARSH,HARBOUR MASTER" Location="Harbour Master Office" DayNight="DAY" IntExt="EXT">
+        <Jurisdiction>Georgia</Jurisdiction>
+        <Notes>Interview scene</Notes>
+      </SceneProperties>
+      <Text>EXT. HARBOUR MASTER OFFICE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="4">
+      <SceneProperties Title="BATHROOM INSERT - PHONE RING" PageCount="0.125" Pages="1/8" InternalTitle="INT. HARBOUR DOCKS BATHROOM - NIGHT" Cast="" Location="Harbour Docks Bathroom" DayNight="NIGHT" IntExt="INT">
+        <Jurisdiction>Georgia</Jurisdiction>
+        <Notes>Insert shot</Notes>
+      </SceneProperties>
+      <Text>INT. HARBOUR DOCKS BATHROOM - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="5">
+      <SceneProperties Title="INTERROGATION" PageCount="2.5" Pages="2-3" InternalTitle="INT. POLICE PRECINCT INTERROGATION - NIGHT" Cast="MARSH,ROOKIE" Location="Police Precinct Interrogation" DayNight="NIGHT" IntExt="INT">
+        <Jurisdiction>Georgia</Jurisdiction>
+        <Notes>Key dramatic scene</Notes>
+      </SceneProperties>
+      <Text>INT. POLICE PRECINCT INTERROGATION - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="6">
+      <SceneProperties Title="DOCKSIDE BEAT" PageCount="0.75" Pages="6/8" InternalTitle="EXT. HARBOUR DOCKS - DUSK" Cast="MARSH" Location="Harbour Docks" DayNight="DUSK" IntExt="EXT">
+        <Jurisdiction>Georgia</Jurisdiction>
+        <Notes>Transition scene</Notes>
+      </SceneProperties>
+      <Text>EXT. HARBOUR DOCKS - DUSK</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="7">
+      <SceneProperties Title="NINA ARRIVES AT THE BATTLEFIELD" PageCount="3.0" Pages="3" InternalTitle="EXT. ANCIENT THERMOPYLAE - DAY" Cast="NINA ORTIZ,GUIDE" Location="Ancient Thermopylae VFX Set" DayNight="DAY" IntExt="EXT">
+        <Jurisdiction>California</Jurisdiction>
+        <Notes>VFX heavy</Notes>
+      </SceneProperties>
+      <Text>EXT. ANCIENT THERMOPYLAE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="8">
+      <SceneProperties Title="THE FALLEN SPEAK" PageCount="2.0" Pages="2" InternalTitle="EXT. ANCIENT THERMOPYLAE - DAWN" Cast="NINA ORTIZ,SPARTAN SOLDIER" Location="Ancient Thermopylae VFX Set" DayNight="DAWN" IntExt="EXT">
+        <Jurisdiction>California</Jurisdiction>
+        <Notes>Key supernatural scene</Notes>
+      </SceneProperties>
+      <Text>EXT. ANCIENT THERMOPYLAE - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="9">
+      <SceneProperties Title="FORENSIC ANALYSIS LAB" PageCount="1.5" Pages="1-2" InternalTitle="INT. UNIVERSITY LABORATORY - DAY" Cast="NINA ORTIZ,DR. CHEN" Location="University Laboratory" DayNight="DAY" IntExt="INT">
+        <Jurisdiction>California</Jurisdiction>
+        <Notes>Science exposition</Notes>
+      </SceneProperties>
+      <Text>INT. UNIVERSITY LABORATORY - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="10">
+      <SceneProperties Title="THE LEAP SEQUENCE" PageCount="4.0" Pages="4" InternalTitle="EXT. TIME PORTAL LOCATION - NIGHT" Cast="NINA ORTIZ" Location="Time Portal Location" DayNight="NIGHT" IntExt="EXT">
+        <Jurisdiction>New York</Jurisdiction>
+        <Notes>VFX sequence - may span multiple days</Notes>
+      </SceneProperties>
+      <Text>EXT. TIME PORTAL LOCATION - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="11">
+      <SceneProperties Title="RESEARCH ARCHIVE" PageCount="1.0" Pages="1" InternalTitle="INT. UNIVERSITY LIBRARY - DAY" Cast="NINA ORTIZ,DR. CHEN,ARCHIVIST" Location="University Library" DayNight="DAY" IntExt="INT">
+        <Jurisdiction>New York</Jurisdiction>
+        <Notes></Notes>
+      </SceneProperties>
+      <Text>INT. UNIVERSITY LIBRARY - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="12">
+      <SceneProperties Title="CONFRONTATION AT THE GATE" PageCount="2.5" Pages="2-3" InternalTitle="EXT. ANCIENT CITY GATE - DUSK" Cast="NINA ORTIZ,COMMANDER" Location="Ancient City Gate" DayNight="DUSK" IntExt="EXT">
+        <Jurisdiction>New York</Jurisdiction>
+        <Notes>Action sequence</Notes>
+      </SceneProperties>
+      <Text>EXT. ANCIENT CITY GATE - DUSK</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="13">
+      <SceneProperties Title="THE RETURN" PageCount="1.5" Pages="1-2" InternalTitle="EXT. TIME PORTAL LOCATION - DAWN" Cast="NINA ORTIZ" Location="Time Portal Location" DayNight="DAWN" IntExt="EXT">
+        <Jurisdiction>New York</Jurisdiction>
+        <Notes>Emotional payoff</Notes>
+      </SceneProperties>
+      <Text>EXT. TIME PORTAL LOCATION - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="14">
+      <SceneProperties Title="DEBRIEF SCENE" PageCount="1.0" Pages="1" InternalTitle="INT. UNIVERSITY OFFICE - DAY" Cast="NINA ORTIZ,DR. CHEN" Location="University Office" DayNight="DAY" IntExt="INT">
+        <Jurisdiction>New York</Jurisdiction>
+        <Notes></Notes>
+      </SceneProperties>
+      <Text>INT. UNIVERSITY OFFICE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading" Number="15">
+      <SceneProperties Title="COLD OPEN - MODERN DAY" PageCount="2.0" Pages="2" InternalTitle="EXT. CHICAGO STREETS - NIGHT" Cast="NINA ORTIZ" Location="Chicago Streets" DayNight="NIGHT" IntExt="EXT">
+        <Jurisdiction>Illinois</Jurisdiction>
+        <Notes>Series cold open</Notes>
+      </SceneProperties>
+      <Text>EXT. CHICAGO STREETS - NIGHT</Text>
+    </Paragraph>
+  </Content>
+</FinalDraft>

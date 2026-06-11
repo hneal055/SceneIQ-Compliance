@@ -1,4 +1,4 @@
-"""
+﻿"""
 Rule Engine package (canonical exports)
 
 Keep this file in sync with registry.py / engine.py public APIs.
@@ -27,3 +27,4 @@ __all__ = [
     "get_rule_path",
     "list_rule_codes",
 ]
+

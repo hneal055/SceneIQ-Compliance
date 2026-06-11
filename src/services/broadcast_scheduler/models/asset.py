@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/models/asset.py
-# The Asset class — represents the underlying media file referenced by a segment.
+# The Asset class â€” represents the underlying media file referenced by a segment.
 # Many segments may point to the same Asset via its asset_id.
 # =============================================================================
 
@@ -31,3 +31,4 @@ class Asset:
             f"title={self.title!r}, "
             f"format={self.format!r})"
         )
+

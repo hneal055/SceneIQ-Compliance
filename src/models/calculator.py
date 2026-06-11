@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pydantic models for Tax Credit Calculator and Compliance Checker
 """
 from pydantic import BaseModel, Field
@@ -268,3 +268,4 @@ class DateBasedRulesResponse(BaseModel):
     totalExpired: int = Field(default=0, description="Number of expired rules")
     
     notes: List[str] = Field(default_factory=list, description="Important date-related notes")
+

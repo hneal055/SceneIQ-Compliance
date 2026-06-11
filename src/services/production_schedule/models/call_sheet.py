@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/models/call_sheet.py
-# The CallSheet dataclass — generated call sheet for a single shoot day.
+# The CallSheet dataclass â€” generated call sheet for a single shoot day.
 # Mirrors the `CallSheet` model in prisma/schema.prisma.
 # Persisted so previously generated sheets remain reproducible even after
 # the stripboard changes.
@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 
 # A generated call sheet for one shoot day. `scenes` and `crew_calls` are
-# JSON snapshots at generation time — the source ShootDay can be reordered
+# JSON snapshots at generation time â€” the source ShootDay can be reordered
 # afterwards without changing what this call sheet says.
 @dataclass
 class CallSheet:
@@ -30,13 +30,13 @@ class CallSheet:
     # ISO date string (YYYY-MM-DD) for the shoot day this sheet covers.
     date: Optional[str] = None
 
-    # General crew call time — e.g. "06:00 AM".
+    # General crew call time â€” e.g. "06:00 AM".
     general_call: Optional[str] = None
 
     # Primary shooting location for the day.
     location: Optional[str] = None
 
-    # Nearest hospital — required on every call sheet for safety.
+    # Nearest hospital â€” required on every call sheet for safety.
     nearest_hospital: Optional[str] = None
 
     # Free-text weather summary. Placeholder for now; can be populated via a
@@ -59,3 +59,4 @@ class CallSheet:
             f"scenes={len(self.scenes)}, "
             f"location={self.location!r})"
         )
+

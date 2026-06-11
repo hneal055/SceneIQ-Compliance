@@ -1,5 +1,5 @@
-"""
-Database seeding — jurisdictions, incentive rules.
+﻿"""
+Database seeding â€” jurisdictions, incentive rules.
 
 Called from src/main.py lifespan on every startup.
 All operations are idempotent: existing records are skipped by unique key.
@@ -13,14 +13,14 @@ from src.utils.database import prisma
 logger = logging.getLogger(__name__)
 
 
-# ── Migrations ────────────────────────────────────────────────────────────────
+# â”€â”€ Migrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def run_migrations() -> None:
     """Migrations are handled externally via scripts/resolve_migrations.py in the startCommand."""
-    logger.info("ℹ️  Migrations handled externally — skipping")
+    logger.info("â„¹ï¸  Migrations handled externally â€” skipping")
 
 
-# ── Jurisdiction data (22 total) ──────────────────────────────────────────────
+# â”€â”€ Jurisdiction data (22 total) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _JURISDICTIONS = [
     # Core USA
@@ -53,7 +53,7 @@ _JURISDICTIONS = [
 ]
 
 
-# ── Incentive rules data (33 total) ──────────────────────────────────────────
+# â”€â”€ Incentive rules data (33 total) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _RULES = [
     # California
@@ -116,7 +116,7 @@ _RULES = [
 ]
 
 
-# ── Seed functions (assume prisma is already connected) ───────────────────────
+# â”€â”€ Seed functions (assume prisma is already connected) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async def _seed_jurisdictions() -> None:
     existing = await prisma.jurisdiction.find_many()
@@ -127,9 +127,9 @@ async def _seed_jurisdictions() -> None:
             await prisma.jurisdiction.create(data=jur)
             added += 1
     if added:
-        logger.info(f"✅ Seeded {added} jurisdictions")
+        logger.info(f"âœ… Seeded {added} jurisdictions")
     else:
-        logger.info("ℹ️  Jurisdictions already seeded — skipping")
+        logger.info("â„¹ï¸  Jurisdictions already seeded â€” skipping")
 
 
 async def _seed_rules() -> None:
@@ -153,12 +153,12 @@ async def _seed_rules() -> None:
         added += 1
 
     if added:
-        logger.info(f"✅ Seeded {added} incentive rules")
+        logger.info(f"âœ… Seeded {added} incentive rules")
     else:
-        logger.info("ℹ️  Incentive rules already seeded — skipping")
+        logger.info("â„¹ï¸  Incentive rules already seeded â€” skipping")
 
 
-# ── Demo productions ──────────────────────────────────────────────────────────
+# â”€â”€ Demo productions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 _DEMO_PRODUCTIONS = [
     {
@@ -214,9 +214,9 @@ async def _seed_productions() -> None:
         added += 1
 
     if added:
-        logger.info(f"✅ Seeded {added} demo productions")
+        logger.info(f"âœ… Seeded {added} demo productions")
     else:
-        logger.info("ℹ️  Demo productions already seeded — skipping")
+        logger.info("â„¹ï¸  Demo productions already seeded â€” skipping")
 
 
 _DEMO_MONITORING_SOURCES = [
@@ -243,21 +243,21 @@ _DEMO_MONITORING_SOURCES = [
     },
     # Sources with live RSS feeds for ingestion
     {
-        "name": "UK Government — Film & TV Tax Relief News",
+        "name": "UK Government â€” Film & TV Tax Relief News",
         "url": "https://www.gov.uk/topic/business-tax/creative-industry-tax-reliefs",
         "feedUrl": "https://www.gov.uk/search/news-and-communications.atom?keywords=film+tax+relief&order=updated-newest",
         "sourceType": "atom",
         "jurisdiction": "UK",
     },
     {
-        "name": "Variety — Business & Finance",
+        "name": "Variety â€” Business & Finance",
         "url": "https://variety.com/v/biz/",
         "feedUrl": "https://variety.com/v/biz/feed/",
         "sourceType": "rss",
         "jurisdiction": None,
     },
     {
-        "name": "Deadline — Business",
+        "name": "Deadline â€” Business",
         "url": "https://deadline.com/category/business/",
         "feedUrl": "https://deadline.com/category/business/feed/",
         "sourceType": "rss",
@@ -285,7 +285,7 @@ _DEMO_MONITORING_EVENTS = [
     {
         "sourceName": "Georgia Dept. of Economic Development",
         "title": "FY Cap Status: 65% Utilized",
-        "summary": "Fiscal year cap status: 65% utilized. Applications remain open — plan submissions accordingly.",
+        "summary": "Fiscal year cap status: 65% utilized. Applications remain open â€” plan submissions accordingly.",
         "url": "https://www.georgia.org/film",
         "severity": "info",
         "publishedAt": datetime(2026, 3, 24, 9, 0, 0),
@@ -294,8 +294,8 @@ _DEMO_MONITORING_EVENTS = [
 
 
 async def _seed_monitoring() -> None:
-    """Seed demo monitoring sources and events. Idempotent — skips if sources already exist."""
-    existing = await prisma.monitoringsource.find_many()
+    """Seed demo monitoring sources and events. Idempotent â€” skips if sources already exist."""
+    existing = await prisma.monitoring_sources.find_many()
     existing_names = {s.name for s in existing}
 
     source_map: dict[str, str] = {s.name: s.id for s in existing}
@@ -303,7 +303,7 @@ async def _seed_monitoring() -> None:
     for src in _DEMO_MONITORING_SOURCES:
         if src["name"] in existing_names:
             continue
-        record = await prisma.monitoringsource.create(data={
+        record = await prisma.monitoring_sources.create(data={"id": str(__import__("uuid").uuid4()), "updatedAt": __import__("datetime").datetime.utcnow(), 
             "name": src["name"],
             "url": src["url"],
             "feedUrl": src.get("feedUrl"),
@@ -319,10 +319,10 @@ async def _seed_monitoring() -> None:
         src_id = source_map.get(ev["sourceName"])
         if not src_id:
             continue
-        existing_ev = await prisma.monitoringevent.find_first(where={"sourceId": src_id})
+        existing_ev = await prisma.monitoring_events.find_first(where={"sourceId": src_id})
         if existing_ev:
             continue
-        await prisma.monitoringevent.create(data={
+        await prisma.monitoring_events.create(data={
             "sourceId": src_id,
             "title": ev["title"],
             "summary": ev["summary"],
@@ -333,14 +333,18 @@ async def _seed_monitoring() -> None:
         added_events += 1
 
     if added_sources or added_events:
-        logger.info(f"✅ Seeded {added_sources} monitoring sources, {added_events} events")
+        logger.info(f"âœ… Seeded {added_sources} monitoring sources, {added_events} events")
     else:
-        logger.info("ℹ️  Monitoring data already seeded — skipping")
+        logger.info("â„¹ï¸  Monitoring data already seeded â€” skipping")
 
 
 async def seed_all() -> None:
-    """Seed jurisdictions, incentive rules, demo productions, and monitoring data. Idempotent — safe on every startup."""
+    """Seed jurisdictions, incentive rules, demo productions, and monitoring data. Idempotent â€” safe on every startup."""
     await _seed_jurisdictions()
     await _seed_rules()
     await _seed_productions()
     await _seed_monitoring()
+
+
+
+

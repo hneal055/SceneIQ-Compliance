@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/broadcast_scheduler/models/segment.py
-# The Segment class — represents a single item inside a broadcast schedule.
+# The Segment class â€” represents a single item inside a broadcast schedule.
 # A Segment is one row of a rundown: a show, an ad break, a promo, a slate, etc.
 # =============================================================================
 
@@ -9,7 +9,7 @@ class Segment:
     """A single item (show, ad, promo, slate) inside a broadcast schedule."""
 
     # Creates a new Segment. Every field is optional so the parser can fill
-    # them in one by one — different source formats provide different fields.
+    # them in one by one â€” different source formats provide different fields.
     def __init__(
         self,
         title=None,
@@ -44,3 +44,4 @@ class Segment:
             f"tx_time={self.tx_time!r}, "
             f"duration={self.duration!r})"
         )
+

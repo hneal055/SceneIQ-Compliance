@@ -1,4 +1,4 @@
-"""
+﻿"""
 PDF Report Generator
 Professional PDF generation for tax incentive reports
 """
@@ -173,22 +173,22 @@ class PDFReportGenerator:
         if comparisons and len(comparisons) > 0 and best_option and best_option.get('jurisdiction'):
             savings = comparisons[0]['estimatedCredit'] - comparisons[-1]['estimatedCredit']
             story.append(Paragraph(
-                f"• <b>Best Financial Option:</b> {best_option['jurisdiction']} offers the highest tax credit of ${best_option.get('estimatedCredit', 0):,.0f}",
+                f"â€¢ <b>Best Financial Option:</b> {best_option['jurisdiction']} offers the highest tax credit of ${best_option.get('estimatedCredit', 0):,.0f}",
                 self.styles['Normal']
             ))
             story.append(Spacer(1, 6))
             story.append(Paragraph(
-                f"• <b>Potential Savings:</b> Filming in {best_option['jurisdiction']} saves ${savings:,.0f} compared to the lowest option",
+                f"â€¢ <b>Potential Savings:</b> Filming in {best_option['jurisdiction']} saves ${savings:,.0f} compared to the lowest option",
                 self.styles['Normal']
             ))
             story.append(Spacer(1, 6))
             story.append(Paragraph(
-                f"• <b>Next Steps:</b> Review compliance requirements for {best_option['jurisdiction']} and contact their film office to begin application process",
+                f"â€¢ <b>Next Steps:</b> Review compliance requirements for {best_option['jurisdiction']} and contact their film office to begin application process",
                 self.styles['Normal']
             ))
         else:
             story.append(Paragraph(
-                "• <b>No data available for recommendations.</b> Please provide jurisdiction comparison data.",
+                "â€¢ <b>No data available for recommendations.</b> Please provide jurisdiction comparison data.",
                 self.styles['Normal']
             ))
         
@@ -248,7 +248,7 @@ class PDFReportGenerator:
         # Compliance Status
         story.append(Paragraph("Compliance Status", self.styles['SectionHeader']))
         status_color = colors.HexColor('#28a745') if overall_status == 'compliant' else colors.HexColor('#dc3545')
-        status_text = '✓ COMPLIANT' if overall_status == 'compliant' else '✗ NON-COMPLIANT'
+        status_text = 'âœ“ COMPLIANT' if overall_status == 'compliant' else 'âœ— NON-COMPLIANT'
         story.append(Paragraph(
             f"<b><font color='{status_color.hexval()}'>{status_text}</font></b>",
             self.styles['HighlightBox']
@@ -266,7 +266,7 @@ class PDFReportGenerator:
         
         req_data = [['Status', 'Requirement', 'Details']]
         for req in requirements:
-            status_symbol = '✓' if req['status'] == 'met' else ('?' if req['status'] == 'unknown' else '✗')
+            status_symbol = 'âœ“' if req['status'] == 'met' else ('?' if req['status'] == 'unknown' else 'âœ—')
             status_color = (colors.HexColor('#28a745') if req['status'] == 'met' else 
                           (colors.HexColor('#ffc107') if req['status'] == 'unknown' else colors.HexColor('#dc3545')))
             
@@ -391,17 +391,17 @@ class PDFReportGenerator:
         savings = best_scenario['estimatedCredit'] - worst_scenario['estimatedCredit']
         
         story.append(Paragraph(
-            f"• <b>Optimization Potential:</b> ${savings:,.0f} difference between best and worst scenarios",
+            f"â€¢ <b>Optimization Potential:</b> ${savings:,.0f} difference between best and worst scenarios",
             self.styles['Normal']
         ))
         story.append(Spacer(1, 6))
         story.append(Paragraph(
-            f"• <b>Budget Efficiency:</b> {best_scenario['scenarioName']} offers the highest return on investment",
+            f"â€¢ <b>Budget Efficiency:</b> {best_scenario['scenarioName']} offers the highest return on investment",
             self.styles['Normal']
         ))
         story.append(Spacer(1, 6))
         story.append(Paragraph(
-            f"• <b>Recommendation:</b> Consider {best_scenario['scenarioName']} for maximum tax incentive benefit",
+            f"â€¢ <b>Recommendation:</b> Consider {best_scenario['scenarioName']} for maximum tax incentive benefit",
             self.styles['Normal']
         ))
         

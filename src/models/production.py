@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pydantic models for Productions
 """
 from pydantic import BaseModel, Field
@@ -57,3 +57,4 @@ class ProductionList(BaseModel):
     """Model for list of productions"""
     total: int
     productions: List[ProductionResponse]
+

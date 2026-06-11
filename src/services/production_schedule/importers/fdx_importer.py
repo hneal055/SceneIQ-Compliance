@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/importers/fdx_importer.py
 # Reads a Final Draft .fdx file (XML script export) and returns a list
 # of Scene objects.
@@ -6,15 +6,15 @@
 # .fdx files are XML. The root is <FinalDraft>; the body lives in
 # <Content> and is a flat sequence of <Paragraph> children. Each
 # <Paragraph> has a Type attribute that tells us what it is:
-#   - "Scene Heading"     — start of a new scene (e.g. "INT. POLICE STATION - DAY")
-#   - "Character"         — a character cue (e.g. "MARSH", "MARSH (CONT'D)")
-#   - "Dialogue", "Action", "Parenthetical", "Transition", "General"  — ignored
+#   - "Scene Heading"     â€” start of a new scene (e.g. "INT. POLICE STATION - DAY")
+#   - "Character"         â€” a character cue (e.g. "MARSH", "MARSH (CONT'D)")
+#   - "Dialogue", "Action", "Parenthetical", "Transition", "General"  â€” ignored
 #
 # Scenes have no <Scene> wrapper element. We walk paragraphs
 # sequentially, open a new Scene on each Scene Heading, and collect
 # Character names until the next heading.
 #
-# The heading parser (string → loc_type/location/time_of_day) lives in
+# The heading parser (string â†’ loc_type/location/time_of_day) lives in
 # the shared module src/services/production_schedule/importers/_heading.py
 # so both this importer and the MMS importer use the same logic.
 # =============================================================================
@@ -33,7 +33,7 @@ VERBOSE_LOGGING = True
 
 
 # Final Draft paragraph Type values we route on. Everything else is
-# silently ignored — the FDX importer only cares about scene boundaries
+# silently ignored â€” the FDX importer only cares about scene boundaries
 # and character cues, not dialogue or action text.
 _SCENE_HEADING_TYPE = "Scene Heading"
 _CHARACTER_TYPE = "Character"
@@ -108,7 +108,7 @@ def parse_fdx_file(file_path):
 # location, time_of_day) triple. `element` is the xmltodict dict for
 # the <Paragraph Type="Scene Heading"> element.
 #
-# Thin wrapper over parse_scene_heading_text — exists because the brief
+# Thin wrapper over parse_scene_heading_text â€” exists because the brief
 # specifies this function signature for the FDX importer.
 def extract_scene_heading(element):
     text = _paragraph_text(element)
@@ -161,9 +161,9 @@ def _find_paragraphs(data):
 
 
 # Pulls the visible text from a <Paragraph> dict. xmltodict gives us:
-#   <Paragraph><Text>X</Text></Paragraph>          → {"Text": "X"}
-#   <Paragraph><Text>X</Text><Text>Y</Text></...>  → {"Text": ["X", "Y"]}
-#   <Paragraph><Text Style="Bold">X</Text></...>   → {"Text": {"#text": "X", "@Style": "Bold"}}
+#   <Paragraph><Text>X</Text></Paragraph>          â†’ {"Text": "X"}
+#   <Paragraph><Text>X</Text><Text>Y</Text></...>  â†’ {"Text": ["X", "Y"]}
+#   <Paragraph><Text Style="Bold">X</Text></...>   â†’ {"Text": {"#text": "X", "@Style": "Bold"}}
 # This helper normalises all three into a single concatenated string.
 def _paragraph_text(paragraph):
     if not isinstance(paragraph, dict):
@@ -182,12 +182,12 @@ def _flatten_text(value):
         return "".join(_flatten_text(item) for item in value)
     if isinstance(value, dict):
         # Dict shape happens when a <Text> element has attributes (e.g.
-        # Style="Bold") — the visible content lives in "#text".
+        # Style="Bold") â€” the visible content lives in "#text".
         return _flatten_text(value.get("#text", ""))
     return str(value)
 
 
-# Removes a trailing parenthesised annotation from a character name —
+# Removes a trailing parenthesised annotation from a character name â€”
 # (O.S.), (V.O.), (CONT'D), (O.C.), (PRELAP), etc. Leaves names with
 # inline parentheses (rare) alone unless they're at the very end.
 def _strip_character_annotation(text):
@@ -221,3 +221,4 @@ def _build_scene(heading_paragraph, index, cast_paragraphs):
         cast_ids=cast_ids,
         notes=None,
     )
+

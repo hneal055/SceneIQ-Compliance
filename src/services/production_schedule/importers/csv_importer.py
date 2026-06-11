@@ -1,10 +1,10 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/importers/csv_importer.py
 # Reads a script-breakdown CSV file and returns a list of Scene objects.
 #
 # The mapping from real-world CSV column headers to internal Scene field
 # names lives in src/services/production_schedule/config/field_maps.py
-# (CSV_SCENE_FIELD_MAP). To add a new header variant, edit that map — you
+# (CSV_SCENE_FIELD_MAP). To add a new header variant, edit that map â€” you
 # do NOT need to change this file.
 #
 # Pattern mirrors src/services/broadcast_scheduler/parsers/csv_parser.py:
@@ -13,10 +13,10 @@
 #
 # NOTE on raw-string semantics:
 #   - Scene.jurisdiction_id temporarily holds the raw jurisdiction NAME
-#     from the CSV. The router (Phase 10) resolves name → Jurisdiction.id
+#     from the CSV. The router (Phase 10) resolves name â†’ Jurisdiction.id
 #     before persisting.
 #   - Scene.cast_ids temporarily holds character NAMES (e.g. ["MARSH"]).
-#     The router (or Phase 8 tracker) resolves names → CastMember.id.
+#     The router (or Phase 8 tracker) resolves names â†’ CastMember.id.
 # =============================================================================
 
 import csv
@@ -35,7 +35,7 @@ VERBOSE_LOGGING = True
 # objects. Returns an empty list if the file cannot be opened or read.
 #
 # Arguments:
-#   file_path  — path to the CSV file (string or Path)
+#   file_path  â€” path to the CSV file (string or Path)
 def parse_csv_breakdown(file_path):
     file_path = Path(file_path)
 
@@ -45,10 +45,10 @@ def parse_csv_breakdown(file_path):
     scenes = []
 
     # All file I/O is wrapped in try/except so a missing or broken file
-    # cannot crash the whole pipeline — log and return an empty list.
+    # cannot crash the whole pipeline â€” log and return an empty list.
     try:
         # encoding="utf-8-sig" silently strips the UTF-8 BOM that Excel
-        # adds to CSVs saved on Windows — a common novice gotcha.
+        # adds to CSVs saved on Windows â€” a common novice gotcha.
         # newline="" lets the csv module handle line endings on its own.
         with open(file_path, mode="r", encoding="utf-8-sig", newline="") as csv_file:
             reader = csv.DictReader(csv_file)
@@ -79,9 +79,9 @@ def parse_csv_breakdown(file_path):
 # scene number (a row without one is unusable and the spec says to skip).
 #
 # Arguments:
-#   row         — dict mapping CSV header strings to raw cell values
-#   field_map   — header → Scene-field-name map (e.g. CSV_SCENE_FIELD_MAP)
-#   row_number  — optional 1-based source row number, used only in warnings
+#   row         â€” dict mapping CSV header strings to raw cell values
+#   field_map   â€” header â†’ Scene-field-name map (e.g. CSV_SCENE_FIELD_MAP)
+#   row_number  â€” optional 1-based source row number, used only in warnings
 def build_scene_from_row(row, field_map, row_number=None):
     cleaned = {}
 
@@ -91,12 +91,12 @@ def build_scene_from_row(row, field_map, row_number=None):
         if csv_column is None:
             continue
 
-        # Strip leading/trailing whitespace from the header before lookup —
+        # Strip leading/trailing whitespace from the header before lookup â€”
         # real-world CSVs often have " Title " instead of "Title".
         clean_column = csv_column.strip()
         internal_field = field_map.get(clean_column)
         if internal_field is None:
-            continue  # this column isn't in our map — silently ignore
+            continue  # this column isn't in our map â€” silently ignore
 
         # Clean the cell value: strip whitespace, convert empty to None,
         # so downstream code never has to distinguish "" from missing.
@@ -110,12 +110,12 @@ def build_scene_from_row(row, field_map, row_number=None):
         cleaned[internal_field] = value
 
     # A row without a scene number is unusable. Per the brief, log and
-    # skip — never crash.
+    # skip â€” never crash.
     scene_number = cleaned.get("scene_number")
     if not scene_number:
         if VERBOSE_LOGGING:
             where = f"row {row_number}" if row_number else "row"
-            print(f"[CSV] WARNING: skipping {where} — no scene number")
+            print(f"[CSV] WARNING: skipping {where} â€” no scene number")
         return None
 
     # Convert page_count to float. Bad values log a warning and become None
@@ -129,7 +129,7 @@ def build_scene_from_row(row, field_map, row_number=None):
             if VERBOSE_LOGGING:
                 print(
                     f"[CSV] WARNING: scene {scene_number}: "
-                    f"could not parse page count {raw_pages!r} — leaving blank"
+                    f"could not parse page count {raw_pages!r} â€” leaving blank"
                 )
 
     # Split cast on commas. Each piece is stripped; empties are dropped.
@@ -139,7 +139,7 @@ def build_scene_from_row(row, field_map, row_number=None):
         cast_ids = [piece.strip() for piece in raw_cast.split(",") if piece.strip()]
 
     # Jurisdiction name lands on Scene.jurisdiction_id as a raw string;
-    # the router resolves name → Jurisdiction.id at persist time.
+    # the router resolves name â†’ Jurisdiction.id at persist time.
     jurisdiction_name = cleaned.get("jurisdiction_name")
 
     return Scene(
@@ -153,3 +153,4 @@ def build_scene_from_row(row, field_map, row_number=None):
         cast_ids=cast_ids,
         notes=cleaned.get("notes"),
     )
+

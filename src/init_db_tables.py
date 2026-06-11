@@ -1,4 +1,4 @@
-import psycopg2
+﻿import psycopg2
 from psycopg2 import sql
 
 def init_database_tables():
@@ -17,7 +17,7 @@ def init_database_tables():
         connection.autocommit = False
         cursor = connection.cursor()
         
-        print("✅ Connected to database successfully")
+        print("âœ… Connected to database successfully")
         
         # Create tables if they don't exist
         tables_sql = [
@@ -71,11 +71,11 @@ def init_database_tables():
         
         for i, table_sql in enumerate(tables_sql):
             cursor.execute(table_sql)
-            print(f"✅ Created/verified table {i+1}")
+            print(f"âœ… Created/verified table {i+1}")
         
         # Commit the transaction
         connection.commit()
-        print("✅ Database tables initialized successfully")
+        print("âœ… Database tables initialized successfully")
         
         # Insert sample data
         sample_data_sql = """
@@ -88,19 +88,19 @@ def init_database_tables():
         """
         
         cursor.execute(sample_data_sql)
-        print("✅ Inserted sample client data")
+        print("âœ… Inserted sample client data")
         
         connection.commit()
         cursor.close()
         
     except (Exception, psycopg2.DatabaseError) as error:
-        print(f"❌ Error: {error}")
+        print(f"âŒ Error: {error}")
         if connection:
             connection.rollback()
     finally:
         if connection:
             connection.close()
-            print("✅ Database connection closed")
+            print("âœ… Database connection closed")
 
 if __name__ == "__main__":
     init_database_tables()

@@ -1,5 +1,5 @@
-"""
-Daily monitoring digest — generates and sends a summary of new monitoring
+﻿"""
+Daily monitoring digest â€” generates and sends a summary of new monitoring
 events to all users who have reportFrequency = 'daily' or 'weekly' (on the
 appropriate day) in their NotificationPreference.
 
@@ -83,7 +83,7 @@ def _build_html(events: list, window_label: str) -> str:
         <tr><td style="background:{banner_color};padding:24px 32px">
           <h1 style="margin:0;color:white;font-size:20px">SceneIQ</h1>
           <p style="margin:4px 0 0;color:rgba(255,255,255,.8);font-size:14px">
-            {window_label} Monitoring Digest — {banner_label}
+            {window_label} Monitoring Digest â€” {banner_label}
           </p>
         </td></tr>
 
@@ -96,7 +96,7 @@ def _build_html(events: list, window_label: str) -> str:
         <tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb">
           <p style="margin:0;font-size:12px;color:#9ca3af">
             You're receiving this because you enabled monitoring digests in SceneIQ.
-            Manage preferences in <strong>Settings → Email Reports</strong>.
+            Manage preferences in <strong>Settings â†’ Email Reports</strong>.
           </p>
         </td></tr>
 
@@ -145,7 +145,7 @@ async def send_daily_digest() -> None:
                 "createdAt": {"gte": cutoff},
                 "isRead": False,
             }
-            events = await prisma.monitoringevent.find_many(
+            events = await prisma.monitoring_events.find_many(
                 where=where_clause,
                 include={"source": True},
                 order={"severity": "asc"},   # critical first
@@ -156,10 +156,11 @@ async def send_daily_digest() -> None:
 
         critical = sum(1 for e in events if e.severity == "critical")
         subject = (
-            f"🚨 SceneIQ Alert: {critical} critical regulatory update{'s' if critical > 1 else ''}"
+            f"ðŸš¨ SceneIQ Alert: {critical} critical regulatory update{'s' if critical > 1 else ''}"
             if critical else
-            f"SceneIQ {label} Digest — {len(events)} new event{'s' if len(events) != 1 else ''}"
+            f"SceneIQ {label} Digest â€” {len(events)} new event{'s' if len(events) != 1 else ''}"
         )
         html = _build_html(events, label)
         send_email(email, subject, html)
         logger.info(f"[digest] Sent {label} digest to {email} ({len(events)} events)")
+

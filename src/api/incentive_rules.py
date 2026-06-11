@@ -1,4 +1,4 @@
-"""
+﻿"""
 Incentive Rule API endpoints
 """
 from fastapi import APIRouter, HTTPException, Query, status

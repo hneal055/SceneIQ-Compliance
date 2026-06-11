@@ -1,4 +1,4 @@
-import csv
+﻿import csv
 from pathlib import Path
 from src.services.broadcast_scheduler.config.field_maps import CSV_FIELD_MAP
 from src.services.broadcast_scheduler.models.schedule import Schedule
@@ -67,3 +67,4 @@ def build_segment_from_row(row):
                 )
 
     return segment
+

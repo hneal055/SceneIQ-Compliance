@@ -1,4 +1,4 @@
-"""
+﻿"""
 Conflicts API -- list detected rule conflicts and record resolutions/overrides.
 
 GET  /conflicts              -- list conflicts (filter by project, resolved status, type)
@@ -169,3 +169,4 @@ async def override_conflict(conflict_id: str, body: OverrideRequest):
     )
 
     return {"override": override, "conflict_id": conflict_id}
+

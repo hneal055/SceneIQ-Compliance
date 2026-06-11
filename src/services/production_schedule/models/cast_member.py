@@ -1,6 +1,6 @@
-# =============================================================================
+﻿# =============================================================================
 # src/services/production_schedule/models/cast_member.py
-# The CastMember dataclass — one cast member on a production.
+# The CastMember dataclass â€” one cast member on a production.
 # Mirrors the `CastMember` model in prisma/schema.prisma.
 # Used to render the Day Out of Days (DOOD) grid.
 # =============================================================================
@@ -20,7 +20,7 @@ from typing import Dict, Optional
 #   WF = Work + Finish (same day)
 @dataclass
 class CastMember:
-    # Character name as it appears in the script — e.g. "DETECTIVE MARSH".
+    # Character name as it appears in the script â€” e.g. "DETECTIVE MARSH".
     character_name: str
 
     # The Production this cast member belongs to.
@@ -29,7 +29,7 @@ class CastMember:
     # Database primary key. None until the record is saved.
     id: Optional[str] = None
 
-    # Real-world actor name. Optional — many breakdowns leave this blank.
+    # Real-world actor name. Optional â€” many breakdowns leave this blank.
     actor_name: Optional[str] = None
 
     # Per-day DOOD status codes keyed by ISO date, e.g.
@@ -49,3 +49,4 @@ class CastMember:
             f"actor={self.actor_name!r}, "
             f"start={self.start_day}, finish={self.finish_day})"
         )
+

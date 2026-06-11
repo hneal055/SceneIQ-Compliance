@@ -1,4 +1,4 @@
-"""
+﻿"""
 Main API router - aggregates all route modules
 """
 from fastapi import APIRouter
@@ -32,4 +32,5 @@ async def api_root():
 
         }
     }
+
 
