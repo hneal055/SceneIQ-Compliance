@@ -98,6 +98,23 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   const [expenseForm, setExpenseForm] = useState({ category: 'labor', description: '', amount: '', expenseDate: new Date().toISOString().split('T')[0], isQualifying: true, vendorName: '' });
   const [expenseSaving, setExpenseSaving] = useState(false);
   const [expenseGenerating, setExpenseGenerating] = useState(false);
+﻿  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
+  const [editExpenseForm, setEditExpenseForm] = useState({ description: '', amount: '', isQualifying: true, vendorName: '', category: 'labor' });
+
+  async function handleEditExpenseSave(expenseId: string) {
+    try {
+      const token = localStorage.getItem('sceneiq_token');
+      const res = await fetch(`/api/0.1.0/productions/${productionId}/expenses/${expenseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...editExpenseForm, amount: parseFloat(editExpenseForm.amount) }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      setEditingExpenseId(null);
+      loadExpenses();
+    } catch { /* silent */ }
+  }
+
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
   const [rules, setRules] = useState<IncentiveRule[]>([]);
@@ -525,8 +542,22 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                         <td className="px-4 py-3 font-semibold text-slate-900">{fmt(exp.amount)}</td>
                         <td className="px-4 py-3">{exp.isQualifying ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300" />}</td>
                         <td className="px-4 py-3">
-                          <button type="button" title="Delete expense" onClick={() => handleDeleteExpense(exp.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          <button type="button" title="Edit expense" onClick={() => { setEditingExpenseId(exp.id); setEditExpenseForm({ description: exp.description, amount: String(exp.amount), isQualifying: exp.isQualifying, vendorName: exp.vendorName || '', category: exp.category }); }} className="text-slate-300 hover:text-blue-500 transition-colors mr-2"><Pencil className="w-4 h-4" /></button><button type="button" title="Delete expense" onClick={() => handleDeleteExpense(exp.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                         </td>
+                      {editingExpenseId === exp.id && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-2 bg-blue-50 border-t">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <input className="border rounded px-2 py-1 text-sm w-48" value={editExpenseForm.description} onChange={e => setEditExpenseForm(f => ({...f, description: e.target.value}))} placeholder="Description" />
+                              <input type="number" className="border rounded px-2 py-1 text-sm w-28" value={editExpenseForm.amount} onChange={e => setEditExpenseForm(f => ({...f, amount: e.target.value}))} placeholder="Amount" />
+                              <input className="border rounded px-2 py-1 text-sm w-36" value={editExpenseForm.vendorName} onChange={e => setEditExpenseForm(f => ({...f, vendorName: e.target.value}))} placeholder="Vendor" />
+                              <label className="flex items-center gap-1 text-sm cursor-pointer"><input type="checkbox" checked={editExpenseForm.isQualifying} onChange={e => setEditExpenseForm(f => ({...f, isQualifying: e.target.checked}))} /> Qualifying</label>
+                              <button onClick={() => handleEditExpenseSave(exp.id)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Save</button>
+                              <button onClick={() => setEditingExpenseId(null)} className="px-3 py-1 border rounded text-sm">Cancel</button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                       </tr>
                     ))}
                   </tbody>

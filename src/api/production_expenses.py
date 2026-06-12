@@ -339,3 +339,33 @@ async def generate_expenses(production_id: str, replace: bool = False):
     }
 
 
+
+@router.patch("/productions/{production_id}/expenses/{expense_id}", summary="Update an expense line item")
+async def update_expense(production_id: str, expense_id: str, data: dict):
+    """Update an individual expense line item — amount, description, qualifying status, vendor."""
+    expense = await prisma.expense.find_unique(where={"id": expense_id})
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    if expense.productionId != production_id:
+        raise HTTPException(status_code=403, detail="Expense does not belong to this production")
+
+    update_data = {}
+    if "description" in data:
+        update_data["description"] = data["description"]
+    if "amount" in data:
+        update_data["amount"] = float(data["amount"])
+    if "isQualifying" in data:
+        update_data["isQualifying"] = bool(data["isQualifying"])
+    if "vendorName" in data:
+        update_data["vendorName"] = data["vendorName"]
+    if "category" in data:
+        update_data["category"] = data["category"]
+
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+
+    updated = await prisma.expense.update(
+        where={"id": expense_id},
+        data=update_data,
+    )
+    return updated
