@@ -578,12 +578,14 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
 
         {/* Intelligence Tab */}
         {tab === 'signals' && (
-          <SignalDashboard productionId={production.id} token={localStorage.getItem('token') || ''} />
+          <SignalDashboard productionId={production.id} token={localStorage.getItem('sceneiq_token') || ''} />
         )}
       </div>
     </div>
   );
 }
+
+
 
 
 
