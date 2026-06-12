@@ -297,7 +297,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
               </span>
             </div>
             <p className="text-slate-500 text-sm">
-              {production.productionCompany}{jur ? ` Â· ${jur.name}` : ''} Â· {capitalize(production.productionType)} Â· Started {production.startDate?.split('T')[0]}
+              {production.productionCompany}{jur ? ` · ${jur.name}` : ''} · {capitalize(production.productionType)} · Started {production.startDate?.split('T')[0]}
             </p>
           </div>
           <div className="flex items-center gap-5">
@@ -336,7 +336,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                       className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50"
                     >
                       {budgetSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                      {budgetSaving ? 'Savingâ€¦' : 'Save'}
+                      {budgetSaving ? 'Saving…' : 'Save'}
                     </button>
                     <button
                       onClick={() => { setBudgetEdit(null); setBudgetError(null); }}
@@ -571,7 +571,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {tab === 'compliance' && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
-              {compliance && compliance.total > 0 && <p className="text-sm text-slate-500"><span className="font-bold">{compliance.complete}</span> of <span className="font-bold">{compliance.total}</span> items complete{compliance.waived > 0 && ` Â· ${compliance.waived} waived`}</p>}
+              {compliance && compliance.total > 0 && <p className="text-sm text-slate-500"><span className="font-bold">{compliance.complete}</span> of <span className="font-bold">{compliance.total}</span> items complete{compliance.waived > 0 && ` · ${compliance.waived} waived`}</p>}
               <div className="flex gap-2">
                 {compliance && compliance.total > 0 && <button onClick={loadCompliance} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-lg"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>}
                 <button onClick={handleGenerateChecklist} disabled={compLoading} className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg">{compLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}{compliance ? 'Regenerate' : 'Generate'} Checklist</button>
@@ -589,7 +589,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {/* Calculator Tab */}
         {tab === 'calculator' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl border p-6"><h2 className="text-sm font-bold mb-4">Incentive Calculator</h2><div className="flex gap-4 items-end"><div className="flex-1"><label className="block text-xs font-semibold uppercase mb-2">Jurisdiction</label><select value={calcJurId} onChange={e => { setCalcJurId(e.target.value); setCalcResult(null); }} className="w-full px-3.5 py-2.5 border rounded-lg">{jurisdictions.map(j => <option key={j.id} value={j.id}>{j.name} ({j.code}){j.id === production.jurisdictionId ? ' â˜… primary' : ''}</option>)}</select></div><button onClick={handleCalculate} disabled={!calcJurId || calcLoading} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg">{calcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}{calcLoading ? 'Calculatingâ€¦' : 'Calculate'}</button></div>{calcError && <p className="text-red-600 text-sm mt-3">{calcError}</p>}</div>
+            <div className="bg-white rounded-xl border p-6"><h2 className="text-sm font-bold mb-4">Incentive Calculator</h2><div className="flex gap-4 items-end"><div className="flex-1"><label className="block text-xs font-semibold uppercase mb-2">Jurisdiction</label><select value={calcJurId} onChange={e => { setCalcJurId(e.target.value); setCalcResult(null); }} className="w-full px-3.5 py-2.5 border rounded-lg">{jurisdictions.map(j => <option key={j.id} value={j.id}>{j.name} ({j.code}){j.id === production.jurisdictionId ? ' ★ primary' : ''}</option>)}</select></div><button onClick={handleCalculate} disabled={!calcJurId || calcLoading} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg">{calcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}{calcLoading ? 'Calculating…' : 'Calculate'}</button></div>{calcError && <p className="text-red-600 text-sm mt-3">{calcError}</p>}</div>
             {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary â€” {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : 'â€”'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
             {!calcResult && !calcLoading && <div className="bg-white rounded-xl border p-16 text-center"><TrendingUp className="w-8 h-8 text-slate-300 mx-auto mb-3" /><p className="text-slate-700 font-semibold">Select a jurisdiction and calculate</p></div>}
           </div>
