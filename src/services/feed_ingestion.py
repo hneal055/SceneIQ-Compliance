@@ -160,7 +160,7 @@ async def _notify_subscribers(
     """
     from src.utils.email import send_email, build_monitoring_alert_html  # lazy import
 
-    prefs = await prisma.notificationpreference.find_many(where={"active": True})
+    prefs = await prisma.notification_preferences.find_many(where={"active": True})
     if not prefs:
         return
 
@@ -205,5 +205,6 @@ async def ingest_all_sources() -> int:
 
     logger.info(f"Feed ingestion complete â€” {total} new event(s) from {len(sources)} source(s)")
     return total
+
 
 

@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 // frontend/src/pages/ProductionSchedule/Stripboard.tsx
 // DAY-block + scene-strip stripboard view with an Unscheduled bin.
 //
@@ -6,7 +6,7 @@
 //   - GET /production-schedule/{id}/stripboard returns { days[], unscheduled }.
 //   - Freshly-imported scenes land in the Unscheduled bin (no shoot day yet).
 //   - "New shoot day" (POST /shoot-days) adds an empty day.
-//   - Each scene strip has an "Assign ▾" dropdown (Unscheduled / Day N) that
+//   - Each scene strip has an "Assign â–¾" dropdown (Unscheduled / Day N) that
 //     calls POST /stripboard/assign or /stripboard/unassign, then refetches.
 //   - Each day can be deleted (DELETE /shoot-days/{id}); its scenes return to
 //     the Unscheduled bin (FK onDelete: SetNull).
@@ -67,7 +67,7 @@ const UNSCHEDULED = "__unscheduled__";
 // Converts a decimal page count (`2.5`, `3.125`) to the eighths display
 // used on traditional stripboards (`"2 4/8"`, `"3 1/8"`).
 function pagesDisplay(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "â€”";
   if (value === 0) return "0";
   const totalEighths = Math.round(value * 8);
   const full = Math.floor(totalEighths / 8);
@@ -114,7 +114,7 @@ export default function Stripboard({ productionId }: Props) {
         }
       })
       .catch(() => {
-        /* dropdown just stays empty — editing other fields still works */
+        /* dropdown just stays empty â€” editing other fields still works */
       });
     return () => {
       cancelled = true;
@@ -234,7 +234,7 @@ export default function Stripboard({ productionId }: Props) {
     return (
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center text-slate-500">
         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-3 text-blue-500" />
-        <p className="text-sm">Loading stripboard…</p>
+        <p className="text-sm">Loading stripboardâ€¦</p>
       </div>
     );
   }
@@ -356,7 +356,7 @@ export default function Stripboard({ productionId }: Props) {
 
       {days.length === 0 && (
         <p className="text-center text-xs text-slate-400 py-2">
-          No shoot days yet — click <span className="font-semibold">New shoot day</span> to
+          No shoot days yet â€” click <span className="font-semibold">New shoot day</span> to
           start scheduling, then assign scenes from the Unscheduled bin above.
         </p>
       )}
@@ -516,7 +516,7 @@ function DayBlock({
             onClick={onDelete}
             disabled={busy}
             title={`Delete Day ${day.day_number} (scenes return to Unscheduled)`}
-            className="p-1 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Trash2 size={13} />
           </button>
@@ -540,8 +540,8 @@ function DayBlock({
         <div className="px-4 pb-4 pt-1 border-t border-slate-100 bg-slate-50/40">
           {day.scenes.length === 0 ? (
             <p className="text-sm text-slate-500 italic py-3">
-              No scenes assigned to this day yet — assign them from the
-              Unscheduled bin using the “Assign ▾” menu.
+              No scenes assigned to this day yet â€” assign them from the
+              Unscheduled bin using the â€œAssign â–¾â€ menu.
             </p>
           ) : (
             <div className="flex flex-col gap-1.5 mt-2">
@@ -564,7 +564,7 @@ function DayBlock({
 }
 
 // -----------------------------------------------------------------------------
-// DayEditForm — inline editor for a shoot day's call-sheet logistics.
+// DayEditForm â€” inline editor for a shoot day's call-sheet logistics.
 // -----------------------------------------------------------------------------
 
 interface DayEditFormProps {
@@ -584,7 +584,7 @@ function DayEditForm({
 }: DayEditFormProps) {
   const [date, setDate] = useState(day.date ?? "");
   // The stripboard returns the jurisdiction NAME; the dropdown is keyed by
-  // name and the backend resolves name → id on save.
+  // name and the backend resolves name â†’ id on save.
   const [jurisdiction, setJurisdiction] = useState(day.jurisdiction ?? "");
   const [callTime, setCallTime] = useState(day.call_time ?? "");
   const [location, setLocation] = useState(day.location ?? "");
@@ -594,7 +594,7 @@ function DayEditForm({
     day.crew_calls.length > 0 ? day.crew_calls : [],
   );
 
-  // Empty string → null so the backend clears the column.
+  // Empty string â†’ null so the backend clears the column.
   const nz = (v: string) => (v.trim() === "" ? null : v.trim());
 
   const addCrewRow = () =>
@@ -723,7 +723,7 @@ function DayEditForm({
         </div>
         {crew.length === 0 ? (
           <p className="text-[11px] text-slate-400 italic">
-            No crew calls yet — add department call times to populate the call
+            No crew calls yet â€” add department call times to populate the call
             sheet's Crew Calls table.
           </p>
         ) : (
@@ -789,7 +789,7 @@ function DayEditForm({
 }
 
 // -----------------------------------------------------------------------------
-// SceneStrip — with an inline placement <select> (Unscheduled / Day N).
+// SceneStrip â€” with an inline placement <select> (Unscheduled / Day N).
 // -----------------------------------------------------------------------------
 
 interface SceneStripProps {
@@ -832,7 +832,7 @@ function SceneStrip({ scene, days, currentDayId, busy, onMove }: SceneStripProps
           )}
         </div>
         <p className="text-xs font-semibold text-slate-900 truncate">
-          {scene.location || scene.title || "—"}
+          {scene.location || scene.title || "â€”"}
         </p>
         {scene.title && scene.location && (
           <p className="text-[11px] text-slate-500 truncate mt-0.5">{scene.title}</p>
@@ -901,3 +901,4 @@ function SceneStrip({ scene, days, currentDayId, busy, onMove }: SceneStripProps
     </div>
   );
 }
+

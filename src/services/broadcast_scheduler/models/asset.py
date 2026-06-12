@@ -32,3 +32,4 @@ class Asset:
             f"format={self.format!r})"
         )
 
+

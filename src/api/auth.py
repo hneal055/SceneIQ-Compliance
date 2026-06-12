@@ -38,7 +38,7 @@ async def _authenticate(email: str, password: str) -> Token:
     Enforces account lockout after settings.MAX_FAILED_ATTEMPTS consecutive
     failures (423), and resets the counter on a successful login.
     """
-    user = await prisma.user.find_unique(where={"email": email})
+    user = await prisma.users.find_unique(where={"email": email})
     if not user or not user.isActive:
         raise _INVALID_CREDENTIALS
 
@@ -48,7 +48,7 @@ async def _authenticate(email: str, password: str) -> Token:
     if not verify_password(password, user.passwordHash):
         new_count = (user.failedLoginCount or 0) + 1
         if new_count >= settings.MAX_FAILED_ATTEMPTS:
-            await prisma.user.update(
+            await prisma.users.update(
                 where={"id": user.id},
                 data={
                     "failedLoginCount": new_count,
@@ -57,13 +57,13 @@ async def _authenticate(email: str, password: str) -> Token:
                 },
             )
             raise _LOCKED
-        await prisma.user.update(
+        await prisma.users.update(
             where={"id": user.id}, data={"failedLoginCount": new_count}
         )
         raise _INVALID_CREDENTIALS
 
     # Success â€” clear any failure state and stamp last login.
-    await prisma.user.update(
+    await prisma.users.update(
         where={"id": user.id},
         data={
             "failedLoginCount": 0,
@@ -99,7 +99,7 @@ async def login(credentials: UserLogin):
 
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: TokenData = Depends(get_current_user)):
-    user = await prisma.user.find_unique(where={"id": current_user.sub})
+    user = await prisma.users.find_unique(where={"id": current_user.sub})
     if not user or not user.isActive:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -110,4 +110,6 @@ async def me(current_user: TokenData = Depends(get_current_user)):
         role=user.role,
         isActive=user.isActive,
     )
+
+
 

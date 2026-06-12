@@ -71,3 +71,4 @@ JSON_FIELD_MAP = {
     "Daypart"             : "daypart",
     "daypart"             : "daypart",
 }
+

@@ -69,3 +69,4 @@ def send_emails_bulk(recipients: list[str], subject: str, html: str, text: str |
     """Send the same email to multiple recipients. Returns success count."""
     return sum(send_email(r, subject, html, text) for r in recipients)
 
+

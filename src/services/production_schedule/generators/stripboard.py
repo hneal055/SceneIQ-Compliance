@@ -168,3 +168,4 @@ def get_stripboard_summary(scenes, shoot_days):
         "shoot_days_per_jurisdiction": by_jurisdiction,
     }
 
+

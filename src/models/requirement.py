@@ -69,3 +69,4 @@ class ChecklistResponse(BaseModel):
     byCategory: dict  # category -> count
     requirements: List[ChecklistItem]
 
+

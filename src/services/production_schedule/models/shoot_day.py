@@ -64,3 +64,4 @@ class ShootDay:
             f"total_pages={self.total_pages!r})"
         )
 
+

@@ -16,3 +16,4 @@ async def disconnect_db():
     """Disconnect from database"""
     await prisma.disconnect()
 
+

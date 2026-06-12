@@ -345,3 +345,4 @@ class ExcelExportGenerator:
 
 # Global Excel generator instance
 excel_generator = ExcelExportGenerator()
+

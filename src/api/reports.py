@@ -401,3 +401,4 @@ async def generate_scenario_report(request: GenerateScenarioReportRequest):
             "Content-Disposition": f"attachment; filename={filename}"
         }
     )
+

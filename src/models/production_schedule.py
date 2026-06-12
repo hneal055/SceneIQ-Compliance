@@ -92,3 +92,4 @@ class JurisdictionSummaryRow(BaseModel):
     shoot_days: int
     verified_at: Optional[datetime] = None
 
+

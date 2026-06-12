@@ -27,3 +27,4 @@ class TokenData(BaseModel):
     email: str
     role: str
 
+

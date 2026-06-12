@@ -167,14 +167,14 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
                     seen_names.add(cast_name)
                     unique_cast_names.append(cast_name)
 
-        existing_cm_rows = await prisma.castmember.find_many(
+        existing_cm_rows = await prisma.cast_members.find_many(
             where={"productionId": production.id},
         )
         cast_name_to_id = {cm.characterName: cm.id for cm in existing_cm_rows}
         for cast_name in unique_cast_names:
             if cast_name not in cast_name_to_id:
                 try:
-                    cm = await prisma.castmember.create(
+                    cm = await prisma.cast_members.create(
                         data={
                             "productionId":  production.id,
                             "characterName": cast_name,
@@ -282,7 +282,7 @@ async def get_stripboard(production_id: str):
     # swap. Matches the Phase 12 call-sheet resolution pattern.
     jur_rows = await prisma.jurisdiction.find_many()
     jur_id_to_name = {j.id: j.name for j in jur_rows}
-    cm_rows = await prisma.castmember.find_many(
+    cm_rows = await prisma.cast_members.find_many(
         where={"productionId": production_id},
     )
     cm_id_to_name = {cm.id: cm.characterName for cm in cm_rows}
@@ -309,7 +309,7 @@ async def assign_scene(production_id: str, body: AssignSceneBody):
             detail=f"Scene {body.scene_id!r} not found in production {production_id!r}",
         )
 
-    shoot_day_row = await prisma.shootday.find_unique(where={"id": body.shoot_day_id})
+    shoot_day_row = await prisma.shoot_days.find_unique(where={"id": body.shoot_day_id})
     if shoot_day_row is None or shoot_day_row.productionId != production_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -404,7 +404,7 @@ async def create_shoot_day(production_id: str, body: CreateShootDayBody):
     # (productionId, dayNumber) unique constraint guarantees no collision
     # for a single create; concurrent creates are not expected in the MVP.
     try:
-        existing = await prisma.shootday.find_many(
+        existing = await prisma.shoot_days.find_many(
             where={"productionId": production_id},
         )
     except Exception as exc:
@@ -422,7 +422,7 @@ async def create_shoot_day(production_id: str, body: CreateShootDayBody):
         resolved_jid = {j.name: j.id for j in jur_rows}.get(body.jurisdiction_name)
 
     try:
-        day = await prisma.shootday.create(
+        day = await prisma.shoot_days.create(
             data={
                 "productionId":    production_id,
                 "dayNumber":       next_day_number,
@@ -457,7 +457,7 @@ async def update_shoot_day(
 ):
     await _load_production_or_404(production_id)
 
-    day_row = await prisma.shootday.find_unique(where={"id": shoot_day_id})
+    day_row = await prisma.shoot_days.find_unique(where={"id": shoot_day_id})
     if day_row is None or day_row.productionId != production_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -493,7 +493,7 @@ async def update_shoot_day(
         data["crewCalls"] = crew_calls_json
 
     try:
-        updated = await prisma.shootday.update(where={"id": shoot_day_id}, data=data)
+        updated = await prisma.shoot_days.update(where={"id": shoot_day_id}, data=data)
     except Exception as exc:
         logger.exception("update shoot day failed")
         raise HTTPException(
@@ -519,7 +519,7 @@ async def update_shoot_day(
 async def delete_shoot_day(production_id: str, shoot_day_id: str):
     await _load_production_or_404(production_id)
 
-    day_row = await prisma.shootday.find_unique(where={"id": shoot_day_id})
+    day_row = await prisma.shoot_days.find_unique(where={"id": shoot_day_id})
     if day_row is None or day_row.productionId != production_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -529,7 +529,7 @@ async def delete_shoot_day(production_id: str, shoot_day_id: str):
     # Scene.shootDayId has onDelete: SetNull, so deleting the day
     # automatically returns its scenes to the Unscheduled bin.
     try:
-        await prisma.shootday.delete(where={"id": shoot_day_id})
+        await prisma.shoot_days.delete(where={"id": shoot_day_id})
     except Exception as exc:
         logger.exception("delete shoot day failed")
         raise HTTPException(
@@ -806,7 +806,7 @@ async def _load_scenes_and_shoot_days(
 ) -> Tuple[List[Scene], List[ShootDay]]:
     try:
         scene_rows = await prisma.scene.find_many(where={"productionId": production_id})
-        shoot_day_rows = await prisma.shootday.find_many(
+        shoot_day_rows = await prisma.shoot_days.find_many(
             where={"productionId": production_id},
         )
     except Exception as exc:
@@ -827,7 +827,7 @@ async def _load_scenes_and_shoot_days(
 # count_shoot_days_per_jurisdiction(); this function owns the Prisma
 # upsert / delete.
 async def _rollup_jurisdiction_shoot_days(production_id: str) -> None:
-    day_rows = await prisma.shootday.find_many(
+    day_rows = await prisma.shoot_days.find_many(
         where={"productionId": production_id},
     )
     day_dcs = [_row_to_shoot_day(r) for r in day_rows]
@@ -866,7 +866,7 @@ async def _rollup_jurisdiction_shoot_days(production_id: str) -> None:
 # Loads cast members for a production as in-memory dataclasses.
 async def _load_cast(production_id: str) -> List[CastMember]:
     try:
-        rows = await prisma.castmember.find_many(
+        rows = await prisma.cast_members.find_many(
             where={"productionId": production_id},
         )
     except Exception as exc:
@@ -889,7 +889,7 @@ async def _build_call_sheet_for_day(
         production = await _load_production_or_404(production_id)
 
     try:
-        day_row = await prisma.shootday.find_first(
+        day_row = await prisma.shoot_days.find_first(
             where={"productionId": production_id, "dayNumber": day_number},
         )
     except Exception as exc:
@@ -924,7 +924,7 @@ async def _build_call_sheet_for_day(
     # Resolve Scene.cast_ids (CastMember.id FK array) into characterName
     # strings for the rendered snapshot. The generator stays pure (no
     # DB access) per the Phase 9 contract.
-    cm_rows = await prisma.castmember.find_many(where={"productionId": production_id})
+    cm_rows = await prisma.cast_members.find_many(where={"productionId": production_id})
     id_to_name = {cm.id: cm.characterName for cm in cm_rows}
     for snap in call_sheet.scenes or []:
         ids = snap.get("cast") or []
@@ -971,7 +971,7 @@ async def auto_schedule(
         scene_rows = sorted(scene_rows, key=scene_sort_key)
 
         # Get current max day number
-        existing_days = await prisma.shootday.find_many(
+        existing_days = await prisma.shoot_days.find_many(
             where={"productionId": production_id},
             order={"dayNumber": "desc"},
         )
@@ -994,7 +994,7 @@ async def auto_schedule(
             )
 
             if needs_new_day:
-                current_day = await prisma.shootday.create(
+                current_day = await prisma.shoot_days.create(
                     data={
                         "productionId": production_id,
                         "dayNumber": next_day_number,
@@ -1163,4 +1163,5 @@ def _stripboard_payload(
             "total_pages": sum((s.page_count or 0.0) for s in unscheduled_scenes),
         },
     }
+
 

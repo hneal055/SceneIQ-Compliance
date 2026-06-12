@@ -61,7 +61,7 @@ async def list_compliance(production_id: str):
     if not prod:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Production not found")
 
-    items = await prisma.complianceitem.find_many(
+    items = await prisma.compliance_items.find_many(
         where={"productionId": production_id},
         order=[{"category": "asc"}, {"createdAt": "asc"}],
     )
@@ -90,7 +90,7 @@ async def generate_checklist(production_id: str):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Production not found")
 
     # Wipe existing items
-    await prisma.complianceitem.delete_many(where={"productionId": production_id})
+    await prisma.compliance_items.delete_many(where={"productionId": production_id})
 
     items_to_create = list(_STANDARD_ITEMS)
 
@@ -114,7 +114,7 @@ async def generate_checklist(production_id: str):
 
     created = []
     for item in items_to_create:
-        created.append(await prisma.complianceitem.create(data={
+        created.append(await prisma.compliance_items.create(data={
             "productionId": production_id,
             "label":        item["label"],
             "category":     item["category"],
@@ -142,13 +142,13 @@ async def add_item(production_id: str, data: ItemCreate):
     if data.dueDate:
         create_data["dueDate"] = datetime.fromisoformat(data.dueDate).replace(tzinfo=timezone.utc)
 
-    item = await prisma.complianceitem.create(data=create_data)
+    item = await prisma.compliance_items.create(data=create_data)
     return item
 
 
 @router.patch("/compliance/{item_id}", summary="Update compliance item status or notes")
 async def update_item(item_id: str, data: ItemUpdate):
-    existing = await prisma.complianceitem.find_unique(where={"id": item_id})
+    existing = await prisma.compliance_items.find_unique(where={"id": item_id})
     if not existing:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Compliance item not found")
 
@@ -165,16 +165,17 @@ async def update_item(item_id: str, data: ItemUpdate):
     if data.dueDate  is not None:
         update["dueDate"] = datetime.fromisoformat(data.dueDate).replace(tzinfo=timezone.utc)
 
-    return await prisma.complianceitem.update(where={"id": item_id}, data=update)
+    return await prisma.compliance_items.update(where={"id": item_id}, data=update)
 
 
 @router.delete("/compliance/{item_id}",
                status_code=status.HTTP_204_NO_CONTENT,
                summary="Delete a compliance item")
 async def delete_item(item_id: str):
-    existing = await prisma.complianceitem.find_unique(where={"id": item_id})
+    existing = await prisma.compliance_items.find_unique(where={"id": item_id})
     if not existing:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Compliance item not found")
-    await prisma.complianceitem.delete(where={"id": item_id})
+    await prisma.compliance_items.delete(where={"id": item_id})
     return None
+
 

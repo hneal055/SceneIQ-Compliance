@@ -41,3 +41,4 @@ class JurisdictionShootDays:
             f"verified_at={self.verified_at!r})"
         )
 
+

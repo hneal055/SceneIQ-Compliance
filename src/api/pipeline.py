@@ -233,3 +233,4 @@ async def generate_pipeline_report(result: dict):
         logger.error("Report generation failed: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
 
+

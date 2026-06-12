@@ -48,3 +48,4 @@ class JurisdictionList(BaseModel):
     total: int
     jurisdictions: list[JurisdictionResponse]
 
+

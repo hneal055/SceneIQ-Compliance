@@ -50,3 +50,4 @@ class CastMember:
             f"start={self.start_day}, finish={self.finish_day})"
         )
 
+

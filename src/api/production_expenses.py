@@ -338,3 +338,4 @@ async def generate_expenses(production_id: str, replace: bool = False):
         "expenses": created,
     }
 
+

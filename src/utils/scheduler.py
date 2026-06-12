@@ -65,3 +65,4 @@ def stop_scheduler() -> None:
         _scheduler.shutdown(wait=False)
         logger.info("âœ… Scheduler stopped")
 
+

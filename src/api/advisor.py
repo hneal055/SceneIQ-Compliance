@@ -533,3 +533,4 @@ async def summarize_event(event_id: str):
             detail=f"Summarization failed: {str(e)}",
         )
 
+

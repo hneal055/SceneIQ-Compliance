@@ -11,3 +11,4 @@ def money(x) -> Decimal:
     # round to cents using standard HALF_UP currency rounding
     return D(x).quantize(CENT, rounding=ROUND_HALF_UP)
 
+

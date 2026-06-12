@@ -30,3 +30,4 @@ class Schedule:
             f"segments={len(self.segments)})"
         )
 
+

@@ -190,3 +190,4 @@ class IncentiveRuleList(BaseModel):
     pageSize: int = Field(... , description="Number of items per page")
     totalPages: int = Field(... , description="Total number of pages")
     rules: List[IncentiveRuleResponse] = Field(default_factory=list, description="Rules returned")
+

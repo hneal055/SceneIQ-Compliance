@@ -140,3 +140,4 @@ def build_segment_from_element(element):
 
     return segment
 
+

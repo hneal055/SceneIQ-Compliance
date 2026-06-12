@@ -45,3 +45,4 @@ class Segment:
             f"duration={self.duration!r})"
         )
 
+

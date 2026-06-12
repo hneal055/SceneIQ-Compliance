@@ -250,3 +250,4 @@ async def maximum_possible_credit(
         best_case_headline="Up to 47.0% + sales tax exemption",
         generated_at=datetime.now(timezone.utc).isoformat(),
     )
+

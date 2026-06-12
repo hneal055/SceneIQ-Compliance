@@ -318,3 +318,4 @@ def _pdf_footer(canvas, doc):
     canvas.drawCentredString(page_size[0] / 2.0, 0.25 * inch, f"Page {doc.page}")
     canvas.restoreState()
 
+

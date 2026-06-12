@@ -83,3 +83,4 @@ def decode_token(token: str) -> TokenData:
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenData:
     return decode_token(token)
 
+

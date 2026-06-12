@@ -94,3 +94,4 @@ def verify_shoot_days(production_id, records, *, now=None):
         rec.verified_at = timestamp
     return records
 
+

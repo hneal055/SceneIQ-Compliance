@@ -66,3 +66,4 @@ async def evaluate_rule_engine(
         logger.exception("Unhandled rule engine error")
         raise HTTPException(status_code=500, detail="Internal Server Error") from e
 
+

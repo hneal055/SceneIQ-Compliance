@@ -175,3 +175,4 @@ def export_to_xml(schedule, output_path):
 def field_to_xml_tag(field_name):
     return "".join(part.capitalize() for part in field_name.split("_"))
 
+

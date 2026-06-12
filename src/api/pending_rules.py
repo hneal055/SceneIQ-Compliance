@@ -186,3 +186,4 @@ def _serialize(r) -> dict:
         "updatedAt":      r.updatedAt.isoformat() if r.updatedAt else None,
     }
 
+
