@@ -1,7 +1,6 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
-  AlertTriangle,
   DollarSign,
   TrendingUp,
   CheckCircle2,
@@ -17,9 +16,10 @@ import {
   Plus,
   Trash2,
   Pencil,
+  Check,
+  X,
 } from 'lucide-react';
 import api from '../api';
-import SignalDashboard from './SignalDashboard';
 import type {
   Production,
   Jurisdiction,
@@ -30,7 +30,7 @@ import type {
   ComplianceStats,
 } from '../types';
 
-type Tab = 'overview' | 'expenses' | 'calculator' | 'rules' | 'compliance' | 'signals';
+type Tab = 'overview' | 'expenses' | 'calculator' | 'rules' | 'compliance';
 
 const STATUS_COLORS: Record<string, string> = {
   planning:        'bg-blue-100 text-blue-800',
@@ -55,6 +55,11 @@ const COMPLIANCE_STATUS_CONFIG: Record<string, { label: string; cls: string }> =
   na:       { label: 'N/A',      cls: 'bg-slate-50 text-slate-400' },
 };
 
+const EXPENSE_CATEGORIES = [
+  'labor','equipment','locations','post_production',
+  'travel','catering','legal','insurance','visual_effects','other',
+];
+
 function fmt(n: number) {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
@@ -78,11 +83,20 @@ function StatCard({ label, value, sub, accent = false }: {
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'overview',    label: 'Overview',        icon: <LayoutList className="w-3.5 h-3.5" /> },
   { id: 'expenses',    label: 'Expenses',         icon: <ReceiptText className="w-3.5 h-3.5" /> },
-  { id: 'compliance',    label: 'Compliance',      icon: <ClipboardCheck className="w-3.5 h-3.5" /> },
-  { id: 'signals',      label: 'Intelligence',    icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  { id: 'compliance',  label: 'Compliance',       icon: <ClipboardCheck className="w-3.5 h-3.5" /> },
   { id: 'calculator',  label: 'Calculator',       icon: <CalcIcon className="w-3.5 h-3.5" /> },
   { id: 'rules',       label: 'Incentive Rules',  icon: <BookOpen className="w-3.5 h-3.5" /> },
 ];
+
+interface ExpenseEditState {
+  id: string;
+  category: string;
+  description: string;
+  amount: string;
+  expenseDate: string;
+  isQualifying: boolean;
+  vendorName: string;
+}
 
 interface Props {
   productionId: string;
@@ -98,24 +112,9 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   const [expenseForm, setExpenseForm] = useState({ category: 'labor', description: '', amount: '', expenseDate: new Date().toISOString().split('T')[0], isQualifying: true, vendorName: '' });
   const [expenseSaving, setExpenseSaving] = useState(false);
   const [expenseGenerating, setExpenseGenerating] = useState(false);
-﻿  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
-  const [editExpenseForm, setEditExpenseForm] = useState({ description: '', amount: '', isQualifying: true, vendorName: '', category: 'labor' });
-
-  async function handleEditExpenseSave(expenseId: string) {
-    try {
-      const token = localStorage.getItem('sceneiq_token');
-      const res = await fetch(`/api/0.1.0/productions/${productionId}/expenses/${expenseId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...editExpenseForm, amount: parseFloat(editExpenseForm.amount) }),
-      });
-      if (!res.ok) throw new Error('Failed to save');
-      setEditingExpenseId(null);
-      loadExpenses();
-    } catch { /* silent */ }
-  }
-
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [editingExpense, setEditingExpense] = useState<ExpenseEditState | null>(null);
+  const [expenseEditSaving, setExpenseEditSaving] = useState(false);
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
   const [rules, setRules] = useState<IncentiveRule[]>([]);
   const [calcResult, setCalcResult] = useState<CalculationResult | null>(null);
@@ -163,7 +162,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   useEffect(() => {
     if (tab === 'compliance' && !compliance) loadCompliance();
     if (tab === 'expenses') loadExpenses();
-  }, [tab]); // intentionally omits loadCompliance/loadExpenses to avoid infinite loop
+  }, [tab]);
 
   function loadExpenses() {
     setExpensesLoading(true);
@@ -181,10 +180,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
       const token = localStorage.getItem('sceneiq_token');
       const res = await fetch(`/api/0.1.0/productions/${production.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           budgetTotal: parseFloat(budgetEdit.total) || 0,
           budgetQualifying: budgetEdit.qualifying ? parseFloat(budgetEdit.qualifying) : null,
@@ -192,11 +188,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
       });
       if (!res.ok) throw new Error(`Save failed: ${res.status}`);
       const updated = await res.json();
-      setProduction(p => p ? {
-        ...p,
-        budgetTotal: updated.budgetTotal,
-        budgetQualifying: updated.budgetQualifying,
-      } : p);
+      setProduction(p => p ? { ...p, budgetTotal: updated.budgetTotal, budgetQualifying: updated.budgetQualifying } : p);
       setBudgetEdit(null);
     } catch (e) {
       setBudgetError(e instanceof Error ? e.message : 'Failed to save budget');
@@ -205,15 +197,49 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
     }
   }
 
+  function startEditExpense(exp: Expense) {
+    setEditingExpense({
+      id:           exp.id,
+      category:     exp.category,
+      description:  exp.description,
+      amount:       String(exp.amount),
+      expenseDate:  exp.expenseDate?.split('T')[0] ?? '',
+      isQualifying: exp.isQualifying,
+      vendorName:   exp.vendorName ?? '',
+    });
+  }
+
+  async function handleSaveExpenseEdit() {
+    if (!editingExpense) return;
+    setExpenseEditSaving(true);
+    try {
+      const token = localStorage.getItem('sceneiq_token');
+      const res = await fetch(`/api/0.1.0/productions/${productionId}/expenses/${editingExpense.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          category:     editingExpense.category,
+          description:  editingExpense.description,
+          amount:       parseFloat(editingExpense.amount),
+          expenseDate:  editingExpense.expenseDate,
+          isQualifying: editingExpense.isQualifying,
+          vendorName:   editingExpense.vendorName || null,
+        }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setEditingExpense(null);
+      loadExpenses();
+    } catch { /* silent */ } finally {
+      setExpenseEditSaving(false);
+    }
+  }
+
   async function handleAddExpense(e: React.FormEvent) {
     e.preventDefault();
     if (!expenseForm.description || !expenseForm.amount) return;
     setExpenseSaving(true);
     try {
-      await api.expenses.create(productionId, {
-        ...expenseForm,
-        amount: parseFloat(expenseForm.amount),
-      });
+      await api.expenses.create(productionId, { ...expenseForm, amount: parseFloat(expenseForm.amount) });
       setExpenseForm({ category: 'labor', description: '', amount: '', expenseDate: new Date().toISOString().split('T')[0], isQualifying: true, vendorName: '' });
       setShowAddExpense(false);
       loadExpenses();
@@ -270,16 +296,12 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
     } catch { /* silent */ }
   }
 
-  const totalSpend = expenses.reduce((s, i) => s + i.amount, 0);
+  const totalSpend     = expenses.reduce((s, i) => s + i.amount, 0);
   const qualifyingSpend = expenses.reduce((s, i) => s + (i.isQualifying ? i.amount : 0), 0);
   const jur = jurisdictions.find(j => j.id === production?.jurisdictionId);
 
-  if (loading) {
-    return <div className="flex justify-center py-32"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>;
-  }
-  if (!production) {
-    return <div className="p-8 text-center">Production not found. <button onClick={onBack} className="text-blue-600 underline">Go back</button></div>;
-  }
+  if (loading) return <div className="flex justify-center py-32"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>;
+  if (!production) return <div className="p-8 text-center">Production not found. <button onClick={onBack} className="text-blue-600 underline">Go back</button></div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -301,62 +323,39 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             </p>
           </div>
           <div className="flex items-center gap-5">
-            {/* Budget display / inline edit */}
             <div className="text-right">
               <p className="text-xs text-slate-400 font-medium">Total Budget</p>
               {budgetEdit ? (
                 <div className="flex items-center gap-2 mt-1">
                   <div className="text-left">
                     <p className="text-[10px] text-slate-400 mb-0.5">Total ($)</p>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={budgetEdit.total}
+                    <input type="number" step="0.01" min="0" value={budgetEdit.total}
                       onChange={e => setBudgetEdit(b => b ? { ...b, total: e.target.value } : b)}
-                      className="w-32 px-2 py-1 border border-slate-300 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                      className="w-32 px-2 py-1 border border-slate-300 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div className="text-left">
                     <p className="text-[10px] text-slate-400 mb-0.5">Qualifying ($)</p>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={budgetEdit.qualifying}
+                    <input type="number" step="0.01" min="0" value={budgetEdit.qualifying}
                       onChange={e => setBudgetEdit(b => b ? { ...b, qualifying: e.target.value } : b)}
                       className="w-32 px-2 py-1 border border-slate-300 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="optional"
-                    />
+                      placeholder="optional" />
                   </div>
                   <div className="flex flex-col gap-1 pt-4">
-                    <button
-                      onClick={handleSaveBudget}
-                      disabled={budgetSaving}
-                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50"
-                    >
+                    <button onClick={handleSaveBudget} disabled={budgetSaving}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50">
                       {budgetSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                       {budgetSaving ? 'Saving…' : 'Save'}
                     </button>
-                    <button
-                      onClick={() => { setBudgetEdit(null); setBudgetError(null); }}
-                      className="px-3 py-1 bg-slate-100 text-slate-600 rounded text-xs hover:bg-slate-200"
-                    >
-                      Cancel
-                    </button>
+                    <button onClick={() => { setBudgetEdit(null); setBudgetError(null); }}
+                      className="px-3 py-1 bg-slate-100 text-slate-600 rounded text-xs hover:bg-slate-200">Cancel</button>
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <p className="text-xl font-bold text-slate-900">{fmt(production.budgetTotal)}</p>
-                  <button
-                    title="Edit budget"
-                    onClick={() => setBudgetEdit({
-                      total: String(production.budgetTotal),
-                      qualifying: String(production.budgetQualifying ?? ''),
-                    })}
-                    className="text-slate-300 hover:text-blue-500 transition-colors"
-                  >
+                  <button title="Edit budget"
+                    onClick={() => setBudgetEdit({ total: String(production.budgetTotal), qualifying: String(production.budgetQualifying ?? '') })}
+                    className="text-slate-300 hover:text-blue-500 transition-colors">
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -395,21 +394,16 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Budget" value={fmt(production.budgetTotal)} />
-              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : 'â€”'} sub={`${expenses.length} items`} />
-              <StatCard label="Qualifying Spend" value={expenses.length ? fmt(qualifyingSpend) : 'â€”'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
+              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} items`} />
+              <StatCard label="Qualifying Spend" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
               <StatCard label="Incentive Rules" value={String(rules.length)} sub={jur?.name ?? 'No jurisdiction'} />
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold text-slate-900">Production Details</h2>
                 {!budgetEdit && (
-                  <button
-                    onClick={() => setBudgetEdit({
-                      total: String(production.budgetTotal),
-                      qualifying: String(production.budgetQualifying ?? ''),
-                    })}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
-                  >
+                  <button onClick={() => setBudgetEdit({ total: String(production.budgetTotal), qualifying: String(production.budgetQualifying ?? '') })}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">
                     <Pencil className="w-3 h-3" /> Edit Budget
                   </button>
                 )}
@@ -420,12 +414,12 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                   ['Type', capitalize(production.productionType)],
                   ['Company', production.productionCompany],
                   ['Status', STATUS_LABELS[production.status] ?? production.status],
-                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : 'â€”'],
+                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : '—'],
                   ['Total Budget', fmt(production.budgetTotal)],
-                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : 'â€”'],
-                  ['Start Date', production.startDate?.split('T')[0] ?? 'â€”'],
-                  ['End Date', production.endDate?.split('T')[0] ?? 'â€”'],
-                  ['Created', production.createdAt?.split('T')[0] ?? 'â€”'],
+                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : '—'],
+                  ['Start Date', production.startDate?.split('T')[0] ?? '—'],
+                  ['End Date', production.endDate?.split('T')[0] ?? '—'],
+                  ['Created', production.createdAt?.split('T')[0] ?? '—'],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <dt className="text-slate-500 font-medium mb-0.5">{label}</dt>
@@ -441,9 +435,9 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {tab === 'expenses' && (
           <div className="space-y-5">
             <div className="grid grid-cols-3 gap-4">
-              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : 'â€”'} sub={`${expenses.length} line items`} />
-              <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : 'â€”'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
-              <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : 'â€”'} />
+              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} line items`} />
+              <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
+              <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : '—'} />
             </div>
             <div className="flex justify-between items-center gap-3">
               <p className="text-sm text-slate-500">{expenses.length} expense{expenses.length !== 1 ? 's' : ''}</p>
@@ -480,9 +474,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                   <div>
                     <label className="block text-xs font-semibold uppercase mb-1 text-slate-500">Category</label>
                     <select title="Expense category" value={expenseForm.category} onChange={e => setExpenseForm(f => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2 border rounded-lg text-sm">
-                      {['labor','equipment','locations','post_production','travel','catering','legal','insurance','visual_effects','other'].map(c => (
-                        <option key={c} value={c}>{capitalize(c)}</option>
-                      ))}
+                      {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{capitalize(c)}</option>)}
                     </select>
                   </div>
                   <div>
@@ -532,34 +524,83 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">{h}</th>
                     ))}</tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {expenses.map(exp => (
-                      <tr key={exp.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 text-slate-500">{exp.expenseDate?.split('T')[0]}</td>
-                        <td className="px-4 py-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs">{capitalize(exp.category)}</span></td>
-                        <td className="px-4 py-3 font-medium text-slate-900">{exp.description}</td>
-                        <td className="px-4 py-3 text-slate-500">{exp.vendorName || 'â€”'}</td>
-                        <td className="px-4 py-3 font-semibold text-slate-900">{fmt(exp.amount)}</td>
-                        <td className="px-4 py-3">{exp.isQualifying ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300" />}</td>
-                        <td className="px-4 py-3">
-                          <button type="button" title="Edit expense" onClick={() => { setEditingExpenseId(exp.id); setEditExpenseForm({ description: exp.description, amount: String(exp.amount), isQualifying: exp.isQualifying, vendorName: exp.vendorName || '', category: exp.category }); }} className="text-slate-300 hover:text-blue-500 transition-colors mr-2"><Pencil className="w-4 h-4" /></button><button type="button" title="Delete expense" onClick={() => handleDeleteExpense(exp.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                        </td>
-                      {editingExpenseId === exp.id && (
-                        <tr>
-                          <td colSpan={7} className="px-4 py-2 bg-blue-50 border-t">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <input className="border rounded px-2 py-1 text-sm w-48" value={editExpenseForm.description} onChange={e => setEditExpenseForm(f => ({...f, description: e.target.value}))} placeholder="Description" />
-                              <input type="number" className="border rounded px-2 py-1 text-sm w-28" value={editExpenseForm.amount} onChange={e => setEditExpenseForm(f => ({...f, amount: e.target.value}))} placeholder="Amount" />
-                              <input className="border rounded px-2 py-1 text-sm w-36" value={editExpenseForm.vendorName} onChange={e => setEditExpenseForm(f => ({...f, vendorName: e.target.value}))} placeholder="Vendor" />
-                              <label className="flex items-center gap-1 text-sm cursor-pointer"><input type="checkbox" checked={editExpenseForm.isQualifying} onChange={e => setEditExpenseForm(f => ({...f, isQualifying: e.target.checked}))} /> Qualifying</label>
-                              <button onClick={() => handleEditExpenseSave(exp.id)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">Save</button>
-                              <button onClick={() => setEditingExpenseId(null)} className="px-3 py-1 border rounded text-sm">Cancel</button>
+                  <tbody className="divide-y divide-slate-100">
+                    {expenses.map(exp => {
+                      const isEditing = editingExpense?.id === exp.id;
+                      if (isEditing && editingExpense) {
+                        return (
+                          <tr key={exp.id} className="bg-blue-50">
+                            <td className="px-2 py-2">
+                              <input type="date" value={editingExpense.expenseDate}
+                                onChange={e => setEditingExpense(s => s ? { ...s, expenseDate: e.target.value } : s)}
+                                className="w-full px-2 py-1 border rounded text-xs" />
+                            </td>
+                            <td className="px-2 py-2">
+                              <select value={editingExpense.category}
+                                onChange={e => setEditingExpense(s => s ? { ...s, category: e.target.value } : s)}
+                                className="w-full px-2 py-1 border rounded text-xs">
+                                {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{capitalize(c)}</option>)}
+                              </select>
+                            </td>
+                            <td className="px-2 py-2">
+                              <input type="text" value={editingExpense.description}
+                                onChange={e => setEditingExpense(s => s ? { ...s, description: e.target.value } : s)}
+                                className="w-full px-2 py-1 border rounded text-xs" />
+                            </td>
+                            <td className="px-2 py-2">
+                              <input type="text" value={editingExpense.vendorName}
+                                onChange={e => setEditingExpense(s => s ? { ...s, vendorName: e.target.value } : s)}
+                                placeholder="Vendor"
+                                className="w-full px-2 py-1 border rounded text-xs" />
+                            </td>
+                            <td className="px-2 py-2">
+                              <input type="number" step="0.01" min="0.01" value={editingExpense.amount}
+                                onChange={e => setEditingExpense(s => s ? { ...s, amount: e.target.value } : s)}
+                                className="w-24 px-2 py-1 border rounded text-xs text-right" />
+                            </td>
+                            <td className="px-2 py-2">
+                              <input type="checkbox" checked={editingExpense.isQualifying}
+                                onChange={e => setEditingExpense(s => s ? { ...s, isQualifying: e.target.checked } : s)}
+                                className="w-4 h-4 rounded" />
+                            </td>
+                            <td className="px-2 py-2">
+                              <div className="flex items-center gap-1">
+                                <button onClick={handleSaveExpenseEdit} disabled={expenseEditSaving} title="Save"
+                                  className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                                  {expenseEditSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                </button>
+                                <button onClick={() => setEditingExpense(null)} title="Cancel"
+                                  className="p-1 bg-slate-200 text-slate-600 rounded hover:bg-slate-300">
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return (
+                        <tr key={exp.id} className="hover:bg-slate-50 group">
+                          <td className="px-4 py-3 text-slate-500">{exp.expenseDate?.split('T')[0]}</td>
+                          <td className="px-4 py-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs">{capitalize(exp.category)}</span></td>
+                          <td className="px-4 py-3 font-medium text-slate-900">{exp.description}</td>
+                          <td className="px-4 py-3 text-slate-500">{exp.vendorName || '—'}</td>
+                          <td className="px-4 py-3 font-semibold text-slate-900">{fmt(exp.amount)}</td>
+                          <td className="px-4 py-3">{exp.isQualifying ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300" />}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button type="button" title="Edit expense" onClick={() => startEditExpense(exp)}
+                                className="text-slate-400 hover:text-blue-500 transition-colors">
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button type="button" title="Delete expense" onClick={() => handleDeleteExpense(exp.id)}
+                                className="text-slate-400 hover:text-red-500 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
                           </td>
                         </tr>
-                      )}
-                      </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -590,7 +631,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {tab === 'calculator' && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border p-6"><h2 className="text-sm font-bold mb-4">Incentive Calculator</h2><div className="flex gap-4 items-end"><div className="flex-1"><label className="block text-xs font-semibold uppercase mb-2">Jurisdiction</label><select value={calcJurId} onChange={e => { setCalcJurId(e.target.value); setCalcResult(null); }} className="w-full px-3.5 py-2.5 border rounded-lg">{jurisdictions.map(j => <option key={j.id} value={j.id}>{j.name} ({j.code}){j.id === production.jurisdictionId ? ' ★ primary' : ''}</option>)}</select></div><button onClick={handleCalculate} disabled={!calcJurId || calcLoading} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg">{calcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}{calcLoading ? 'Calculating…' : 'Calculate'}</button></div>{calcError && <p className="text-red-600 text-sm mt-3">{calcError}</p>}</div>
-            {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary â€” {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : 'â€”'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
+            {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary — {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : '—'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
             {!calcResult && !calcLoading && <div className="bg-white rounded-xl border p-16 text-center"><TrendingUp className="w-8 h-8 text-slate-300 mx-auto mb-3" /><p className="text-slate-700 font-semibold">Select a jurisdiction and calculate</p></div>}
           </div>
         )}
@@ -605,22 +646,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           </div>
         )}
 
-      
-
-        {/* Intelligence Tab */}
-        {tab === 'signals' && (
-          <SignalDashboard productionId={production.id} token={localStorage.getItem('sceneiq_token') || ''} />
-        )}
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
