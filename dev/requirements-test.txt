@@ -17,7 +17,7 @@ pytest-pylint==0.19.0
 mypy==1.7.1
 freezegun==1.4.0
 responses==0.24.1
-python-dotenv==1.0.0
+python-dotenv==1.2.2
 Flask==3.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-JWT-Extended==4.5.3
