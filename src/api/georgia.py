@@ -88,3 +88,4 @@ async def get_program_rules(pid: str):
     return {"program": {"id": r.id, "name": r.ruleName, "code": r.ruleCode, "incentive_type": r.incentiveType, "active": r.active}, "jurisdiction": {"id": j.id if j else None, "name": j.name if j else None, "code": j.code if j else None, "country": j.country if j else None, "website": j.website if j else None}, "credit_structure": {"base_rate": r.percentage, "max_credit": r.maxCredit, "min_spend": r.minSpend}, "qualified_expenses": {"eligible": r.eligibleExpenses, "excluded": r.excludedExpenses}, "requirements": r.requirements, "effective_date": r.effectiveDate, "expiration_date": r.expirationDate}
 
 
+

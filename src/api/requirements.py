@@ -248,3 +248,4 @@ async def delete_requirement(requirement_id: str):
     await prisma.jurisdictionrequirement.delete(where={"id": requirement_id})
 
 
+

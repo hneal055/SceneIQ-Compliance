@@ -251,3 +251,4 @@ async def maximum_possible_credit(
         generated_at=datetime.now(timezone.utc).isoformat(),
     )
 
+

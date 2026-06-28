@@ -28,7 +28,7 @@ class PrefUpsert(BaseModel):
 
 @router.get("/preferences", summary="Get current user's notification preferences")
 async def get_preferences(current_user: TokenData = Depends(get_current_user)):
-    pref = await prisma.notification_preferences.find_unique(
+    pref = await prisma.notificationPreference.find_unique(
         where={"userId": current_user.sub}
     )
     return pref  # None if not set yet
@@ -39,11 +39,11 @@ async def upsert_preferences(
     data: PrefUpsert,
     current_user: TokenData = Depends(get_current_user),
 ):
-    existing = await prisma.notification_preferences.find_unique(
+    existing = await prisma.notificationPreference.find_unique(
         where={"userId": current_user.sub}
     )
     if existing:
-        pref = await prisma.notification_preferences.update(
+        pref = await prisma.notificationPreference.update(
             where={"userId": current_user.sub},
             data={
                 "emailAddress":    data.emailAddress,
@@ -56,7 +56,7 @@ async def upsert_preferences(
         user = await prisma.user.find_unique(where={"id": current_user.sub})
         if not user:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
-        pref = await prisma.notification_preferences.create(data={
+        pref = await prisma.notificationPreference.create(data={
             "userId":          current_user.sub,
             "emailAddress":    data.emailAddress,
             "jurisdictions":   data.jurisdictions,
@@ -71,12 +71,13 @@ async def upsert_preferences(
                status_code=status.HTTP_204_NO_CONTENT,
                summary="Remove notification preferences")
 async def delete_preferences(current_user: TokenData = Depends(get_current_user)):
-    existing = await prisma.notification_preferences.find_unique(
+    existing = await prisma.notificationPreference.find_unique(
         where={"userId": current_user.sub}
     )
     if not existing:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No preferences found")
-    await prisma.notification_preferences.delete(where={"userId": current_user.sub})
+    await prisma.notificationPreference.delete(where={"userId": current_user.sub})
     return None
+
 
 
