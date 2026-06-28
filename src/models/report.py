@@ -38,3 +38,4 @@ class ReportResponse(BaseModel):
     reportType: str = Field(..., description="Type of report generated")
 
 
+

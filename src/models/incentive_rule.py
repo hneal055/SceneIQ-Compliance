@@ -192,3 +192,4 @@ class IncentiveRuleList(BaseModel):
     rules: List[IncentiveRuleResponse] = Field(default_factory=list, description="Rules returned")
 
 
+

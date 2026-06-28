@@ -70,3 +70,4 @@ def build_segment_from_row(row):
 
 
 
+

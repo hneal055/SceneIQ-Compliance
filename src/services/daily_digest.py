@@ -118,7 +118,7 @@ async def send_daily_digest() -> None:
     is_monday = now.weekday() == 0
 
     try:
-        prefs = await prisma.notificationPreference.find_many(
+        prefs = await prisma.notificationpreference.find_many(
             where={"active": True},
             include={"user": True},
         )
@@ -145,7 +145,7 @@ async def send_daily_digest() -> None:
                 "createdAt": {"gte": cutoff},
                 "isRead": False,
             }
-            events = await prisma.monitoringEvent.find_many(
+            events = await prisma.monitoringevent.find_many(
                 where=where_clause,
                 include={"source": True},
                 order={"severity": "asc"},   # critical first
@@ -163,6 +163,7 @@ async def send_daily_digest() -> None:
         html = _build_html(events, label)
         send_email(email, subject, html)
         logger.info(f"[digest] Sent {label} digest to {email} ({len(events)} events)")
+
 
 
 

@@ -66,7 +66,7 @@ _DEFAULT_OUTPUT_DIR = Path("data") / "output" / "reports"
 #                 here; PDF rendering pulls cosmetic fields separately).
 #
 # Returns the CallSheet object. Does NOT persist to the DB â€” the
-# Phase 10 router handles `await prisma.callSheet.create(...)`.
+# Phase 10 router handles `await prisma.callsheet.create(...)`.
 def generate_call_sheet(shoot_day, scenes, crew_calls, production):
     scene_snapshots = [_scene_snapshot(s) for s in scenes]
     crew_snapshots = [_crew_snapshot(c) for c in (crew_calls or [])]
@@ -384,6 +384,7 @@ def _pdf_footer(canvas, doc):
     page_size = canvas._pagesize
     canvas.drawCentredString(page_size[0] / 2.0, 0.3 * inch, f"Page {doc.page}")
     canvas.restoreState()
+
 
 
 

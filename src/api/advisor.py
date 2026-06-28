@@ -493,14 +493,14 @@ async def summarize_event(event_id: str):
     2-3 sentence summary, and store the result in `MonitoringEvent.summary`.
     Returns the updated event record.
     """
-    event = await prisma.monitoringEvent.find_unique(where={"id": event_id})
+    event = await prisma.monitoringevent.find_unique(where={"id": event_id})
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
     client = _get_client()
     if client is None:
         summary_text = f"Regulatory update: {event.title}. Review the source for full details on jurisdictional impact and compliance requirements."
-        updated = await prisma.monitoringEvent.update(where={"id": event_id}, data={"summary": summary_text})
+        updated = await prisma.monitoringevent.update(where={"id": event_id}, data={"summary": summary_text})
         return updated
 
     content_parts = [f"Title: {event.title}"]
@@ -518,7 +518,7 @@ async def summarize_event(event_id: str):
         )
         summary_text = response.content[0].text
 
-        updated = await prisma.monitoringEvent.update(
+        updated = await prisma.monitoringevent.update(
             where={"id": event_id},
             data={"summary": summary_text},
         )
@@ -532,6 +532,7 @@ async def summarize_event(event_id: str):
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Summarization failed: {str(e)}",
         )
+
 
 
 

@@ -61,7 +61,7 @@ def _to_out(row) -> ScenarioOut:
 
 @router.get("", summary="List current user's saved scenarios")
 async def list_scenarios(current_user: TokenData = Depends(get_current_user)):
-    rows = await prisma.userScenario.find_many(
+    rows = await prisma.userscenario.find_many(
         where={"userId": current_user.sub},
         order={"createdAt": "desc"},
     )
@@ -73,7 +73,7 @@ async def create_scenario(
     data: ScenarioCreate,
     current_user: TokenData = Depends(get_current_user),
 ):
-    row = await prisma.userScenario.create(data={
+    row = await prisma.userscenario.create(data={
         "userId":      current_user.sub,
         "name":        data.name,
         "codes":       data.codes,
@@ -91,13 +91,14 @@ async def delete_scenario(
     scenario_id: str,
     current_user: TokenData = Depends(get_current_user),
 ):
-    row = await prisma.userScenario.find_unique(where={"id": scenario_id})
+    row = await prisma.userscenario.find_unique(where={"id": scenario_id})
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Scenario not found")
     if row.userId != current_user.sub:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Not your scenario")
-    await prisma.userScenario.delete(where={"id": scenario_id})
+    await prisma.userscenario.delete(where={"id": scenario_id})
     return None
+
 
 
 

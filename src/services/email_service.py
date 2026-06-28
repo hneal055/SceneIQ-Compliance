@@ -71,3 +71,4 @@ def send_emails_bulk(recipients: list[str], subject: str, html: str, text: str |
 
 
 
+

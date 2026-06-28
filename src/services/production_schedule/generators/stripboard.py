@@ -170,3 +170,4 @@ def get_stripboard_summary(scenes, shoot_days):
 
 
 
+
