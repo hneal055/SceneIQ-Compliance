@@ -53,7 +53,7 @@ async def upsert_preferences(
             },
         )
     else:
-        user = await prisma.users.find_unique(where={"id": current_user.sub})
+        user = await prisma.user.find_unique(where={"id": current_user.sub})
         if not user:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
         pref = await prisma.notification_preferences.create(data={

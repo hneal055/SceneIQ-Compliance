@@ -42,7 +42,7 @@ class UserUpdate(BaseModel):
 
 @router.get("/users", summary="List all users")
 async def list_users(_: TokenData = Depends(_require_admin)):
-    users = await prisma.users.find_many(order={"createdAt": "asc"})
+    users = await prisma.user.find_many(order={"createdAt": "asc"})
     return {
         "total": len(users),
         "users": [
@@ -63,7 +63,7 @@ async def list_users(_: TokenData = Depends(_require_admin)):
              status_code=status.HTTP_201_CREATED,
              summary="Create a new user")
 async def create_user(data: UserCreate, _: TokenData = Depends(_require_admin)):
-    existing = await prisma.users.find_unique(where={"email": data.email})
+    existing = await prisma.user.find_unique(where={"email": data.email})
     if existing:
         raise HTTPException(status.HTTP_409_CONFLICT, f"Email already in use: {data.email}")
 
@@ -74,7 +74,7 @@ async def create_user(data: UserCreate, _: TokenData = Depends(_require_admin)):
     if not valid:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, reason)
 
-    user = await prisma.users.create(data={
+    user = await prisma.user.create(data={
         "email":        data.email,
         "passwordHash": hash_password(data.password),
         "role":         data.role,
@@ -90,7 +90,7 @@ async def update_user(
     data: UserUpdate,
     current_admin: TokenData = Depends(_require_admin),
 ):
-    user = await prisma.users.find_unique(where={"id": user_id})
+    user = await prisma.user.find_unique(where={"id": user_id})
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
 
@@ -116,7 +116,7 @@ async def update_user(
     if not update:
         return user
 
-    updated = await prisma.users.update(where={"id": user_id}, data=update)
+    updated = await prisma.user.update(where={"id": user_id}, data=update)
     logger.info(f"Admin updated user {updated.email}: {list(update.keys())}")
     return {"id": updated.id, "email": updated.email, "role": updated.role, "isActive": updated.isActive}
 
@@ -131,11 +131,11 @@ async def delete_user(
     if user_id == current_admin.sub:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot delete your own account")
 
-    user = await prisma.users.find_unique(where={"id": user_id})
+    user = await prisma.user.find_unique(where={"id": user_id})
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
 
-    await prisma.users.delete(where={"id": user_id})
+    await prisma.user.delete(where={"id": user_id})
     logger.info(f"Admin deleted user: {user.email}")
     return None
 
