@@ -44,9 +44,9 @@ async def _ensure_user_columns() -> None:
 
 
 async def _seed_admin() -> None:
-    count = await prisma.users.count()
+    count = await prisma.user.count()
     if count == 0:
-        await prisma.users.create(data={"email": ADMIN_EMAIL, "passwordHash": hash_password(ADMIN_PASSWORD), "role": "admin", "isActive": True})
+        await prisma.user.create(data={"email": ADMIN_EMAIL, "passwordHash": hash_password(ADMIN_PASSWORD), "role": "admin", "isActive": True})
         logger.info(f"âœ… Admin user created: {ADMIN_EMAIL}")
     else:
         logger.info("â„¹ï¸  Admin user already exists â€” skipping seed")
