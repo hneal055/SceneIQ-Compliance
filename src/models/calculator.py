@@ -270,3 +270,4 @@ class DateBasedRulesResponse(BaseModel):
     notes: List[str] = Field(default_factory=list, description="Important date-related notes")
 
 
+

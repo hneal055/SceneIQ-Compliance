@@ -37,3 +37,4 @@ class ReportResponse(BaseModel):
     filename: str = Field(..., description="Generated filename")
     reportType: str = Field(..., description="Type of report generated")
 
+

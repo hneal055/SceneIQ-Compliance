@@ -414,3 +414,4 @@ class PDFReportGenerator:
 # Global PDF generator instance
 pdf_generator = PDFReportGenerator()
 
+

@@ -66,7 +66,7 @@ async def ingest_source(source_id: str) -> int:
     Fetch and parse one source's RSS/Atom feed.
     Returns the count of new MonitoringEvent records created.
     """
-    source = await prisma.monitoring_sources.find_unique(where={"id": source_id})
+    source = await prisma.monitoringSource.find_unique(where={"id": source_id})
     if not source or not source.feedUrl or not source.active:
         return 0
 
@@ -88,7 +88,7 @@ async def ingest_source(source_id: str) -> int:
 
     if feed.bozo and not feed.entries:
         logger.warning(f"Malformed or empty feed for {source.name}: {getattr(feed, 'bozo_exception', 'unknown')}")
-        await prisma.monitoring_sources.update(
+        await prisma.monitoringSource.update(
             where={"id": source_id},
             data={"lastFetched": datetime.now(timezone.utc)},
         )
@@ -105,13 +105,13 @@ async def ingest_source(source_id: str) -> int:
         hash_val    = _content_hash(title, url, published_raw)
 
         # Skip duplicates
-        existing = await prisma.monitoring_events.find_first(where={"contentHash": hash_val})
+        existing = await prisma.monitoringEvent.find_first(where={"contentHash": hash_val})
         if existing:
             continue
 
         severity = _severity_from_entry(title, summary or "")
 
-        await prisma.monitoring_events.create(data={
+        await prisma.monitoringEvent.create(data={
             "sourceId":    source_id,
             "title":       title[:255],
             "summary":     summary,
@@ -134,7 +134,7 @@ async def ingest_source(source_id: str) -> int:
         except Exception as exc:
             logger.warning(f"Notification dispatch failed for event '{title[:60]}': {exc}")
 
-    await prisma.monitoring_sources.update(
+    await prisma.monitoringSource.update(
         where={"id": source_id},
         data={"lastFetched": datetime.now(timezone.utc)},
     )
@@ -160,7 +160,7 @@ async def _notify_subscribers(
     """
     from src.utils.email import send_email, build_monitoring_alert_html  # lazy import
 
-    prefs = await prisma.notification_preferences.find_many(where={"active": True})
+    prefs = await prisma.notificationPreference.find_many(where={"active": True})
     if not prefs:
         return
 
@@ -186,7 +186,7 @@ async def ingest_all_sources() -> int:
     Returns the total count of new events created across all sources.
     Called by APScheduler on its cron interval and by the manual API trigger.
     """
-    sources = await prisma.monitoring_sources.find_many(
+    sources = await prisma.monitoringSource.find_many(
         where={"active": True, "feedUrl": {"not": None}},
         order={"createdAt": "asc"},
     )
@@ -205,6 +205,7 @@ async def ingest_all_sources() -> int:
 
     logger.info(f"Feed ingestion complete â€” {total} new event(s) from {len(sources)} source(s)")
     return total
+
 
 
 

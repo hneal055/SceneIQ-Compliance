@@ -295,7 +295,7 @@ _DEMO_MONITORING_EVENTS = [
 
 async def _seed_monitoring() -> None:
     """Seed demo monitoring sources and events. Idempotent â€” skips if sources already exist."""
-    existing = await prisma.monitoring_sources.find_many()
+    existing = await prisma.monitoringSource.find_many()
     existing_names = {s.name for s in existing}
 
     source_map: dict[str, str] = {s.name: s.id for s in existing}
@@ -303,7 +303,7 @@ async def _seed_monitoring() -> None:
     for src in _DEMO_MONITORING_SOURCES:
         if src["name"] in existing_names:
             continue
-        record = await prisma.monitoring_sources.create(data={"id": str(__import__("uuid").uuid4()), "updatedAt": __import__("datetime").datetime.utcnow(), 
+        record = await prisma.monitoringSource.create(data={"id": str(__import__("uuid").uuid4()), "updatedAt": __import__("datetime").datetime.utcnow(), 
             "name": src["name"],
             "url": src["url"],
             "feedUrl": src.get("feedUrl"),
@@ -319,10 +319,10 @@ async def _seed_monitoring() -> None:
         src_id = source_map.get(ev["sourceName"])
         if not src_id:
             continue
-        existing_ev = await prisma.monitoring_events.find_first(where={"sourceId": src_id})
+        existing_ev = await prisma.monitoringEvent.find_first(where={"sourceId": src_id})
         if existing_ev:
             continue
-        await prisma.monitoring_events.create(data={
+        await prisma.monitoringEvent.create(data={
             "sourceId": src_id,
             "title": ev["title"],
             "summary": ev["summary"],
@@ -344,6 +344,7 @@ async def seed_all() -> None:
     await _seed_rules()
     await _seed_productions()
     await _seed_monitoring()
+
 
 
 

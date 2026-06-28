@@ -93,3 +93,4 @@ class JurisdictionSummaryRow(BaseModel):
     verified_at: Optional[datetime] = None
 
 
+

@@ -415,3 +415,4 @@ if __name__ == "__main__":
         print("\nâŒ Database reset failed")
         sys.exit(1)
 
+
