@@ -1,5 +1,5 @@
 ﻿"""
-Production-scoped expense endpoints â€” nested under /productions/{id}/expenses.
+Production-scoped expense endpoints — nested under /productions/{id}/expenses.
 Matches the URL pattern expected by the frontend API client.
 """
 import logging
@@ -21,13 +21,13 @@ router = APIRouter(tags=["Expenses"])
 
 _TEMPLATES: dict[str, list[dict]] = {
     "feature_film": [
-        # Above-the-Line â€” typically NOT qualifying
+        # Above-the-Line — typically NOT qualifying
         {"cat": "labor",          "desc": "Director",                       "pct": 0.08,  "q": False, "vendor": ""},
         {"cat": "labor",          "desc": "Executive Producer",             "pct": 0.04,  "q": False, "vendor": ""},
-        {"cat": "labor",          "desc": "Lead Actor â€” Principal",         "pct": 0.08,  "q": False, "vendor": "Talent Agency Inc."},
+        {"cat": "labor",          "desc": "Lead Actor — Principal",         "pct": 0.08,  "q": False, "vendor": "Talent Agency Inc."},
         {"cat": "labor",          "desc": "Supporting Cast",                "pct": 0.05,  "q": False, "vendor": ""},
         {"cat": "labor",          "desc": "Screenplay / Story Rights",      "pct": 0.03,  "q": False, "vendor": ""},
-        # Below-the-Line Labor â€” qualifying
+        # Below-the-Line Labor — qualifying
         {"cat": "labor",          "desc": "Director of Photography",        "pct": 0.05,  "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "Production Manager",             "pct": 0.025, "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "1st Assistant Director",         "pct": 0.02,  "q": True,  "vendor": ""},
@@ -35,28 +35,28 @@ _TEMPLATES: dict[str, list[dict]] = {
         {"cat": "labor",          "desc": "Sound Mixer",                    "pct": 0.02,  "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "Production Designer",            "pct": 0.025, "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "Camera Crew",                    "pct": 0.02,  "q": True,  "vendor": ""},
-        # Equipment â€” qualifying
+        # Equipment — qualifying
         {"cat": "equipment",      "desc": "Camera Package Rental",         "pct": 0.05,  "q": True,  "vendor": "Panavision"},
         {"cat": "equipment",      "desc": "Lighting & Grip Package",        "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "equipment",      "desc": "Sound Package",                  "pct": 0.02,  "q": True,  "vendor": ""},
-        # Locations â€” qualifying
+        # Locations — qualifying
         {"cat": "locations",      "desc": "Location Fees",                  "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "locations",      "desc": "Studio / Stage Rental",          "pct": 0.03,  "q": True,  "vendor": ""},
         {"cat": "locations",      "desc": "Location Permits",               "pct": 0.01,  "q": True,  "vendor": "Film Office"},
-        # Travel & Living â€” qualifying
-        {"cat": "travel",         "desc": "Air Travel â€” Cast & Crew",       "pct": 0.015, "q": True,  "vendor": ""},
-        {"cat": "travel",         "desc": "Hotels â€” Production",            "pct": 0.015, "q": True,  "vendor": ""},
+        # Travel & Living — qualifying
+        {"cat": "travel",         "desc": "Air Travel — Cast & Crew",       "pct": 0.015, "q": True,  "vendor": ""},
+        {"cat": "travel",         "desc": "Hotels — Production",            "pct": 0.015, "q": True,  "vendor": ""},
         {"cat": "travel",         "desc": "Ground Transportation",          "pct": 0.01,  "q": True,  "vendor": ""},
-        # Catering â€” qualifying
+        # Catering — qualifying
         {"cat": "catering",       "desc": "Craft Services (daily)",         "pct": 0.01,  "q": True,  "vendor": ""},
-        {"cat": "catering",       "desc": "Catering â€” Meals on Set",        "pct": 0.01,  "q": True,  "vendor": ""},
-        # Post Production â€” qualifying
+        {"cat": "catering",       "desc": "Catering — Meals on Set",        "pct": 0.01,  "q": True,  "vendor": ""},
+        # Post Production — qualifying
         {"cat": "post_production","desc": "Picture Editor",                 "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Color Grading",                  "pct": 0.015, "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Sound Edit & Mix",               "pct": 0.015, "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Visual Effects",                 "pct": 0.02,  "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Music Licensing & Score",        "pct": 0.01,  "q": True,  "vendor": ""},
-        # Insurance / Legal â€” NOT qualifying
+        # Insurance / Legal — NOT qualifying
         {"cat": "insurance",      "desc": "Production Insurance",           "pct": 0.025, "q": False, "vendor": ""},
         {"cat": "legal",          "desc": "Legal & E&O Insurance",          "pct": 0.01,  "q": False, "vendor": ""},
         {"cat": "other",          "desc": "Contingency Reserve",            "pct": 0.02,  "q": False, "vendor": ""},
@@ -73,7 +73,7 @@ _TEMPLATES: dict[str, list[dict]] = {
         {"cat": "equipment",      "desc": "Sound Package",                  "pct": 0.02,  "q": True,  "vendor": ""},
         {"cat": "locations",      "desc": "Location Fees",                  "pct": 0.05,  "q": True,  "vendor": ""},
         {"cat": "locations",      "desc": "Location Permits",               "pct": 0.01,  "q": True,  "vendor": "Film Office"},
-        {"cat": "travel",         "desc": "Air Travel â€” Crew",              "pct": 0.04,  "q": True,  "vendor": ""},
+        {"cat": "travel",         "desc": "Air Travel — Crew",              "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "travel",         "desc": "Hotels & Per Diem",              "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "catering",       "desc": "Craft Services",                 "pct": 0.015, "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Picture Editor",                 "pct": 0.09,  "q": True,  "vendor": ""},
@@ -85,26 +85,26 @@ _TEMPLATES: dict[str, list[dict]] = {
         {"cat": "other",          "desc": "Contingency Reserve",            "pct": 0.025, "q": False, "vendor": ""},
     ],
     "tv_series": [
-        # Above-the-Line â€” NOT qualifying
+        # Above-the-Line — NOT qualifying
         {"cat": "labor",          "desc": "Showrunner / EP",                "pct": 0.10,  "q": False, "vendor": ""},
         {"cat": "labor",          "desc": "Writers' Room (4 writers)",      "pct": 0.06,  "q": False, "vendor": ""},
         {"cat": "labor",          "desc": "Director(s)",                    "pct": 0.05,  "q": False, "vendor": ""},
         {"cat": "labor",          "desc": "Series Lead Cast",               "pct": 0.09,  "q": False, "vendor": "Talent Agency"},
         {"cat": "labor",          "desc": "Supporting Cast",                "pct": 0.05,  "q": False, "vendor": ""},
-        # BTL â€” qualifying
+        # BTL — qualifying
         {"cat": "labor",          "desc": "Director of Photography",        "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "Production Manager",             "pct": 0.025, "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "Line Producer",                  "pct": 0.02,  "q": True,  "vendor": ""},
-        {"cat": "labor",          "desc": "Crew â€” Camera, Sound, Grip",     "pct": 0.04,  "q": True,  "vendor": ""},
+        {"cat": "labor",          "desc": "Crew — Camera, Sound, Grip",     "pct": 0.04,  "q": True,  "vendor": ""},
         {"cat": "labor",          "desc": "Production Designer",            "pct": 0.02,  "q": True,  "vendor": ""},
         {"cat": "equipment",      "desc": "Camera Package",                 "pct": 0.05,  "q": True,  "vendor": ""},
         {"cat": "equipment",      "desc": "Lighting Package",               "pct": 0.045, "q": True,  "vendor": ""},
         {"cat": "locations",      "desc": "Studio / Stage Rental",          "pct": 0.045, "q": True,  "vendor": ""},
         {"cat": "locations",      "desc": "Street Permits & Location Fees", "pct": 0.025, "q": True,  "vendor": "Film Office"},
         {"cat": "travel",         "desc": "Air Travel",                     "pct": 0.015, "q": True,  "vendor": ""},
-        {"cat": "travel",         "desc": "Hotels â€” Key Talent",            "pct": 0.015, "q": True,  "vendor": ""},
+        {"cat": "travel",         "desc": "Hotels — Key Talent",            "pct": 0.015, "q": True,  "vendor": ""},
         {"cat": "catering",       "desc": "Craft Services (per episode)",   "pct": 0.01,  "q": True,  "vendor": ""},
-        {"cat": "catering",       "desc": "Catering â€” Meals on Set",        "pct": 0.01,  "q": True,  "vendor": ""},
+        {"cat": "catering",       "desc": "Catering — Meals on Set",        "pct": 0.01,  "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Picture Editor",                 "pct": 0.035, "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Color Grading (per episode)",    "pct": 0.02,  "q": True,  "vendor": ""},
         {"cat": "post_production","desc": "Sound Edit & Mix (per episode)", "pct": 0.02,  "q": True,  "vendor": ""},
@@ -205,7 +205,7 @@ async def create_expense(production_id: str, data: ExpenseCreate):
     try:
         expense_date = date.fromisoformat(data.expenseDate)
     except ValueError:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Invalid expenseDate â€” use YYYY-MM-DD")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Invalid expenseDate — use YYYY-MM-DD")
 
     create_data: dict = {
         "productionId": production_id,
@@ -273,7 +273,7 @@ async def generate_expenses(production_id: str, replace: bool = False):
     prod_type = (prod.productionType or "feature_film").lower().replace(" ", "_")
     template = _TEMPLATES.get(prod_type) or _TEMPLATES["feature_film"]
 
-    # Determine base date â€” use production start date if set, else today
+    # Determine base date — use production start date if set, else today
     if prod.startDate:
         try:
             base = date.fromisoformat(str(prod.startDate)[:10])
