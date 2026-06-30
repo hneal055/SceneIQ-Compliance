@@ -397,8 +397,8 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Budget" value={fmt(production.budgetTotal)} />
-              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : 'â€”'} sub={`${expenses.length} items`} />
-              <StatCard label="Qualifying Spend" value={expenses.length ? fmt(qualifyingSpend) : 'â€”'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
+              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} items`} />
+              <StatCard label="Qualifying Spend" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
               <StatCard label="Incentive Rules" value={String(rules.length)} sub={jur?.name ?? 'No jurisdiction'} />
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -417,12 +417,12 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                   ['Type', capitalize(production.productionType)],
                   ['Company', production.productionCompany],
                   ['Status', STATUS_LABELS[production.status] ?? production.status],
-                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : 'â€”'],
+                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : '—'],
                   ['Total Budget', fmt(production.budgetTotal)],
-                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : 'â€”'],
-                  ['Start Date', production.startDate?.split('T')[0] ?? 'â€”'],
-                  ['End Date', production.endDate?.split('T')[0] ?? 'â€”'],
-                  ['Created', production.createdAt?.split('T')[0] ?? 'â€”'],
+                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : '—'],
+                  ['Start Date', production.startDate?.split('T')[0] ?? '—'],
+                  ['End Date', production.endDate?.split('T')[0] ?? '—'],
+                  ['Created', production.createdAt?.split('T')[0] ?? '—'],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <dt className="text-slate-500 font-medium mb-0.5">{label}</dt>
@@ -438,9 +438,9 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {tab === 'expenses' && (
           <div className="space-y-5">
             <div className="grid grid-cols-3 gap-4">
-              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : 'â€”'} sub={`${expenses.length} line items`} />
-              <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : 'â€”'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
-              <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : 'â€”'} />
+              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} line items`} />
+              <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
+              <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : '—'} />
             </div>
             <div className="flex justify-between items-center gap-3">
               <p className="text-sm text-slate-500">{expenses.length} expense{expenses.length !== 1 ? 's' : ''}</p>
@@ -586,7 +586,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                           <td className="px-4 py-3 text-slate-500">{exp.expenseDate?.split('T')[0]}</td>
                           <td className="px-4 py-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs">{capitalize(exp.category)}</span></td>
                           <td className="px-4 py-3 font-medium text-slate-900">{exp.description}</td>
-                          <td className="px-4 py-3 text-slate-500">{exp.vendorName || 'â€”'}</td>
+                          <td className="px-4 py-3 text-slate-500">{exp.vendorName || '—'}</td>
                           <td className="px-4 py-3 font-semibold text-slate-900">{fmt(exp.amount)}</td>
                           <td className="px-4 py-3">{exp.isQualifying ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300" />}</td>
                           <td className="px-4 py-3">
@@ -639,7 +639,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         {tab === 'calculator' && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border p-6"><h2 className="text-sm font-bold mb-4">Incentive Calculator</h2><div className="flex gap-4 items-end"><div className="flex-1"><label className="block text-xs font-semibold uppercase mb-2">Jurisdiction</label><select value={calcJurId} onChange={e => { setCalcJurId(e.target.value); setCalcResult(null); }} className="w-full px-3.5 py-2.5 border rounded-lg">{jurisdictions.map(j => <option key={j.id} value={j.id}>{j.name} ({j.code}){j.id === production.jurisdictionId ? ' â˜… primary' : ''}</option>)}</select></div><button onClick={handleCalculate} disabled={!calcJurId || calcLoading} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg">{calcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}{calcLoading ? 'Calculatingâ€¦' : 'Calculate'}</button></div>{calcError && <p className="text-red-600 text-sm mt-3">{calcError}</p>}</div>
-            {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary â€” {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : 'â€”'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
+            {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary — {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : '—'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
             {!calcResult && !calcLoading && <div className="bg-white rounded-xl border p-16 text-center"><TrendingUp className="w-8 h-8 text-slate-300 mx-auto mb-3" /><p className="text-slate-700 font-semibold">Select a jurisdiction and calculate</p></div>}
           </div>
         )}

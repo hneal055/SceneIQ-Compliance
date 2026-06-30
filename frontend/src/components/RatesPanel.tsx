@@ -76,11 +76,12 @@ export default function RatesPanel({ productionId, onExpenseAdded }: RatesPanelP
     setAddingKey(role);
     try {
       await api.expenses.create(productionId, {
-        description: `${GUILD_LABELS[guild] ?? guild} \u2014 ${labelize(role)} (${labelize(category)})`,
+        description: `${GUILD_LABELS[guild] ?? guild} — ${labelize(role)} (${labelize(category)})`,
         amount,
         category: guild === 'WGA' || guild === 'DGA' ? 'Above-the-Line' : 'Below-the-Line',
         isQualifying: true,
         vendorName: guild,
+        expenseDate: new Date().toISOString().split('T')[0],
       } as never);
       onExpenseAdded();
     } finally {
@@ -156,7 +157,7 @@ export default function RatesPanel({ productionId, onExpenseAdded }: RatesPanelP
         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
             <h4 className="text-sm font-semibold text-slate-700">
-              Estimated Costs &mdash; {GUILD_LABELS[guild] ?? guild} / {labelize(category)} ({shootWeeks} {shootWeeks === 1 ? 'week' : 'weeks'})
+              Estimated Costs — {GUILD_LABELS[guild] ?? guild} / {labelize(category)} ({shootWeeks} {shootWeeks === 1 ? 'week' : 'weeks'})
             </h4>
           </div>
 
