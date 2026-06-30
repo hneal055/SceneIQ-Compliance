@@ -1,0 +1,104 @@
+{
+  "SAG-AFTRA": {
+    "ultra_low": {
+      "actor_daily": 206, "actor_weekly": 714, "stunt_daily": 206, "overtime_rate": 1.5,
+      "notes": "Ultra Low Budget Agreement - productions under $250K"
+    },
+    "micro": {
+      "actor_daily": 268, "actor_weekly": 933, "stunt_daily": 268, "overtime_rate": 1.5,
+      "notes": "Micro Budget Agreement - productions under $1M"
+    },
+    "low": {
+      "actor_daily": 368, "actor_weekly": 1279, "stunt_daily": 400, "overtime_rate": 1.5,
+      "notes": "Low Budget Agreement - productions under $3.5M"
+    },
+    "modified": {
+      "actor_daily": 630, "actor_weekly": 2190, "stunt_daily": 630, "overtime_rate": 1.5,
+      "notes": "Modified Low Budget Agreement - productions under $6.5M"
+    },
+    "basic": {
+      "actor_daily": 1100, "actor_weekly": 3822, "stunt_daily": 1100, "overtime_rate": 1.5,
+      "notes": "Basic Agreement - productions over $6.5M"
+    }
+  },
+  "IATSE": {
+    "camera": {
+      "dp_weekly": 9500, "camera_op_weekly": 7200, "1st_ac_weekly": 5800,
+      "2nd_ac_weekly": 4200, "loader_weekly": 3200, "overtime_rate": 1.5,
+      "notes": "Local 600 - International Cinematographers Guild"
+    },
+    "lighting": {
+      "gaffer_weekly": 7500, "best_boy_electric_weekly": 5500, "electrician_weekly": 4200,
+      "generator_op_weekly": 4500, "overtime_rate": 1.5,
+      "notes": "Local 728 - Studio Electrical Lighting Technicians"
+    },
+    "grip": {
+      "key_grip_weekly": 7200, "best_boy_grip_weekly": 5200, "grip_weekly": 3800,
+      "dolly_grip_weekly": 4500, "overtime_rate": 1.5,
+      "notes": "Local 80 - Grips"
+    },
+    "art_department": {
+      "production_designer_weekly": 8500, "art_director_weekly": 6500,
+      "set_decorator_weekly": 6000, "props_master_weekly": 5500, "set_dresser_weekly": 3800,
+      "overtime_rate": 1.5, "notes": "Local 44 - Affiliated Property Craftspersons"
+    },
+    "sound": {
+      "production_mixer_weekly": 7000, "boom_operator_weekly": 4800,
+      "utility_sound_weekly": 3500, "overtime_rate": 1.5,
+      "notes": "Local 695 - Production Sound Technicians"
+    },
+    "makeup_hair": {
+      "dept_head_makeup_weekly": 6500, "makeup_artist_weekly": 4800,
+      "dept_head_hair_weekly": 6000, "hair_stylist_weekly": 4500, "overtime_rate": 1.5,
+      "notes": "Local 706 - Make-Up Artists and Hair Stylists"
+    },
+    "costume": {
+      "costume_designer_weekly": 7500, "costume_supervisor_weekly": 5500,
+      "set_costumer_weekly": 4200, "overtime_rate": 1.5,
+      "notes": "Local 705 - Motion Picture Costumers"
+    },
+    "construction": {
+      "construction_coordinator_weekly": 7000, "foreman_weekly": 5500,
+      "carpenter_weekly": 4200, "painter_weekly": 4000, "plasterer_weekly": 4200,
+      "overtime_rate": 1.5,
+      "notes": "Local 44 - Construction - rates vary by market"
+    }
+  },
+  "DGA": {
+    "feature_film": {
+      "director_low_budget_weekly": 16000, "director_basic_weekly": 22000,
+      "1st_ad_weekly": 8500, "2nd_ad_weekly": 5500, "overtime_rate": 1.5,
+      "notes": "DGA Basic Agreement - feature film rates"
+    },
+    "tv_drama": {
+      "director_per_episode": 45000, "1st_ad_weekly": 8500, "2nd_ad_weekly": 5500,
+      "overtime_rate": 1.5, "notes": "DGA Basic Agreement - television dramatic rates"
+    },
+    "tv_comedy": {
+      "director_per_episode": 35000, "1st_ad_weekly": 8000, "2nd_ad_weekly": 5000,
+      "overtime_rate": 1.5, "notes": "DGA Basic Agreement - television comedy rates"
+    }
+  },
+  "Teamsters": {
+    "transportation": {
+      "captain_weekly": 6500, "driver_weekly": 5000,
+      "picture_car_coordinator_weekly": 5500, "overtime_rate": 1.5,
+      "notes": "Local 399 - Studio Transportation Drivers"
+    },
+    "locations": {
+      "location_manager_weekly": 6000, "asst_location_manager_weekly": 4500,
+      "overtime_rate": 1.5, "notes": "Teamsters Location Managers"
+    }
+  },
+  "WGA": {
+    "feature_film": {
+      "original_screenplay_low": 50000, "original_screenplay_high": 130000,
+      "adaptation_low": 40000, "adaptation_high": 100000,
+      "notes": "WGA Minimum Basic Agreement - feature film"
+    },
+    "tv_drama_one_hour": {
+      "story_min": 8000, "teleplay_min": 22000, "story_and_teleplay_min": 28000,
+      "notes": "WGA MBA - one hour television drama"
+    }
+  }
+}

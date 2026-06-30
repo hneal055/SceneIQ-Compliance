@@ -8,6 +8,7 @@ from src.api.jurisdictions import router as jurisdictions_router
 from src.api.incentive_rules import router as incentive_rules_router
 from src.api.productions import router as productions_router
 from src.api.calculator import router as calculator_router
+from src.api.rates import router as rates_router
 from src.api.reports import router as reports_router
 from src.api.excel import router as excel_router
 from src.api.rule_engine import router as rule_engine_router
@@ -47,6 +48,7 @@ router.include_router(jurisdictions_router, dependencies=_auth_dep)
 router.include_router(incentive_rules_router, dependencies=_auth_dep)
 router.include_router(productions_router, dependencies=_auth_dep)
 router.include_router(calculator_router, dependencies=_auth_dep)
+router.include_router(rates_router, dependencies=_auth_dep)
 router.include_router(reports_router, dependencies=_auth_dep)
 router.include_router(excel_router, dependencies=_auth_dep)
 router.include_router(rule_engine_router, dependencies=_auth_dep)
@@ -88,6 +90,7 @@ async def api_root():
             "health": "/health",
         },
     }
+
 
 
 
