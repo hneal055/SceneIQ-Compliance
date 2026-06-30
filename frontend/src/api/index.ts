@@ -169,6 +169,25 @@ export const api = {
       ),
   },
 
+  reports: {
+    downloadProductionSummary: async (productionId: string, productionTitle: string) => {
+      const r = await apiClient.post(
+        "/reports/production-summary",
+        { productionId },
+        { responseType: "blob" }
+      );
+      const blob = new Blob([r.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = productionTitle.replace(/\s+/g, "_") + "_summary.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    },
+  },
+
   rates: {
     guilds: () =>
       withFallback(

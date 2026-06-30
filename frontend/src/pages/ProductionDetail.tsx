@@ -19,6 +19,7 @@ import {
   Pencil,
   Check,
   X,
+  Download,
 } from 'lucide-react';
 import api from '../api';
 import RatesPanel from '../components/RatesPanel';
@@ -108,6 +109,17 @@ interface Props {
 
 export default function ProductionDetail({ productionId, onBack }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
+  const [downloadingReport, setDownloadingReport] = useState(false);
+
+  async function handleDownloadReport() {
+    if (!production) return;
+    setDownloadingReport(true);
+    try {
+      await api.reports.downloadProductionSummary(productionId, production.title);
+    } finally {
+      setDownloadingReport(false);
+    }
+  }
   const [production, setProduction] = useState<Production | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(false);
@@ -404,12 +416,18 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             <div className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold text-slate-900">Production Details</h2>
-                {!budgetEdit && (
-                  <button onClick={() => setBudgetEdit({ total: String(production.budgetTotal), qualifying: String(production.budgetQualifying ?? '') })}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">
-                    <Pencil className="w-3 h-3" /> Edit Budget
+                <div className="flex items-center gap-2">
+                  <button onClick={handleDownloadReport} disabled={downloadingReport}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-50">
+                    {downloadingReport ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} Download Report
                   </button>
-                )}
+                  {!budgetEdit && (
+                    <button onClick={() => setBudgetEdit({ total: String(production.budgetTotal), qualifying: String(production.budgetQualifying ?? '') })}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">
+                      <Pencil className="w-3 h-3" /> Edit Budget
+                    </button>
+                  )}
+                </div>
               </div>
               <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 text-sm">
                 {[
