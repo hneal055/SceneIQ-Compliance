@@ -1,4 +1,4 @@
-﻿"""
+"""
 Pydantic models for PDF Report Generation
 """
 from pydantic import BaseModel, Field
@@ -39,3 +39,7 @@ class ReportResponse(BaseModel):
 
 
 
+
+class GenerateProductionSummaryReportRequest(BaseModel):
+    """Request to generate a full production summary report"""
+    productionId: str = Field(..., description="Production ID")

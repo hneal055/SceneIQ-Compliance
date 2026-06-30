@@ -1,4 +1,4 @@
-﻿"""
+"""
 PDF Report Generator
 Professional PDF generation for tax incentive reports
 """
@@ -198,6 +198,137 @@ class PDFReportGenerator:
         buffer.seek(0)
         return buffer.getvalue()
     
+    def generate_production_summary_report(self, production, expenses, compliance_items, incentive_rules):
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+        story = []
+
+        title = production.get("title") or "Production"
+        story.append(Paragraph(title + " - Summary Report", self.styles["CustomTitle"]))
+        story.append(Paragraph("Generated on " + datetime.now().strftime("%B %d, %Y"), self.styles["CustomSubtitle"]))
+        story.append(Spacer(1, 0.3 * inch))
+
+        story.append(Paragraph("Production Overview", self.styles["Heading2"]))
+        overview_data = [
+            ["Title", production.get("title") or "-"],
+            ["Company", production.get("company") or "-"],
+            ["Type", production.get("type") or "-"],
+            ["Status", production.get("status") or "-"],
+            ["Jurisdiction", production.get("jurisdiction") or "-"],
+            ["Total Budget", "$" + format(production.get("budgetTotal") or 0, ",.2f")],
+            ["Start Date", production.get("startDate") or "-"],
+            ["End Date", production.get("endDate") or "-"],
+        ]
+        overview_table = Table(overview_data, colWidths=[150, 300])
+        overview_table.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+        ]))
+        story.append(overview_table)
+        story.append(Spacer(1, 0.3 * inch))
+
+        total_spend = sum(e.get("amount") or 0 for e in expenses)
+        qualifying_spend = sum(e.get("amount") or 0 for e in expenses if e.get("isQualifying"))
+        qual_pct = (qualifying_spend / total_spend * 100) if total_spend else 0
+
+        story.append(Paragraph("Budget Summary", self.styles["Heading2"]))
+        budget_summary_data = [
+            ["Total Budget", "$" + format(production.get("budgetTotal") or 0, ",.2f")],
+            ["Total Spend (Line Items)", "$" + format(total_spend, ",.2f")],
+            ["Qualifying Spend", "$" + format(qualifying_spend, ",.2f")],
+            ["Qualifying %", format(qual_pct, ".1f") + "%"],
+            ["Line Item Count", str(len(expenses))],
+        ]
+        budget_summary_table = Table(budget_summary_data, colWidths=[200, 250])
+        budget_summary_table.setStyle(TableStyle([
+            ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+        ]))
+        story.append(budget_summary_table)
+        story.append(Spacer(1, 0.3 * inch))
+
+        if expenses:
+            story.append(Paragraph("Expense Line Items", self.styles["Heading2"]))
+            exp_rows = [["Date", "Category", "Description", "Vendor", "Amount", "Qual."]]
+            for e in expenses[:50]:
+                date_str = str(e.get("expenseDate") or "")[:10]
+                desc = (e.get("description") or "")[:35]
+                vendor = (e.get("vendorName") or "-")[:20]
+                amt = "$" + format(e.get("amount") or 0, ",.0f")
+                qual = "Y" if e.get("isQualifying") else "N"
+                exp_rows.append([date_str, e.get("category") or "", desc, vendor, amt, qual])
+            exp_table = Table(exp_rows, colWidths=[55, 65, 145, 90, 60, 35])
+            exp_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1E3A5F")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#E2E8F0")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+            ]))
+            story.append(exp_table)
+            if len(expenses) > 50:
+                story.append(Paragraph("...and " + str(len(expenses) - 50) + " more line items", self.styles["Normal"]))
+            story.append(Spacer(1, 0.3 * inch))
+
+        story.append(Paragraph("Compliance Status", self.styles["Heading2"]))
+        if compliance_items:
+            complete = sum(1 for c in compliance_items if c.get("status") == "complete")
+            total = len(compliance_items)
+            pct = round((complete / total * 100) if total else 0, 1)
+            story.append(Paragraph(str(complete) + " of " + str(total) + " items complete (" + str(pct) + "%)", self.styles["Normal"]))
+            story.append(Spacer(1, 0.15 * inch))
+
+            comp_rows = [["Category", "Item", "Status"]]
+            for c in compliance_items[:40]:
+                cat = (c.get("category") or "").title()
+                label = (c.get("label") or "")[:55]
+                status = (c.get("status") or "").title()
+                comp_rows.append([cat, label, status])
+            comp_table = Table(comp_rows, colWidths=[80, 320, 70])
+            comp_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1E3A5F")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#E2E8F0")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+            ]))
+            story.append(comp_table)
+        else:
+            story.append(Paragraph("No compliance checklist generated yet.", self.styles["Normal"]))
+        story.append(Spacer(1, 0.3 * inch))
+
+        story.append(Paragraph("Applicable Incentive Rules", self.styles["Heading2"]))
+        if incentive_rules:
+            for r in incentive_rules:
+                pct = r.get("percentage")
+                pct_str = (str(pct) + "%") if pct is not None else "-"
+                rule_name = r.get("ruleName") or ""
+                story.append(Paragraph("<b>" + rule_name + "</b> (" + pct_str + ")", self.styles["Normal"]))
+                if r.get("requirements"):
+                    story.append(Paragraph(str(r.get("requirements")), self.styles["Normal"]))
+                story.append(Spacer(1, 0.1 * inch))
+        else:
+            story.append(Paragraph("No incentive rules linked to this jurisdiction.", self.styles["Normal"]))
+
+        story.append(Spacer(1, 0.4 * inch))
+        story.append(Paragraph("Generated by SceneIQ - Scene Reader Studio Technologies LLC", self.styles["CustomSubtitle"]))
+
+        doc.build(story)
+        buffer.seek(0)
+        return buffer.getvalue()
+
     def generate_compliance_report(
         self,
         production_title: str,

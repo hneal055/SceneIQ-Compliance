@@ -1,4 +1,4 @@
-﻿"""
+"""
 Reports API endpoints - PDF Report Generation
 """
 from fastapi import APIRouter, HTTPException, status
@@ -10,6 +10,7 @@ from src.models.report import (
     GenerateComparisonReportRequest,
     GenerateComplianceReportRequest,
     GenerateScenarioReportRequest,
+    GenerateProductionSummaryReportRequest,
     ReportResponse
 )
 from src.utils.database import prisma
@@ -291,6 +292,86 @@ async def generate_compliance_report(request: GenerateComplianceReportRequest):
         }
     )
 
+
+
+@router.post("/production-summary", summary="Generate full production summary PDF report")
+async def generate_production_summary_report(request: GenerateProductionSummaryReportRequest):
+    production = await prisma.production.find_unique(where={"id": request.productionId})
+    if not production:
+        raise HTTPException(404, "Production not found")
+
+    jurisdiction = None
+    if production.jurisdictionId:
+        jurisdiction = await prisma.jurisdiction.find_unique(where={"id": production.jurisdictionId})
+
+    expenses = await prisma.expense.find_many(
+        where={"productionId": request.productionId},
+        order=[{"category": "asc"}, {"expenseDate": "asc"}],
+    )
+
+    compliance_items = await prisma.complianceitem.find_many(
+        where={"productionId": request.productionId},
+        order=[{"category": "asc"}, {"createdAt": "asc"}],
+    )
+
+    incentive_rules = []
+    if jurisdiction:
+        incentive_rules = await prisma.incentiverule.find_many(
+            where={"jurisdictionId": jurisdiction.id, "active": True}
+        )
+
+    production_dict = {
+        "title": production.title,
+        "company": getattr(production, "company", None),
+        "type": getattr(production, "type", None),
+        "status": production.status,
+        "jurisdiction": jurisdiction.name if jurisdiction else None,
+        "budgetTotal": production.budgetTotal,
+        "startDate": str(production.startDate) if production.startDate else None,
+        "endDate": str(production.endDate) if production.endDate else None,
+    }
+
+    expenses_list = [
+        {
+            "expenseDate": str(e.expenseDate) if e.expenseDate else "",
+            "category": e.category,
+            "description": e.description,
+            "vendorName": e.vendorName,
+            "amount": e.amount,
+            "isQualifying": e.isQualifying,
+        }
+        for e in expenses
+    ]
+
+    compliance_list = [
+        {
+            "category": c.category,
+            "label": c.label,
+            "status": c.status,
+        }
+        for c in compliance_items
+    ]
+
+    rules_list = [
+        {
+            "ruleName": r.ruleName,
+            "percentage": r.percentage,
+            "requirements": r.requirements,
+        }
+        for r in incentive_rules
+    ]
+
+    pdf_bytes = pdf_generator.generate_production_summary_report(
+        production_dict, expenses_list, compliance_list, rules_list
+    )
+
+    filename = f"{production.title.replace(' ', '_')}_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @router.post("/scenario", summary="Generate scenario analysis PDF report")
 async def generate_scenario_report(request: GenerateScenarioReportRequest):
