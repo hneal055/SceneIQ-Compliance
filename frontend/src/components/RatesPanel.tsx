@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calculator, Plus, Loader2, Users, MapPin } from 'lucide-react';
+import { Calculator, Plus, Loader2, Users, MapPin, Search, Check } from 'lucide-react';
 import api from '../api';
 
 interface RatesPanelProps {
@@ -26,11 +26,16 @@ const GUILD_LABELS: Record<string, string> = {
 };
 
 const MARKET_LABELS: Record<string, string> = {
-  los_angeles: 'Los Angeles',
-  new_york: 'New York',
-  georgia: 'Georgia',
+  los_angeles: 'Los Angeles, CA',
+  new_york: 'New York, NY',
+  georgia: 'Georgia (Statewide)',
   new_mexico: 'New Mexico',
-  chicago: 'Chicago',
+  chicago: 'Chicago, IL',
+  atlanta: 'Atlanta, GA',
+  new_orleans: 'New Orleans, LA',
+  vancouver: 'Vancouver, BC',
+  toronto: 'Toronto, ON',
+  london: 'London, UK',
 };
 
 function categoriesForGuild(guild: string): string[] {
@@ -62,6 +67,8 @@ export default function RatesPanel({ productionId, onExpenseAdded }: RatesPanelP
   const [nonunionWeeks, setNonunionWeeks] = useState(4);
   const [nonunionRates, setNonunionRates] = useState<Record<string, number | string> | null>(null);
   const [rateBasis, setRateBasis] = useState<'daily' | 'weekly'>('weekly');
+  const [marketSearch, setMarketSearch] = useState('');
+  const [marketDropdownOpen, setMarketDropdownOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [addingKey, setAddingKey] = useState<string | null>(null);
@@ -287,15 +294,52 @@ export default function RatesPanel({ productionId, onExpenseAdded }: RatesPanelP
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">Market</label>
-                <select
-                  value={market}
-                  onChange={(e) => setMarket(e.target.value)}
-                  className="w-full text-sm border border-slate-300 rounded-md px-3 py-2"
-                >
-                  {(markets.length ? markets : Object.keys(MARKET_LABELS)).map((m) => (
-                    <option key={m} value={m}>{MARKET_LABELS[m] ?? labelize(m)}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMarketDropdownOpen((v) => !v)}
+                    className="w-full flex items-center justify-between text-sm border border-slate-300 rounded-md px-3 py-2 bg-white text-left"
+                  >
+                    <span>{MARKET_LABELS[market] ?? labelize(market)}</span>
+                    <Search className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  {marketDropdownOpen && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg">
+                      <div className="p-2 border-b border-slate-100">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={marketSearch}
+                          onChange={(e) => setMarketSearch(e.target.value)}
+                          placeholder="Search markets..."
+                          className="w-full text-sm border border-slate-200 rounded px-2 py-1.5"
+                        />
+                      </div>
+                      <div className="max-h-56 overflow-y-auto">
+                        {(markets.length ? markets : Object.keys(MARKET_LABELS))
+                          .filter((m) => (MARKET_LABELS[m] ?? labelize(m)).toLowerCase().includes(marketSearch.toLowerCase()))
+                          .map((m) => (
+                            <button
+                              type="button"
+                              key={m}
+                              onClick={() => {
+                                setMarket(m);
+                                setMarketDropdownOpen(false);
+                                setMarketSearch('');
+                              }}
+                              className="w-full flex items-center justify-between text-left text-sm px-3 py-2 hover:bg-slate-50"
+                            >
+                              <span>{MARKET_LABELS[m] ?? labelize(m)}</span>
+                              {market === m && <Check className="w-3.5 h-3.5 text-blue-600" />}
+                            </button>
+                          ))}
+                        {(markets.length ? markets : Object.keys(MARKET_LABELS)).filter((m) => (MARKET_LABELS[m] ?? labelize(m)).toLowerCase().includes(marketSearch.toLowerCase())).length === 0 && (
+                          <div className="px-3 py-4 text-sm text-slate-400 text-center">No markets found</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
