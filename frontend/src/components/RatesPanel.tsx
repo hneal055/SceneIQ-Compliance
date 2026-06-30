@@ -36,6 +36,10 @@ const MARKET_LABELS: Record<string, string> = {
   vancouver: 'Vancouver, BC',
   toronto: 'Toronto, ON',
   london: 'London, UK',
+  cape_town: 'Cape Town, South Africa',
+  budapest: 'Budapest, Hungary',
+  prague: 'Prague, Czech Republic',
+  dublin: 'Dublin, Ireland',
 };
 
 function categoriesForGuild(guild: string): string[] {
