@@ -1,4 +1,4 @@
-import apiClient from './client';
+﻿import apiClient from './client';
 import type {
   Production,
   Jurisdiction,
@@ -25,7 +25,7 @@ import { mockApi } from '../mocks/api';
 
 // Wraps every API call with flag check + automatic mock fallback on failure.
 // Reads from getFlagSnapshot() so runtime flag toggles (via FeatureFlagContext) take effect
-// immediately on the next call — no page reload needed.
+// immediately on the next call â€” no page reload needed.
 // READ operations fall back to mock data silently (good for dev with backend down).
 // WRITE operations re-throw after logging so callers can handle the error.
 async function withFallback<T>(
@@ -43,7 +43,7 @@ async function withFallback<T>(
     return await realFn();
   } catch (error) {
     if (isRead) {
-      if (import.meta.env.DEV) console.warn(`[FALLBACK] ${label} — API unavailable, using mock data`, error);
+      if (import.meta.env.DEV) console.warn(`[FALLBACK] ${label} â€” API unavailable, using mock data`, error);
       return mockFn();
     }
     console.error(`[API ERROR] ${label}`, error);
@@ -169,6 +169,36 @@ export const api = {
       ),
   },
 
+  rates: {
+    guilds: () =>
+      withFallback(
+        async () => { const r = await apiClient.get(`/rates/guilds`); return r.data as { guilds: string[]; nonunion_markets: string[] }; },
+        async () => ({ guilds: ['SAG-AFTRA', 'IATSE', 'DGA', 'Teamsters', 'WGA'], nonunion_markets: ['los_angeles', 'new_york', 'georgia', 'new_mexico', 'chicago'] }),
+        `rates.guilds()`,
+      ),
+
+    union: (guild?: string) =>
+      withFallback(
+        async () => { const r = await apiClient.get(`/rates/union`, { params: guild ? { guild } : {} }); return r.data; },
+        async () => ({ unions: {} }),
+        `rates.union(${guild ?? ''})`,
+      ),
+
+    nonunion: (location?: string) =>
+      withFallback(
+        async () => { const r = await apiClient.get(`/rates/nonunion`, { params: location ? { location } : {} }); return r.data; },
+        async () => ({ markets: {} }),
+        `rates.nonunion(${location ?? ''})`,
+      ),
+
+    estimate: (data: { guild: string; category: string; budget_tier?: string; shoot_weeks?: number; shoot_days?: number }) =>
+      withFallback(
+        async () => { const r = await apiClient.post(`/rates/estimate`, data); return r.data as { guild: string; category: string; budget_tier?: string; shoot_weeks: number; estimated_costs: Record<string, number | string> }; },
+        async () => ({ guild: data.guild, category: data.category, shoot_weeks: data.shoot_weeks ?? 4, estimated_costs: {} }),
+        `rates.estimate(${data.guild}/${data.category})`,
+        false,
+      ),
+  },
   calculations: {
     calculate: (productionId: string, jurisdictionId: string) =>
       withFallback(
@@ -303,7 +333,7 @@ export const api = {
           breakdown: {},
           applied_rules: [],
           overridden_rules: [],
-          warnings: ['API unavailable — showing empty result'],
+          warnings: ['API unavailable â€” showing empty result'],
           recommendations: [],
         } as MaximizeResult),
         'maximizer.maximize',
@@ -570,3 +600,4 @@ export const conflictsApi = {
 };
 
 export default api;
+
