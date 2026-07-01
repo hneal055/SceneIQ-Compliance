@@ -218,16 +218,25 @@ export default function RatesPanel({ productionId, onExpenseAdded }: RatesPanelP
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Shoot Weeks</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={shootWeeks}
-                  onChange={(e) => setShootWeeks(Number(e.target.value))}
-                  className="w-full text-sm border border-slate-300 rounded-md px-3 py-2"
-                />
-              </div>
+              {guild === 'WGA' || (guild === 'DGA' && category === 'tv_drama') || (guild === 'DGA' && category === 'tv_comedy') ? (
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Shoot Weeks</label>
+                  <div className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                    Flat minimums per project/episode &mdash; not week-based
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Shoot Weeks</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={shootWeeks}
+                    onChange={(e) => setShootWeeks(Number(e.target.value))}
+                    className="w-full text-sm border border-slate-300 rounded-md px-3 py-2"
+                  />
+                </div>
+              )}
             </div>
 
             <button
