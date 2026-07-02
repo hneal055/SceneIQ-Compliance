@@ -1,0 +1,11 @@
+jurisdiction_code,jurisdiction_name,jurisdiction_id,rule_name,rule_code,category,effectiveDate,sourceUrl,active,flag_missing_source,flag_stale_date,flag_orphaned
+NM,New Mexico,ece65bb9-bb46-40ef-9098-30626382f8bf,Santa Fe County Production Credit,NM-SF-COUNTY-001,film_production,2024-01-01T00:00:00+00:00,https://www.santafenm.gov/film/,True,,,
+CA,California,ff13fba2-1b17-418f-befb-e79fd4972506,Los Angeles County Film Production Incentive,CA-LA-FILM-001,film_production,2024-01-01T00:00:00+00:00,https://film.lacounty.gov/incentives/,True,,,
+GA,Georgia,57013227-120b-49ce-ae79-7f1c03f61f4d,Atlanta Entertainment Zone Credit,GA-ATL-ENT-001,film_production,2024-01-01T00:00:00+00:00,https://www.atlantaga.gov/film/,True,,,
+LA,Louisiana,4959b596-1599-447e-b19a-f009f9f005ff,Baton Rouge Film Production Grant,LA-BR-FILM-001,film_production,2024-01-01T00:00:00+00:00,https://www.brfilm.org/,True,,,
+CA,California,ff13fba2-1b17-418f-befb-e79fd4972506,San Francisco Digital Media Tax Credit,CA-SF-DIGITAL-001,digital_media,2023-07-01T00:00:00+00:00,https://sffilmcommission.com/incentives/,True,,3.0y old,
+NY,New York,82294749-a16d-43ef-a02d-37994fb970ad,Buffalo-Niagara Film Production Credit,NY-BUF-FILM-001,film_production,2023-06-01T00:00:00+00:00,https://www.buffaloniagara.org/film/,True,,3.1y old,
+NM,New Mexico,ece65bb9-bb46-40ef-9098-30626382f8bf,Albuquerque Film Production Bonus,NM-ABQ-FILM-001,film_production,2023-04-01T00:00:00+00:00,https://www.cabq.gov/film/,True,,3.2y old,
+NY,New York,82294749-a16d-43ef-a02d-37994fb970ad,NYC Made in NY Tax Credit,NY-NYC-FILM-001,film_production,2023-01-01T00:00:00+00:00,https://www.nyc.gov/mome/,True,,3.5y old,
+LA,Louisiana,4959b596-1599-447e-b19a-f009f9f005ff,New Orleans Entertainment District Incentive,LA-NO-ENT-001,film_production,2023-01-01T00:00:00+00:00,https://www.nolafilm.com/incentives/,True,,3.5y old,
+GA,Georgia,57013227-120b-49ce-ae79-7f1c03f61f4d,Savannah Film Incentive,GA-SAV-FILM-001,film_production,2023-01-01T00:00:00+00:00,https://www.savannahfilm.org/,True,,3.5y old,

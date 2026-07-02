@@ -1,0 +1,15 @@
+TAX INCENTIVE CALCULATION REPORT
+Generated: July 1, 2026
+
+Production:          The Great Success Story
+Jurisdiction:        California
+
+Total Budget:        $80,000,000
+Qualified Expenses:  $64,000,000
+Qualified Ratio:     80% of budget
+Credit Rate:         19%
+Estimated Tax Credit: $12,000,000
+Effective Rate:      15.0%
+
+This estimate is for planning purposes only.
+Consult a qualified production accountant for final tax decisions.

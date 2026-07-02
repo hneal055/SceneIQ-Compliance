@@ -1,0 +1,15 @@
+TAX INCENTIVE CALCULATION REPORT
+Generated: July 1, 2026
+
+Production:          The Great Success Story
+Jurisdiction:        Australia
+
+Total Budget:        $80,000,000
+Qualified Expenses:  $64,000,000
+Qualified Ratio:     80% of budget
+Credit Rate:         20%
+Estimated Tax Credit: $12,800,000
+Effective Rate:      16.0%
+
+This estimate is for planning purposes only.
+Consult a qualified production accountant for final tax decisions.
