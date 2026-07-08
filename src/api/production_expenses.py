@@ -3,11 +3,13 @@ Production-scoped expense endpoints — nested under /productions/{id}/expenses.
 Matches the URL pattern expected by the frontend API client.
 """
 import logging
+import os
 from typing import Optional
 from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
+import httpx
 
 from src.utils.database import prisma
 
@@ -154,7 +156,7 @@ EXPENSE_CATEGORIES = [
 ]
 
 
-# â”€â”€ Pydantic models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Pydantic models
 
 class ExpenseCreate(BaseModel):
     category:      str
@@ -167,7 +169,53 @@ class ExpenseCreate(BaseModel):
     qualifyingNote: Optional[str] = None
 
 
-# â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+class BudgetImportRequest(BaseModel):
+    budget_analysis_id: str
+
+
+# ── Budget Analysis import — category classification ──────────────────────
+# Pattern derived from this app's own _TEMPLATES above: every category
+# qualifies consistently across all production types except "labor", which
+# splits Above-the-Line (non-qualifying) vs Below-the-Line (qualifying).
+
+BUDGET_ANALYSIS_API_URL = os.environ.get('BUDGET_ANALYSIS_API_URL', '')
+BUDGET_ANALYSIS_API_KEY = os.environ.get('BUDGET_ANALYSIS_API_KEY', '')
+
+_CATEGORY_RULES: list[tuple[list[str], str, bool, str]] = [
+    (["crew", "camera", "gear", "rental", "equipment"], "equipment", True,
+     "Auto-classified as equipment (always qualifying)."),
+    (["location", "permit", "stage", "studio"], "locations", True,
+     "Auto-classified as locations (always qualifying)."),
+    (["travel", "flight", "hotel", "transport"], "travel", True,
+     "Auto-classified as travel (always qualifying)."),
+    (["catering", "craft service", "craft services", "food", "meal"], "catering", True,
+     "Auto-classified as catering (always qualifying)."),
+    (["vfx", "visual effects", "cgi"], "visual_effects", True,
+     "Auto-classified as visual effects (always qualifying)."),
+    (["edit", "color", "sound mix", "post"], "post_production", True,
+     "Auto-classified as post-production (always qualifying)."),
+    (["legal"], "legal", False,
+     "Auto-classified as legal (never qualifying)."),
+    (["insurance"], "insurance", False,
+     "Auto-classified as insurance (never qualifying)."),
+    (["labor", "staff", "salary", "wage", "director", "actor", "cast", "talent"], "labor", False,
+     "Imported as labor — requires manual Above-the-Line / Below-the-Line review before it can be marked qualifying."),
+]
+
+
+def _classify_line_item(category: str, department: str = "") -> tuple[str, bool, str]:
+    """Map a Budget Analysis line item's freeform category/department text
+    onto a Compliance expense category, a default isQualifying flag, and an
+    explanatory note. Falls back to 'other' / non-qualifying when nothing
+    matches, so an unclassifiable item is flagged rather than guessed at."""
+    haystack = f"{category} {department}".lower()
+    for keywords, mapped_category, qualifying, note in _CATEGORY_RULES:
+        if any(kw in haystack for kw in keywords):
+            return mapped_category, qualifying, note
+    return "other", False, f"Could not confidently classify '{category}' — imported as other, non-qualifying. Please review."
+
+
+# ── Routes ──────────────────────────────────────────────────────────────────
 
 @router.get("/productions/{production_id}/expenses",
             summary="List expenses for a production")
@@ -282,7 +330,7 @@ async def generate_expenses(production_id: str, replace: bool = False):
     else:
         base = date.today()
 
-    # Spread dates: pre-prod 4 wks before, production 0â€“8 wks, post 8â€“14 wks after base
+    # Spread dates: pre-prod 4 wks before, production 0–8 wks, post 8–14 wks after base
     category_offset: dict[str, int] = {
         "labor":          -14,   # pre-prod / ATL deals signed early
         "equipment":       0,
@@ -371,5 +419,89 @@ async def update_expense(production_id: str, expense_id: str, data: dict):
     return updated
 
 
+@router.post("/productions/{production_id}/expenses/import-from-budget-analysis",
+             status_code=status.HTTP_201_CREATED,
+             summary="Import line items from a Budget Analysis report")
+async def import_from_budget_analysis(production_id: str, data: BudgetImportRequest):
+    """
+    Pulls structured line items from Budget Analysis & Risk Management
+    (a separate SceneIQ service) via its authenticated API, maps each item
+    onto this app's expense categories, and creates them as Expense records
+    tied to this production. Labor items are always imported as
+    non-qualifying pending manual ATL/BTL review — see _CATEGORY_RULES.
+    """
+    prod = await prisma.production.find_unique(where={"id": production_id})
+    if not prod:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Production not found")
+
+    if not BUDGET_ANALYSIS_API_URL or not BUDGET_ANALYSIS_API_KEY:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Budget Analysis integration is not configured. Set BUDGET_ANALYSIS_API_URL and BUDGET_ANALYSIS_API_KEY."
+        )
+
+    url = f"{BUDGET_ANALYSIS_API_URL.rstrip('/')}/api/budget/{data.budget_analysis_id}/line-items"
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get(url, headers={"X-API-Key": BUDGET_ANALYSIS_API_KEY})
+    except httpx.RequestError as e:
+        logger.error(f"Budget Analysis request failed: {e}")
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Could not reach Budget Analysis service.")
+
+    if resp.status_code == 404:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Budget analysis not found on Budget Analysis service.")
+    if resp.status_code != 200:
+        logger.error(f"Budget Analysis returned {resp.status_code}: {resp.text[:300]}")
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Budget Analysis service returned an unexpected response.")
+
+    payload = resp.json()
+    line_items = payload.get("line_items", [])
+    if not line_items:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "That budget analysis has no line items to import.")
+
+    created = []
+    labor_flagged = 0
+    for item in line_items:
+        raw_category = str(item.get("category") or "")
+        raw_department = str(item.get("department") or "")
+        amount = float(item.get("amount") or 0)
+        if amount <= 0:
+            continue
+
+        mapped_category, is_qualifying, note = _classify_line_item(raw_category, raw_department)
+        if mapped_category == "labor":
+            labor_flagged += 1
+
+        description = str(item.get("description") or raw_category or "Imported line item")
+
+        create_data: dict = {
+            "productionId": production_id,
+            "category": mapped_category,
+            "description": description,
+            "amount": amount,
+            "expenseDate": date.today().isoformat() + "T00:00:00Z",
+            "isQualifying": is_qualifying,
+            "qualifyingNote": note,
+        }
+        expense = await prisma.expense.create(data=create_data)
+        created.append(expense)
+
+    total = sum(e.amount for e in created)
+    qualify = sum(e.amount for e in created if e.isQualifying)
+
+    logger.info(
+        f"Imported {len(created)} expenses from Budget Analysis id={data.budget_analysis_id} "
+        f"into production {production_id} (total ${total:,.0f}, qualifying ${qualify:,.0f}, "
+        f"{labor_flagged} labor item(s) flagged for review)"
+    )
+
+    return {
+        "created": len(created),
+        "totalAmount": total,
+        "qualifyingAmount": qualify,
+        "nonQualifyingAmount": total - qualify,
+        "laborItemsFlaggedForReview": labor_flagged,
+        "expenses": created,
+    }
 
 
