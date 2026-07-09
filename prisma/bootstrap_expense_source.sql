@@ -1,0 +1,22 @@
+-- =============================================================================
+-- bootstrap_expense_source.sql
+--
+-- Idempotent, migration-history-INDEPENDENT addition of the expenses.source
+-- provenance column ('manual' vs. 'budget_analysis_import').
+--
+-- WHY THIS EXISTS (same reasoning as bootstrap_schedule_tables.sql):
+--   `prisma migrate deploy` is currently inert in production — recent boot
+--   logs show "No migration found in prisma/migrations / No pending
+--   migrations to apply", so a formal Prisma migration adding this column
+--   would never reach the database. This script is run at startup AFTER
+--   `migrate deploy` as the safety net that actually lands the column.
+--
+--   `ADD COLUMN ... IF NOT EXISTS ... NOT NULL DEFAULT 'manual'` backfills
+--   every existing row to 'manual' and is safe to run on every boot; it only
+--   ever ADDs the column and touches no other data.
+--
+-- NOTE: Prisma maps this model to the table "expenses" (@@map("expenses")),
+--   NOT "Expense".
+-- =============================================================================
+
+ALTER TABLE "expenses" ADD COLUMN IF NOT EXISTS "source" TEXT NOT NULL DEFAULT 'manual';

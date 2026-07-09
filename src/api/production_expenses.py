@@ -288,6 +288,7 @@ async def create_expense(production_id: str, data: ExpenseCreate):
         "amount":       data.amount,
         "expenseDate":  expense_date.isoformat() + "T00:00:00Z",
         "isQualifying": data.isQualifying,
+        "source":       "manual",
     }
     if data.vendorName:     create_data["vendorName"]    = data.vendorName
     if data.subcategory:    create_data["subcategory"]   = data.subcategory
@@ -508,6 +509,7 @@ async def import_from_budget_analysis(production_id: str, data: BudgetImportRequ
             "expenseDate": date.today().isoformat() + "T00:00:00Z",
             "isQualifying": is_qualifying,
             "qualifyingNote": note,
+            "source": "budget_analysis_import",
         }
         expense = await prisma.expense.create(data=create_data)
         created.append(expense)

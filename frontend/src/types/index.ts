@@ -64,6 +64,7 @@ export interface Expense {
   expenseDate: string;
   isQualifying: boolean;
   qualifyingNote?: string;
+  source?: string;
   vendorName?: string;
   createdAt: string;
   updatedAt: string;

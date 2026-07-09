@@ -73,5 +73,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 #      this, every /production-schedule endpoint 500s ("relation does not
 #      exist"). It only ever CREATEs missing objects, so it is safe on every
 #      boot and cannot touch existing data.
-CMD ["sh", "-c", "python -m prisma migrate deploy || echo 'migrate deploy failed — starting anyway'; psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/bootstrap_schedule_tables.sql || echo 'schedule-table bootstrap failed — starting anyway'; uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+#   3. bootstrap_expense_source.sql — same idempotent-safety-net pattern for
+#      the expenses.source provenance column, since migrate deploy is inert
+#      here and never applies a formal migration for it.
+CMD ["sh", "-c", "python -m prisma migrate deploy || echo 'migrate deploy failed — starting anyway'; psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/bootstrap_schedule_tables.sql || echo 'schedule-table bootstrap failed — starting anyway'; psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f prisma/bootstrap_expense_source.sql || echo 'expense-source bootstrap failed — starting anyway'; uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 

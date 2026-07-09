@@ -230,6 +230,7 @@ model Expense {
   paymentDate    DateTime?
   isQualifying   Boolean    @default(true)
   qualifyingNote String?
+  source         String     @default("manual")
   vendorName     String?
   vendorLocation String?
   receiptNumber  String?

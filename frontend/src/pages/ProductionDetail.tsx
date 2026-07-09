@@ -602,8 +602,18 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                       return (
                         <tr key={exp.id} className="hover:bg-slate-50 group">
                           <td className="px-4 py-3 text-slate-500">{exp.expenseDate?.split('T')[0]}</td>
-                          <td className="px-4 py-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs">{capitalize(exp.category)}</span></td>
-                          <td className="px-4 py-3 font-medium text-slate-900">{exp.description}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs">{capitalize(exp.category)}</span>
+                            {exp.source === 'budget_analysis_import' && (
+                              <span className="ml-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">Imported</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-slate-900">{exp.description}</div>
+                            {exp.qualifyingNote && (
+                              <div className="text-xs text-slate-400 mt-0.5 max-w-md">{exp.qualifyingNote}</div>
+                            )}
+                          </td>
                           <td className="px-4 py-3 text-slate-500">{exp.vendorName || '—'}</td>
                           <td className="px-4 py-3 font-semibold text-slate-900">{fmt(exp.amount)}</td>
                           <td className="px-4 py-3">{exp.isQualifying ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300" />}</td>
