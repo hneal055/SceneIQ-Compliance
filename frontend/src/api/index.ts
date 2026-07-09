@@ -167,6 +167,20 @@ export const api = {
         `expenses.generate(${productionId})`,
         false,
       ),
+
+    importFromBudgetAnalysis: (productionId: string, budgetAnalysisId: string) =>
+      withFallback(
+        async () => {
+          const r = await apiClient.post(
+            `/productions/${productionId}/expenses/import-from-budget-analysis`,
+            { budget_analysis_id: budgetAnalysisId },
+          );
+          return r.data as { created: number; totalAmount: number; qualifyingAmount: number; expenses: Expense[] };
+        },
+        async () => ({ created: 0, totalAmount: 0, qualifyingAmount: 0, expenses: [] as Expense[] }),
+        `expenses.importFromBudgetAnalysis(${productionId})`,
+        false,
+      ),
   },
 
   reports: {

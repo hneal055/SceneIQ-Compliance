@@ -128,6 +128,11 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   const [expenseSaving, setExpenseSaving] = useState(false);
   const [expenseGenerating, setExpenseGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importId, setImportId] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const [editingExpense, setEditingExpense] = useState<ExpenseEditState | null>(null);
   const [expenseEditSaving, setExpenseEditSaving] = useState(false);
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
@@ -278,6 +283,26 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
       setGenerateError(e instanceof Error ? e.message : 'Generation failed');
     } finally {
       setExpenseGenerating(false);
+    }
+  }
+
+  async function handleImportFromBudget(e: React.FormEvent) {
+    e.preventDefault();
+    if (!importId.trim()) return;
+    setImporting(true);
+    setImportError(null);
+    setImportSuccess(null);
+    try {
+      const res = await api.expenses.importFromBudgetAnalysis(productionId, importId.trim());
+      setImportSuccess(`Imported ${res.created} expense${res.created !== 1 ? 's' : ''}.`);
+      setImportId('');
+      setShowImport(false);
+      loadExpenses();
+    } catch (err) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setImportError(detail || (err instanceof Error ? err.message : 'Import failed'));
+    } finally {
+      setImporting(false);
     }
   }
 
@@ -477,7 +502,11 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                     Regenerate
                   </button>
                 )}
-                <button type="button" onClick={() => setShowAddExpense(v => !v)}
+                <button type="button" onClick={() => { setShowImport(v => !v); setShowAddExpense(false); setImportError(null); }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                  <Download className="w-4 h-4" />{showImport ? 'Cancel' : 'Import from Budget Analysis'}
+                </button>
+                <button type="button" onClick={() => { setShowAddExpense(v => !v); setShowImport(false); }}
                   className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
                   <Plus className="w-4 h-4" />{showAddExpense ? 'Cancel' : 'Add Expense'}
                 </button>
@@ -486,6 +515,11 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             {generateError && (
               <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                 <XCircle className="w-4 h-4 shrink-0" />{generateError}
+              </div>
+            )}
+            {importSuccess && (
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />{importSuccess}
               </div>
             )}
             {showAddExpense && (
@@ -525,6 +559,29 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                   <button type="button" onClick={() => setShowAddExpense(false)} className="px-4 py-2 text-sm border rounded-lg">Cancel</button>
                   <button type="submit" disabled={expenseSaving} className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50">
                     {expenseSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}Save Expense
+                  </button>
+                </div>
+              </form>
+            )}
+            {showImport && (
+              <form onSubmit={handleImportFromBudget} className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+                <h3 className="text-sm font-bold text-slate-900">Import from Budget Analysis</h3>
+                <div>
+                  <label className="block text-xs font-semibold uppercase mb-1 text-slate-500">Budget Analysis ID</label>
+                  <input type="text" required value={importId} onChange={e => setImportId(e.target.value)}
+                    placeholder="e.g. a907d2a9-6ffa-4667-9964-f85a8f1bcb28"
+                    className="w-full px-3 py-2 border rounded-lg text-sm" />
+                  <p className="text-xs text-slate-400 mt-1">Find this ID in Budget Analysis under the analysis you want to import.</p>
+                </div>
+                {importError && (
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    <XCircle className="w-4 h-4 shrink-0" />{importError}
+                  </div>
+                )}
+                <div className="flex justify-end gap-3">
+                  <button type="button" onClick={() => { setShowImport(false); setImportError(null); }} className="px-4 py-2 text-sm border rounded-lg">Cancel</button>
+                  <button type="submit" disabled={importing} className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50">
+                    {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}Import
                   </button>
                 </div>
               </form>
