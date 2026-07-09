@@ -181,8 +181,27 @@ class BudgetImportRequest(BaseModel):
 BUDGET_ANALYSIS_API_URL = os.environ.get('BUDGET_ANALYSIS_API_URL', '')
 BUDGET_ANALYSIS_API_KEY = os.environ.get('BUDGET_ANALYSIS_API_KEY', '')
 
+# Role / person-indicating words are checked FIRST, before any other category.
+# A line item that names a role (e.g. "Camera Operator", "Grip Crew") is a
+# person's wage, not gear — it must land on labor and be flagged for manual
+# Above-the-Line / Below-the-Line review, never auto-marked as qualifying.
+# ("crew" and "operator" in particular used to be swallowed by the equipment
+# rule, silently qualifying a $18k crew salary — see _classify_line_item.)
+_LABOR_KEYWORDS = [
+    "labor", "staff", "salary", "wage", "director", "actor",
+    "cast", "talent", "operator", "crew", "technician", "artist",
+    "coordinator", "supervisor", "producer", "assistant", "manager",
+]
+_LABOR_NOTE = (
+    "Imported as labor — requires manual Above-the-Line / Below-the-Line "
+    "review before it can be marked qualifying."
+)
+
+# Non-labor category rules, checked only AFTER labor has been ruled out.
+# NOTE: "crew" was removed from the equipment rule and moved into
+# _LABOR_KEYWORDS above — it names people, not equipment.
 _CATEGORY_RULES: list[tuple[list[str], str, bool, str]] = [
-    (["crew", "camera", "gear", "rental", "equipment"], "equipment", True,
+    (["camera", "gear", "rental", "equipment"], "equipment", True,
      "Auto-classified as equipment (always qualifying)."),
     (["location", "permit", "stage", "studio"], "locations", True,
      "Auto-classified as locations (always qualifying)."),
@@ -198,17 +217,24 @@ _CATEGORY_RULES: list[tuple[list[str], str, bool, str]] = [
      "Auto-classified as legal (never qualifying)."),
     (["insurance"], "insurance", False,
      "Auto-classified as insurance (never qualifying)."),
-    (["labor", "staff", "salary", "wage", "director", "actor", "cast", "talent"], "labor", False,
-     "Imported as labor — requires manual Above-the-Line / Below-the-Line review before it can be marked qualifying."),
 ]
 
 
 def _classify_line_item(category: str, department: str = "") -> tuple[str, bool, str]:
     """Map a Budget Analysis line item's freeform category/department text
     onto a Compliance expense category, a default isQualifying flag, and an
-    explanatory note. Falls back to 'other' / non-qualifying when nothing
-    matches, so an unclassifiable item is flagged rather than guessed at."""
+    explanatory note.
+
+    Labor/role-indicating words are checked FIRST: a line item naming a person
+    (e.g. "Camera Operator") is a wage, not equipment, so it must be imported
+    as labor and flagged for manual ATL/BTL review rather than silently marked
+    qualifying. Only if no labor signal is present do we fall through to the
+    equipment/locations/travel/etc. rules. Falls back to 'other' /
+    non-qualifying when nothing matches, so an unclassifiable item is flagged
+    rather than guessed at."""
     haystack = f"{category} {department}".lower()
+    if any(kw in haystack for kw in _LABOR_KEYWORDS):
+        return "labor", False, _LABOR_NOTE
     for keywords, mapped_category, qualifying, note in _CATEGORY_RULES:
         if any(kw in haystack for kw in keywords):
             return mapped_category, qualifying, note
