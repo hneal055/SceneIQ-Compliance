@@ -25,7 +25,7 @@ import { mockApi } from '../mocks/api';
 
 // Wraps every API call with flag check + automatic mock fallback on failure.
 // Reads from getFlagSnapshot() so runtime flag toggles (via FeatureFlagContext) take effect
-// immediately on the next call â€” no page reload needed.
+// immediately on the next call — no page reload needed.
 // READ operations fall back to mock data silently (good for dev with backend down).
 // WRITE operations re-throw after logging so callers can handle the error.
 async function withFallback<T>(
@@ -43,7 +43,7 @@ async function withFallback<T>(
     return await realFn();
   } catch (error) {
     if (isRead) {
-      if (import.meta.env.DEV) console.warn(`[FALLBACK] ${label} â€” API unavailable, using mock data`, error);
+      if (import.meta.env.DEV) console.warn(`[FALLBACK] ${label} — API unavailable, using mock data`, error);
       return mockFn();
     }
     console.error(`[API ERROR] ${label}`, error);
@@ -366,7 +366,7 @@ export const api = {
           breakdown: {},
           applied_rules: [],
           overridden_rules: [],
-          warnings: ['API unavailable â€” showing empty result'],
+          warnings: ['API unavailable — showing empty result'],
           recommendations: [],
         } as MaximizeResult),
         'maximizer.maximize',
