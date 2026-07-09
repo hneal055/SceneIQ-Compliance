@@ -3,6 +3,7 @@ Calculator API endpoints - Tax credit calculations
 """
 from fastapi import APIRouter, HTTPException, status
 import json
+import logging
 from typing import Dict, Any
 from pydantic import BaseModel
 
@@ -25,6 +26,8 @@ from src.models.calculator import (
     DateBasedRulesResponse
 )
 from src.utils.database import prisma
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/calculate", tags=["Calculator"])
 
@@ -206,9 +209,37 @@ async def calculate_compare(request: CompareCalculateRequest):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="One or more jurisdictions not found"
         )
-    
-    qualifying_budget = request.qualifyingBudget if request.qualifyingBudget else request.productionBudget
-    
+
+    # Resolve the budget figures from one of two mutually-exclusive sources:
+    #   1. production_id  -> live-sum the production's Expense records right now
+    #      (never a cached/stored budget field: expenses can be reclassified
+    #      after import, so a cached number would go stale)
+    #   2. productionBudget / qualifyingBudget -> manual entry (unchanged path)
+    if request.production_id:
+        if request.productionBudget is not None or request.qualifyingBudget is not None:
+            logger.warning(
+                "compare: production_id=%s provided; ignoring manually-passed "
+                "productionBudget/qualifyingBudget in favor of live expense totals.",
+                request.production_id,
+            )
+        production = await prisma.production.find_unique(where={"id": request.production_id})
+        if not production:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Production not found"
+            )
+        expenses = await prisma.expense.find_many(where={"productionId": request.production_id})
+        if not expenses:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Production has no expenses to compare. Add or import expenses first."
+            )
+        production_budget = sum(e.amount for e in expenses)
+        qualifying_budget = sum(e.amount for e in expenses if e.isQualifying)
+    else:
+        production_budget = request.productionBudget
+        qualifying_budget = request.qualifyingBudget if request.qualifyingBudget else request.productionBudget
+
     # Calculate for each jurisdiction (use best rule for each)
     comparisons = []
     
@@ -303,7 +334,7 @@ async def calculate_compare(request: CompareCalculateRequest):
         notes.append(f"ðŸ“Š Top rate: {best['percentage']}% ({best['ruleName']})")
     
     return CompareCalculateResponse(
-        totalBudget=request.productionBudget,
+        totalBudget=production_budget,
         comparisons=comparison_results,
         bestOption=best_result,
         savingsVsWorst=savings_vs_worst,

@@ -1,7 +1,7 @@
 ﻿"""
 Pydantic models for Tax Credit Calculator and Compliance Checker
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Dict, Any, List
 from datetime import date
 
@@ -43,10 +43,25 @@ class SimpleCalculateResponse(BaseModel):
 
 
 class CompareCalculateRequest(BaseModel):
-    """Request for comparing multiple jurisdictions"""
-    productionBudget: float = Field(..., description="Total production budget in USD", gt=0)
+    """Request for comparing multiple jurisdictions.
+
+    Provide EITHER production_id OR productionBudget:
+    - production_id takes precedence; the comparison runs off the production's
+      live-summed Expense records at request time. Any productionBudget /
+      qualifyingBudget passed alongside it is ignored (a warning is logged).
+    - productionBudget (+ optional qualifyingBudget) is the manual-entry path,
+      unchanged from before.
+    """
+    productionBudget: Optional[float] = Field(None, description="Total production budget in USD (required unless production_id is provided)", gt=0)
     jurisdictionIds: List[str] = Field(..., description="List of jurisdiction IDs to compare", min_items=2, max_items=10)
     qualifyingBudget: Optional[float] = Field(None, description="Override qualifying budget")
+    production_id: Optional[str] = Field(None, description="Compare a real production by ID; derives total/qualifying from its live Expense records (takes precedence over productionBudget/qualifyingBudget)")
+
+    @model_validator(mode="after")
+    def _require_budget_or_production(self):
+        if not self.production_id and self.productionBudget is None:
+            raise ValueError("Either production_id or productionBudget must be provided.")
+        return self
 
 
 class ComparisonResult(BaseModel):
