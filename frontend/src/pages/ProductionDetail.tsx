@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   DollarSign,
@@ -488,7 +488,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             <div className="flex justify-between items-center gap-3">
               <p className="text-sm text-slate-500">{expenses.length} expense{expenses.length !== 1 ? 's' : ''}</p>
               <div className="flex items-center gap-2">
-                {expenses.length === 0 ? (
+                {expensesLoading ? null : expenses.length === 0 ? (
                   <button type="button" onClick={() => handleGenerateExpenses(false)} disabled={expenseGenerating}
                     className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 disabled:opacity-50">
                     {expenseGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}

@@ -52,3 +52,16 @@ node_modules/
 Lib/site-packages/
 archive_20260218_125420/
 safety_backup_20260219_085731/
+*.bak
+*.bak_*
+app.py.bak*
+*.exe
+*.msix
+__pycache__/
+.pytest_cache/
+venv/
+.env
+temp_token.txt
+*.pdf
+*.pptx
+node_modules/
