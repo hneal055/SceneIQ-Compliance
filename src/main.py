@@ -1,6 +1,7 @@
 ﻿"""
 SceneIQ - Tax Incentive Intelligence for Film & TV
 """
+import os
 from contextlib import asynccontextmanager
 import logging
 from pathlib import Path
@@ -21,7 +22,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 ADMIN_EMAIL = "admin@sceneiq.com"
-ADMIN_PASSWORD = "sceneiq2024"
 
 async def _ensure_user_columns() -> None:
     """Idempotently ensure the account-lockout/profile columns exist on the
@@ -43,13 +43,28 @@ async def _ensure_user_columns() -> None:
     logger.info("âœ… Ensured users lockout/profile columns exist")
 
 
-async def _seed_admin() -> None:
-    count = await prisma.user.count()
-    if count == 0:
-        await prisma.user.create(data={"email": ADMIN_EMAIL, "passwordHash": hash_password(ADMIN_PASSWORD), "role": "admin", "isActive": True})
-        logger.info(f"âœ… Admin user created: {ADMIN_EMAIL}")
+async def _ensure_admin() -> None:
+    """Provision admin@sceneiq.com from the ADMIN_PASSWORD env var.
+
+    Runs on every boot: if the admin row exists its password hash is re-synced
+    to ADMIN_PASSWORD; if it does not exist it is created. Scoped strictly to
+    ADMIN_EMAIL by unique email - no other user rows are read or modified.
+    If ADMIN_PASSWORD is unset, provisioning is skipped and the existing admin
+    login is left unchanged (no hardcoded fallback).
+    """
+    admin_password = os.environ.get("ADMIN_PASSWORD")
+    if not admin_password:
+        logger.warning("ADMIN_PASSWORD not set - skipping admin provisioning; existing admin login unchanged")
+        return
+    pw_hash = hash_password(admin_password)
+    existing = await prisma.user.find_unique(where={"email": ADMIN_EMAIL})
+    if existing is None:
+        await prisma.user.create(data={"email": ADMIN_EMAIL, "passwordHash": pw_hash, "role": "admin", "isActive": True})
+        logger.info(f"Admin user created from ADMIN_PASSWORD: {ADMIN_EMAIL}")
     else:
-        logger.info("â„¹ï¸  Admin user already exists â€” skipping seed")
+        await prisma.user.update(where={"email": ADMIN_EMAIL}, data={"passwordHash": pw_hash})
+        logger.info(f"Admin user password re-synced from ADMIN_PASSWORD: {ADMIN_EMAIL}")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,7 +74,7 @@ async def lifespan(app: FastAPI):
         await prisma.connect()
         logger.info("âœ… Database connected")
         await _ensure_user_columns()
-        await _seed_admin()
+        await _ensure_admin()
         await seed_all()
     except Exception as e:
         logger.warning(f"âš ï¸  Database init failed: {e}")
