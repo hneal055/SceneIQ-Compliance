@@ -33,6 +33,7 @@ from src.api.pipeline import router as pipeline_router
 from src.api.signals import router as signals_router
 from src.api.atl_btl import router as atl_btl_router
 from src.api.budget_risk import router as budget_risk_router
+from src.api.burn_rate import router as burn_rate_router
 from src.api.scenes import router as scenes_router
 from src.utils.auth_utils import get_current_user
 
@@ -74,6 +75,7 @@ router.include_router(pipeline_router, dependencies=_auth_dep)
 router.include_router(signals_router, dependencies=_auth_dep)
 router.include_router(atl_btl_router, dependencies=_auth_dep)
 router.include_router(budget_risk_router, dependencies=_auth_dep)
+router.include_router(burn_rate_router, dependencies=_auth_dep)
 router.include_router(scenes_router, dependencies=_auth_dep)
 
 
