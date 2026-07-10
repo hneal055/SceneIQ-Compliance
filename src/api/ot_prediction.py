@@ -1,4 +1,4 @@
-﻿"""
+"""
 ot_prediction.py — Phase 4 Slice 3: OT Prediction Engine
 GET /productions/{id}/budget/ot-prediction
 
@@ -74,8 +74,17 @@ async def predict_ot(production_id: str):
     shoot_days = await prisma.shootday.find_many(
         where={"productionId": production_id},
         order={"dayNumber": "asc"},
-        include={"scenes": True},
     )
+    )
+
+    # Load all scenes for this production keyed by shootDayId
+    all_scenes = await prisma.scene.find_many(
+        where={"productionId": production_id},
+    )
+    scenes_by_day: dict = {}
+    for s in all_scenes:
+        if s.shootDayId:
+            scenes_by_day.setdefault(s.shootDayId, []).append(s)
 
     # Load crew members with rates
     crew = await prisma.crewmember.find_many(
@@ -99,8 +108,8 @@ async def predict_ot(production_id: str):
         # Use totalPages if set, otherwise sum scene page counts
         if day.totalPages and day.totalPages > 0:
             pages = day.totalPages
-        elif day.scenes:
-            pages = sum(s.pageCount or 0 for s in day.scenes)
+        elif day.id in scenes_by_day:
+            pages = sum(s.pageCount or 0 for s in scenes_by_day[day.id])
         else:
             pages = 0.0
 
