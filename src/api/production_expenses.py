@@ -25,6 +25,8 @@ import httpx
 from src.utils.database import prisma
 
 from src.api.atl_btl import router as atl_btl_router
+logger = logging.getLogger(__name__)
+
 router = APIRouter(tags=["Expenses"])
 
 # ---------------------------------------------------------------------------
