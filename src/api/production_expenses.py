@@ -1,4 +1,16 @@
-﻿"""
+"""
+
+
+async def _trigger_budget_analysis(production_id: str) -> None:
+    try:
+        from src.api.budget_risk import analyze_budget
+        await analyze_budget(production_id)
+    except Exception:
+        logger.exception('budget drift auto-analysis failed for %s', production_id)
+"""
+
+
+"""
 Production-scoped expense endpoints — nested under /productions/{id}/expenses.
 Matches the URL pattern expected by the frontend API client.
 """
@@ -13,7 +25,8 @@ import httpx
 
 from src.utils.database import prisma
 
-logger = logging.getLogger(__name__)
+from src.api.atl_btl import router as atl_btl_router
+from src.api.budget_risk import router as budget_risk_router
 router = APIRouter(tags=["Expenses"])
 
 # ---------------------------------------------------------------------------
@@ -296,6 +309,7 @@ async def create_expense(production_id: str, data: ExpenseCreate):
 
     expense = await prisma.expense.create(data=create_data)
     logger.info(f"Expense created: {expense.id} for production {production_id}")
+    await _trigger_budget_analysis(production_id)
     return expense
 
 
@@ -401,6 +415,7 @@ async def generate_expenses(production_id: str, replace: bool = False):
     qualify = sum(e.amount for e in created if e.isQualifying)
 
     logger.info(
+    await _trigger_budget_analysis(production_id)
         f"Generated {len(created)} expenses for production {production_id} "
         f"(total ${total:,.0f}, qualifying ${qualify:,.0f})"
     )
@@ -443,6 +458,7 @@ async def update_expense(production_id: str, expense_id: str, data: dict):
         where={"id": expense_id},
         data=update_data,
     )
+    await _trigger_budget_analysis(production_id)
     return updated
 
 
@@ -518,6 +534,7 @@ async def import_from_budget_analysis(production_id: str, data: BudgetImportRequ
     qualify = sum(e.amount for e in created if e.isQualifying)
 
     logger.info(
+    await _trigger_budget_analysis(production_id)
         f"Imported {len(created)} expenses from Budget Analysis id={data.budget_analysis_id} "
         f"into production {production_id} (total ${total:,.0f}, qualifying ${qualify:,.0f}, "
         f"{labor_flagged} labor item(s) flagged for review)"
