@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   DollarSign,
@@ -20,6 +20,7 @@ import {
   Check,
   X,
   Download,
+  AlertTriangle,
 } from 'lucide-react';
 import api from '../api';
 import RatesPanel from '../components/RatesPanel';
@@ -33,7 +34,7 @@ import type {
   ComplianceStats,
 } from '../types';
 
-type Tab = 'overview' | 'expenses' | 'calculator' | 'rules' | 'compliance' | 'rates';
+type Tab = 'overview' | 'expenses' | 'calculator' | 'rules' | 'compliance' | 'rates' | 'signals';
 
 const STATUS_COLORS: Record<string, string> = {
   planning:        'bg-blue-100 text-blue-800',
@@ -52,45 +53,44 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const COMPLIANCE_STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  pending:  { label: 'Pending',  cls: 'bg-slate-100 text-slate-600' },
+  pending:  { label: 'Pending',  cls: 'bg-slate-100 text-slate-500' },
   complete: { label: 'Complete', cls: 'bg-emerald-100 text-emerald-700' },
   waived:   { label: 'Waived',   cls: 'bg-amber-100 text-amber-700' },
-  na:       { label: 'N/A',      cls: 'bg-slate-50 text-slate-400' },
+  na:       { label: 'N/A',      cls: 'bg-slate-100 text-slate-400' },
+};
+
+const SIGNAL_SEVERITY: Record<string, { label: string; cls: string; dot: string }> = {
+  critical: { label: 'Critical', cls: 'bg-red-100 text-red-700 border border-red-200',       dot: 'bg-red-500' },
+  high:     { label: 'High',     cls: 'bg-amber-100 text-amber-700 border border-amber-200', dot: 'bg-amber-500' },
+  medium:   { label: 'Medium',   cls: 'bg-blue-100 text-blue-700 border border-blue-200',    dot: 'bg-blue-500' },
+  low:      { label: 'Low',      cls: 'bg-slate-100 text-slate-500 border border-slate-200', dot: 'bg-slate-400' },
+};
+
+const SIGNAL_TYPE_LABELS: Record<string, string> = {
+  budget_drift:   'Budget Drift',
+  ot_spike:       'OT Spike',
+  weather_risk:   'Weather Risk',
+  schedule_slip:  'Schedule Slip',
+  vfx_inflation:  'VFX Inflation',
+  crew_conflict:  'Crew Conflict',
+  location_issue: 'Location Issue',
 };
 
 const EXPENSE_CATEGORIES = [
-  'labor','equipment','locations','post_production',
-  'travel','catering','legal','insurance','visual_effects','other',
+  'labor','equipment','locations','travel','catering',
+  'post_production','visual_effects','legal','insurance','other',
 ];
 
-function fmt(n: number) {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
-  return `$${n.toFixed(0)}`;
+interface ProductionSignal {
+  id: string;
+  signalType: string;
+  severity: string;
+  message: string;
+  isResolved: boolean;
+  resolvedAt: string | null;
+  createdAt: string;
+  metadata?: Record<string, unknown>;
 }
-function fmtPct(n: number) { return `${n.toFixed(1)}%`; }
-function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' '); }
-
-function StatCard({ label, value, sub, accent = false }: {
-  label: string; value: string; sub?: string; accent?: boolean;
-}) {
-  return (
-    <div className={`rounded-xl border p-5 ${accent ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200'}`}>
-      <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${accent ? 'text-blue-200' : 'text-slate-500'}`}>{label}</p>
-      <p className={`text-2xl font-bold ${accent ? 'text-white' : 'text-slate-900'}`}>{value}</p>
-      {sub && <p className={`text-xs mt-1 ${accent ? 'text-blue-200' : 'text-slate-500'}`}>{sub}</p>}
-    </div>
-  );
-}
-
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'overview',    label: 'Overview',        icon: <LayoutList className="w-3.5 h-3.5" /> },
-  { id: 'expenses',    label: 'Expenses',         icon: <ReceiptText className="w-3.5 h-3.5" /> },
-  { id: 'compliance',  label: 'Compliance',       icon: <ClipboardCheck className="w-3.5 h-3.5" /> },
-  { id: 'rates',       label: 'Rates',            icon: <Users className="w-3.5 h-3.5" /> },
-  { id: 'calculator',  label: 'Calculator',       icon: <CalcIcon className="w-3.5 h-3.5" /> },
-  { id: 'rules',       label: 'Incentive Rules',  icon: <BookOpen className="w-3.5 h-3.5" /> },
-];
 
 interface ExpenseEditState {
   id: string;
@@ -107,6 +107,33 @@ interface Props {
   onBack: () => void;
 }
 
+function fmt(n: number | null | undefined) {
+  if (n == null) return '$0';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+}
+function fmtPct(n: number) { return n.toFixed(1) + '%'; }
+function capitalize(s: string) { return s ? s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ') : ''; }
+
+function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+  return (
+    <div className={`rounded-xl border p-5 ${accent ? 'bg-blue-600 text-white border-blue-700' : 'bg-white'}`}>
+      <p className={`text-xs font-semibold uppercase mb-1 ${accent ? 'text-blue-200' : 'text-slate-400'}`}>{label}</p>
+      <p className={`text-2xl font-bold ${accent ? 'text-white' : 'text-slate-900'}`}>{value}</p>
+      {sub && <p className={`text-xs mt-0.5 ${accent ? 'text-blue-200' : 'text-slate-400'}`}>{sub}</p>}
+    </div>
+  );
+}
+
+const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  { id: 'overview',   label: 'Overview',       icon: <LayoutList className="w-3.5 h-3.5" /> },
+  { id: 'expenses',   label: 'Expenses',        icon: <ReceiptText className="w-3.5 h-3.5" /> },
+  { id: 'compliance', label: 'Compliance',      icon: <ClipboardCheck className="w-3.5 h-3.5" /> },
+  { id: 'rates',      label: 'Rates',           icon: <Users className="w-3.5 h-3.5" /> },
+  { id: 'calculator', label: 'Calculator',      icon: <CalcIcon className="w-3.5 h-3.5" /> },
+  { id: 'rules',      label: 'Incentive Rules', icon: <BookOpen className="w-3.5 h-3.5" /> },
+  { id: 'signals',    label: 'Signals',         icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+];
+
 export default function ProductionDetail({ productionId, onBack }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
   const [downloadingReport, setDownloadingReport] = useState(false);
@@ -120,6 +147,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
       setDownloadingReport(false);
     }
   }
+
   const [production, setProduction] = useState<Production | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(false);
@@ -147,7 +175,9 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcError, setCalcError] = useState<string | null>(null);
   const [compLoading, setCompLoading] = useState(false);
-
+  const [signals, setSignals] = useState<ProductionSignal[]>([]);
+  const [signalsLoading, setSignalsLoading] = useState(false);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -167,9 +197,39 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   useEffect(() => {
     if (!production?.jurisdictionId) return;
     api.incentiveRules.getByJurisdiction(production.jurisdictionId)
-      .then(rules => setRules(rules.filter(rule => rule.active)))
+      .then(rules => setRules(rules.filter((rule: IncentiveRule) => rule.active)))
       .catch(() => {});
   }, [production?.jurisdictionId]);
+
+  useEffect(() => {
+    loadSignals();
+  }, [productionId]);
+
+  function loadSignals() {
+    setSignalsLoading(true);
+    const token = localStorage.getItem('sceneiq_token');
+    fetch(`/api/0.1.0/productions/${productionId}/signals/active`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setSignals(Array.isArray(data) ? data : (data.signals ?? [])))
+      .catch(() => {})
+      .finally(() => setSignalsLoading(false));
+  }
+
+  async function handleResolveSignal(signalId: string) {
+    setResolvingId(signalId);
+    const token = localStorage.getItem('sceneiq_token');
+    try {
+      const res = await fetch(`/api/0.1.0/productions/${productionId}/signals/${signalId}/resolve`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      if (res.ok) loadSignals();
+    } catch { /* silent */ } finally {
+      setResolvingId(null);
+    }
+  }
 
   function loadCompliance() {
     setCompLoading(true);
@@ -182,6 +242,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   useEffect(() => {
     if (tab === 'compliance' && !compliance) loadCompliance();
     if (tab === 'expenses') loadExpenses();
+    if (tab === 'signals') loadSignals();
   }, [tab]);
 
   function loadExpenses() {
@@ -336,16 +397,16 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
     } catch { /* silent */ }
   }
 
-  const totalSpend     = expenses.reduce((s, i) => s + i.amount, 0);
+  const totalSpend      = expenses.reduce((s, i) => s + i.amount, 0);
   const qualifyingSpend = expenses.reduce((s, i) => s + (i.isQualifying ? i.amount : 0), 0);
   const jur = jurisdictions.find(j => j.id === production?.jurisdictionId);
+  const activeSignalCount = signals.filter(s => !s.isResolved).length;
 
   if (loading) return <div className="flex justify-center py-32"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>;
   if (!production) return <div className="p-8 text-center">Production not found. <button onClick={onBack} className="text-blue-600 underline">Go back</button></div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
       <div className="bg-white border-b border-slate-200 px-8 py-6">
         <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-4">
           <ArrowLeft className="w-4 h-4" /> Back to Productions
@@ -359,7 +420,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
               </span>
             </div>
             <p className="text-slate-500 text-sm">
-              {production.productionCompany}{jur ? ` · ${jur.name}` : ''} · {capitalize(production.productionType)} · Started {production.startDate?.split('T')[0]}
+              {production.productionCompany}{jur ? ` \u00b7 ${jur.name}` : ''} \u00b7 {capitalize(production.productionType)} \u00b7 Started {production.startDate?.split('T')[0]}
             </p>
           </div>
           <div className="flex items-center gap-5">
@@ -384,7 +445,7 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                     <button onClick={handleSaveBudget} disabled={budgetSaving}
                       className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 disabled:opacity-50">
                       {budgetSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                      {budgetSaving ? 'Saving…' : 'Save'}
+                      {budgetSaving ? 'Saving\u2026' : 'Save'}
                     </button>
                     <button onClick={() => { setBudgetEdit(null); setBudgetError(null); }}
                       className="px-3 py-1 bg-slate-100 text-slate-600 rounded text-xs hover:bg-slate-200">Cancel</button>
@@ -412,7 +473,6 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="bg-white border-b border-slate-200 px-8">
         <div className="flex gap-1">
           {TABS.map(t => (
@@ -421,21 +481,22 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
               {t.id === 'compliance' && compliance && compliance.total > 0 && (
                 <span className={`ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${compliance.pct === 100 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{compliance.pct}%</span>
               )}
+              {t.id === 'signals' && activeSignalCount > 0 && (
+                <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">{activeSignalCount}</span>
+              )}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-8 max-w-6xl mx-auto">
 
-        {/* Overview Tab */}
         {tab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Budget" value={fmt(production.budgetTotal)} />
-              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} items`} />
-              <StatCard label="Qualifying Spend" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
+              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '\u2014'} sub={`${expenses.length} items`} />
+              <StatCard label="Qualifying Spend" value={expenses.length ? fmt(qualifyingSpend) : '\u2014'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
               <StatCard label="Incentive Rules" value={String(rules.length)} sub={jur?.name ?? 'No jurisdiction'} />
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -460,12 +521,12 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                   ['Type', capitalize(production.productionType)],
                   ['Company', production.productionCompany],
                   ['Status', STATUS_LABELS[production.status] ?? production.status],
-                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : '—'],
+                  ['Jurisdiction', jur ? `${jur.name} (${jur.code})` : '\u2014'],
                   ['Total Budget', fmt(production.budgetTotal)],
-                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : '—'],
-                  ['Start Date', production.startDate?.split('T')[0] ?? '—'],
-                  ['End Date', production.endDate?.split('T')[0] ?? '—'],
-                  ['Created', production.createdAt?.split('T')[0] ?? '—'],
+                  ['Qualifying Budget', production.budgetQualifying ? fmt(production.budgetQualifying) : '\u2014'],
+                  ['Start Date', production.startDate?.split('T')[0] ?? '\u2014'],
+                  ['End Date', production.endDate?.split('T')[0] ?? '\u2014'],
+                  ['Created', production.createdAt?.split('T')[0] ?? '\u2014'],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <dt className="text-slate-500 font-medium mb-0.5">{label}</dt>
@@ -477,13 +538,12 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           </div>
         )}
 
-        {/* Expenses Tab */}
         {tab === 'expenses' && (
           <div className="space-y-5">
             <div className="grid grid-cols-3 gap-4">
-              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '—'} sub={`${expenses.length} line items`} />
-              <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : '—'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent />
-              <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : '—'} />
+              <StatCard label="Total Spend" value={expenses.length ? fmt(totalSpend) : '\u2014'} sub={`${expenses.length} line items`} />
+              <StatCard label="Qualifying" value={expenses.length ? fmt(qualifyingSpend) : '\u2014'} sub={totalSpend ? fmtPct((qualifyingSpend / totalSpend) * 100) + ' of spend' : undefined} accent/>
+              <StatCard label="Non-Qualifying" value={expenses.length ? fmt(totalSpend - qualifyingSpend) : '\u2014'} />
             </div>
             <div className="flex justify-between items-center gap-3">
               <p className="text-sm text-slate-500">{expenses.length} expense{expenses.length !== 1 ? 's' : ''}</p>
@@ -608,49 +668,16 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                       if (isEditing && editingExpense) {
                         return (
                           <tr key={exp.id} className="bg-blue-50">
-                            <td className="px-2 py-2">
-                              <input type="date" value={editingExpense.expenseDate}
-                                onChange={e => setEditingExpense(s => s ? { ...s, expenseDate: e.target.value } : s)}
-                                className="w-full px-2 py-1 border rounded text-xs" />
-                            </td>
-                            <td className="px-2 py-2">
-                              <select value={editingExpense.category}
-                                onChange={e => setEditingExpense(s => s ? { ...s, category: e.target.value } : s)}
-                                className="w-full px-2 py-1 border rounded text-xs">
-                                {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{capitalize(c)}</option>)}
-                              </select>
-                            </td>
-                            <td className="px-2 py-2">
-                              <input type="text" value={editingExpense.description}
-                                onChange={e => setEditingExpense(s => s ? { ...s, description: e.target.value } : s)}
-                                className="w-full px-2 py-1 border rounded text-xs" />
-                            </td>
-                            <td className="px-2 py-2">
-                              <input type="text" value={editingExpense.vendorName}
-                                onChange={e => setEditingExpense(s => s ? { ...s, vendorName: e.target.value } : s)}
-                                placeholder="Vendor"
-                                className="w-full px-2 py-1 border rounded text-xs" />
-                            </td>
-                            <td className="px-2 py-2">
-                              <input type="number" step="0.01" min="0.01" value={editingExpense.amount}
-                                onChange={e => setEditingExpense(s => s ? { ...s, amount: e.target.value } : s)}
-                                className="w-24 px-2 py-1 border rounded text-xs text-right" />
-                            </td>
-                            <td className="px-2 py-2">
-                              <input type="checkbox" checked={editingExpense.isQualifying}
-                                onChange={e => setEditingExpense(s => s ? { ...s, isQualifying: e.target.checked } : s)}
-                                className="w-4 h-4 rounded" />
-                            </td>
+                            <td className="px-2 py-2"><input type="date" value={editingExpense.expenseDate} onChange={e => setEditingExpense(s => s ? { ...s, expenseDate: e.target.value } : s)} className="w-full px-2 py-1 border rounded text-xs" /></td>
+                            <td className="px-2 py-2"><select value={editingExpense.category} onChange={e => setEditingExpense(s => s ? { ...s, category: e.target.value } : s)} className="w-full px-2 py-1 border rounded text-xs">{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{capitalize(c)}</option>)}</select></td>
+                            <td className="px-2 py-2"><input type="text" value={editingExpense.description} onChange={e => setEditingExpense(s => s ? { ...s, description: e.target.value } : s)} className="w-full px-2 py-1 border rounded text-xs" /></td>
+                            <td className="px-2 py-2"><input type="text" value={editingExpense.vendorName} onChange={e => setEditingExpense(s => s ? { ...s, vendorName: e.target.value } : s)} placeholder="Vendor" className="w-full px-2 py-1 border rounded text-xs" /></td>
+                            <td className="px-2 py-2"><input type="number" step="0.01" min="0.01" value={editingExpense.amount} onChange={e => setEditingExpense(s => s ? { ...s, amount: e.target.value } : s)} className="w-24 px-2 py-1 border rounded text-xs text-right" /></td>
+                            <td className="px-2 py-2"><input type="checkbox" checked={editingExpense.isQualifying} onChange={e => setEditingExpense(s => s ? { ...s, isQualifying: e.target.checked } : s)} className="w-4 h-4 rounded" /></td>
                             <td className="px-2 py-2">
                               <div className="flex items-center gap-1">
-                                <button onClick={handleSaveExpenseEdit} disabled={expenseEditSaving} title="Save"
-                                  className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
-                                  {expenseEditSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                                </button>
-                                <button onClick={() => setEditingExpense(null)} title="Cancel"
-                                  className="p-1 bg-slate-200 text-slate-600 rounded hover:bg-slate-300">
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
+                                <button onClick={handleSaveExpenseEdit} disabled={expenseEditSaving} title="Save" className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{expenseEditSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}</button>
+                                <button onClick={() => setEditingExpense(null)} title="Cancel" className="p-1 bg-slate-200 text-slate-600 rounded hover:bg-slate-300"><X className="w-3.5 h-3.5" /></button>
                               </div>
                             </td>
                           </tr>
@@ -661,29 +688,19 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                           <td className="px-4 py-3 text-slate-500">{exp.expenseDate?.split('T')[0]}</td>
                           <td className="px-4 py-3">
                             <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs">{capitalize(exp.category)}</span>
-                            {exp.source === 'budget_analysis_import' && (
-                              <span className="ml-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">Imported</span>
-                            )}
+                            {exp.source === 'budget_analysis_import' && <span className="ml-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">Imported</span>}
                           </td>
                           <td className="px-4 py-3">
                             <div className="font-medium text-slate-900">{exp.description}</div>
-                            {exp.qualifyingNote && (
-                              <div className="text-xs text-slate-400 mt-0.5 max-w-md">{exp.qualifyingNote}</div>
-                            )}
+                            {exp.qualifyingNote && <div className="text-xs text-slate-400 mt-0.5 max-w-md">{exp.qualifyingNote}</div>}
                           </td>
-                          <td className="px-4 py-3 text-slate-500">{exp.vendorName || '—'}</td>
+                          <td className="px-4 py-3 text-slate-500">{exp.vendorName || '\u2014'}</td>
                           <td className="px-4 py-3 font-semibold text-slate-900">{fmt(exp.amount)}</td>
                           <td className="px-4 py-3">{exp.isQualifying ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-slate-300" />}</td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button type="button" title="Edit expense" onClick={() => startEditExpense(exp)}
-                                className="text-slate-400 hover:text-blue-500 transition-colors">
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                              <button type="button" title="Delete expense" onClick={() => handleDeleteExpense(exp.id)}
-                                className="text-slate-400 hover:text-red-500 transition-colors">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <button type="button" title="Edit expense" onClick={() => startEditExpense(exp)} className="text-slate-400 hover:text-blue-500 transition-colors"><Pencil className="w-4 h-4" /></button>
+                              <button type="button" title="Delete expense" onClick={() => handleDeleteExpense(exp.id)} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </td>
                         </tr>
@@ -696,18 +713,17 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           </div>
         )}
 
-        {/* Compliance Tab */}
         {tab === 'compliance' && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
-              {compliance && compliance.total > 0 && <p className="text-sm text-slate-500"><span className="font-bold">{compliance.complete}</span> of <span className="font-bold">{compliance.total}</span> items complete{compliance.waived > 0 && ` · ${compliance.waived} waived`}</p>}
+              {compliance && compliance.total > 0 && <p className="text-sm text-slate-500"><span className="font-bold">{compliance.complete}</span> of <span className="font-bold">{compliance.total}</span> items complete{compliance.waived > 0 && ` \u00b7 ${compliance.waived} waived`}</p>}
               <div className="flex gap-2">
                 {compliance && compliance.total > 0 && <button onClick={loadCompliance} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-lg"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>}
                 <button onClick={handleGenerateChecklist} disabled={compLoading} className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg">{compLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}{compliance ? 'Regenerate' : 'Generate'} Checklist</button>
               </div>
             </div>
             {compliance && compliance.total > 0 && <div className="bg-white rounded-xl border p-5"><div className="flex justify-between text-sm mb-2"><span className="font-semibold">Overall Completion</span><span>{compliance.pct}%</span></div><progress value={compliance.pct} max={100} className="w-full h-3 rounded-full" /><div className="flex gap-4 mt-2.5 text-xs"><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Complete ({compliance.complete})</span><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-slate-200" /> Pending ({compliance.pending})</span>{compliance.waived > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-400" /> Waived ({compliance.waived})</span>}</div></div>}
-            {(compliance?.items?.length ?? 0) > 0 && Object.entries((compliance!.items ?? []).reduce<Record<string, ComplianceItem[]>>((acc, i) => { (acc[i.category] ||= []).push(i); return acc; }, {})).sort(([a], [b]) => a.localeCompare(b)).map(([cat, items]) => (
+            {(compliance?.items?.length ?? 0) > 0 && Object.entries((compliance!.items ?? []).reduce<Record<string, ComplianceItem[]>>((acc, i) => { (acc[i.category] ||= []).push(i); return acc;}, {})).sort(([a], [b]) => a.localeCompare(b)).map(([cat, items]) => (
               <div key={cat} className="bg-white rounded-xl border overflow-hidden"><div className="flex justify-between px-6 py-3.5 border-b bg-slate-50"><h3 className="text-xs font-bold uppercase">{capitalize(cat)}</h3><span className="text-xs">{items.filter(i => i.status === 'complete').length}/{items.length} complete</span></div><div className="divide-y divide-slate-50">{items.map(item => { const cfg = COMPLIANCE_STATUS_CONFIG[item.status]; return (<div key={item.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50"><button onClick={() => cycleStatus(item)} className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${item.status === 'complete' ? 'bg-emerald-500 border-emerald-500' : item.status === 'waived' ? 'bg-amber-400 border-amber-400' : item.status === 'na' ? 'bg-slate-200 border-slate-200' : 'border-slate-300'}`}>{item.status === 'complete' && <CheckCircle2 className="w-3 h-3 text-white" />}{item.status === 'waived' && <XCircle className="w-3 h-3 text-white" />}</button><span className={`text-sm flex-1 ${item.status === 'complete' ? 'line-through text-slate-400' : ''}`}>{item.label}</span><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.cls}`}>{cfg.label}</span></div>); })}</div></div>
             ))}
             {(!compliance || compliance.total === 0) && !compLoading && <div className="bg-white rounded-xl border p-16 text-center"><ClipboardCheck className="w-8 h-8 text-slate-300 mx-auto mb-3" /><p className="text-slate-700 font-semibold">No checklist yet</p><p className="text-slate-400 text-sm">Click "Generate Checklist" to create compliance items.</p></div>}
@@ -715,21 +731,18 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           </div>
         )}
 
-        {/* Rates Tab */}
         {tab === 'rates' && (
           <RatesPanel productionId={productionId} onExpenseAdded={loadExpenses} />
         )}
 
-        {/* Calculator Tab */}
         {tab === 'calculator' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl border p-6"><h2 className="text-sm font-bold mb-4">Incentive Calculator</h2><div className="flex gap-4 items-end"><div className="flex-1"><label className="block text-xs font-semibold uppercase mb-2">Jurisdiction</label><select value={calcJurId} onChange={e => { setCalcJurId(e.target.value); setCalcResult(null); }} className="w-full px-3.5 py-2.5 border rounded-lg">{jurisdictions.map(j => <option key={j.id} value={j.id}>{j.name} ({j.code}){j.id === production.jurisdictionId ? ' â˜… primary' : ''}</option>)}</select></div><button onClick={handleCalculate} disabled={!calcJurId || calcLoading} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg">{calcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}{calcLoading ? 'Calculating…' : 'Calculate'}</button></div>{calcError && <p className="text-red-600 text-sm mt-3">{calcError}</p>}</div>
-            {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary — {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : '—'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
+            <div className="bg-white rounded-xl border p-6"><h2 className="text-sm font-bold mb-4">Incentive Calculator</h2><div className="flex gap-4 items-end"><div className="flex-1"><label className="block text-xs font-semibold uppercase mb-2">Jurisdiction</label><select value={calcJurId} onChange={e => { setCalcJurId(e.target.value); setCalcResult(null); }} className="w-full px-3.5 py-2.5 border rounded-lg">{jurisdictions.map(j => <option key={j.id} value={j.id}>{j.name} ({j.code}){j.id === production.jurisdictionId ? ' \u2605 primary' : ''}</option>)}</select></div><button onClick={handleCalculate} disabled={!calcJurId || calcLoading} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg">{calcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}{calcLoading ? 'Calculating\u2026' : 'Calculate'}</button></div>{calcError && <p className="text-red-600 text-sm mt-3">{calcError}</p>}</div>
+            {calcResult && (() => { const sel = jurisdictions.find(j => j.id === calcResult.jurisdiction_id); const rate = calcResult.qualified_expenses > 0 ? (calcResult.incentive_amount / calcResult.qualified_expenses) * 100 : 0; return (<div className="space-y-4"><div className="grid grid-cols-4 gap-4"><StatCard label="Total Expenses" value={fmt(calcResult.total_expenses)} /><StatCard label="Qualified Expenses" value={fmt(calcResult.qualified_expenses)} sub={calcResult.total_expenses ? fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100) : undefined} /><StatCard label="Estimated Credit" value={fmt(calcResult.incentive_amount)} accent /><StatCard label="Effective Rate" value={fmtPct(calcResult.effective_rate * 100)} /></div><div className="bg-white rounded-xl border p-6"><h3 className="text-sm font-bold mb-4">Summary \u2014 {sel?.name}</h3><dl className="space-y-3">{([['Production', production.title], ['Jurisdiction', sel ? `${sel.name} (${sel.code})` : '\u2014'], ['Total Expenses', fmt(calcResult.total_expenses)], ['Qualified Expenses', fmt(calcResult.qualified_expenses)], ['Qualification Rate', fmtPct((calcResult.qualified_expenses / calcResult.total_expenses) * 100)], ['Credit Rate', fmtPct(rate)], ['Estimated Credit', fmt(calcResult.incentive_amount)], ['Effective Rate', fmtPct(calcResult.effective_rate * 100)]] as [string, string][]).map(([l, v]) => <div key={l} className="flex justify-between py-2 border-b"><dt className="text-slate-500">{l}</dt><dd className="font-semibold">{v}</dd></div>)}</dl></div></div>); })()}
             {!calcResult && !calcLoading && <div className="bg-white rounded-xl border p-16 text-center"><TrendingUp className="w-8 h-8 text-slate-300 mx-auto mb-3" /><p className="text-slate-700 font-semibold">Select a jurisdiction and calculate</p></div>}
           </div>
         )}
 
-        {/* Rules Tab */}
         {tab === 'rules' && (
           <div className="space-y-4">
             {rules.length === 0 ? <div className="bg-white rounded-xl border p-16 text-center"><BookOpen className="w-8 h-8 text-slate-300 mx-auto mb-3" /><p className="text-slate-700 font-semibold">No rules found</p></div> : <>
@@ -739,11 +752,78 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
           </div>
         )}
 
+        {tab === 'signals' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">Production Signals</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Autonomous alerts surfaced by the production intelligence layer</p>
+              </div>
+              <button onClick={loadSignals} disabled={signalsLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-50">
+                {signalsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                Refresh
+              </button>
+            </div>
+            {signals.length > 0 && (
+              <div className="grid grid-cols-4 gap-3">
+                {(['critical','high','medium','low'] as const).map(sev => {
+                  const count = signals.filter(s => s.severity === sev && !s.isResolved).length;
+                  const cfg = SIGNAL_SEVERITY[sev];
+                  return (
+                    <div key={sev} className="bg-white rounded-xl border p-4 flex items-center gap-3">
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500">{cfg.label}</p>
+                        <p className="text-xl font-bold text-slate-900">{count}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {signalsLoading ? (
+              <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-blue-500" /></div>
+            ) : signals.length === 0 ? (
+              <div className="bg-white rounded-xl border p-16 text-center">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
+                <p className="text-slate-700 font-semibold">No active signals</p>
+                <p className="text-slate-400 text-sm mt-1">The production intelligence layer hasn't detected any issues yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {signals
+                  .sort((a, b) => {
+                    const order = { critical: 0, high: 1, medium: 2, low: 3 };
+                    return (order[a.severity as keyof typeof order] ?? 4) - (order[b.severity as keyof typeof order] ?? 4);
+                  })
+                  .map(signal => {
+                    const cfg = SIGNAL_SEVERITY[signal.severity] ?? SIGNAL_SEVERITY.low;
+                    return (
+                      <div key={signal.id} className="bg-white rounded-xl border border-slate-200 p-5 flex items-start gap-4">
+                        <span className={`mt-0.5 w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.cls}`}>{cfg.label}</span>
+                            <span className="text-xs font-semibold text-slate-700">{SIGNAL_TYPE_LABELS[signal.signalType] ?? signal.signalType}</span>
+                            <span className="text-xs text-slate-400">{signal.createdAt?.split('T')[0]}</span>
+                          </div>
+                          <p className="text-sm text-slate-700">{signal.message}</p>
+                        </div>
+                        <button onClick={() => handleResolveSignal(signal.id)} disabled={resolvingId === signal.id}
+                          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 disabled:opacity-50 transition-colors">
+                          {resolvingId === signal.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                          Resolve
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
 }
-
-
-
-
