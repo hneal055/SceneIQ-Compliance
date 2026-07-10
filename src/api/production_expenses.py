@@ -22,7 +22,6 @@ import httpx
 from src.utils.database import prisma
 
 from src.api.atl_btl import router as atl_btl_router
-from src.api.budget_risk import router as budget_risk_router
 router = APIRouter(tags=["Expenses"])
 
 # ---------------------------------------------------------------------------

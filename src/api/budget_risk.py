@@ -1,4 +1,4 @@
-﻿"""
+"""
 budget_risk.py — Phase 4 Budget Risk Analysis Engine
 POST /productions/{id}/budget/analyze
 
@@ -12,13 +12,19 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from src.utils.database import prisma
-from src.api.production_expenses import _TEMPLATES
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Budget Risk"])
 
 # Drift thresholds
+# Category allocation percentages by production type
+_ALLOC_PCT = {
+    'feature_film': {'labor':0.465,'equipment':0.11,'locations':0.08,'travel':0.04,'catering':0.02,'post_production':0.10,'insurance':0.025,'legal':0.01,'other':0.02},
+    'documentary':  {'labor':0.29,'equipment':0.13,'locations':0.06,'travel':0.08,'catering':0.015,'post_production':0.17,'insurance':0.03,'legal':0.015,'other':0.025},
+    'tv_series':    {'labor':0.49,'equipment':0.10,'locations':0.07,'travel':0.04,'catering':0.02,'post_production':0.10,'insurance':0.025,'legal':0.01,'other':0.02},
+}
+
 _WARN_PCT  = 0.10   # 10% over allocation → high signal
 _CRIT_PCT  = 0.25   # 25% over allocation → critical signal
 
@@ -41,14 +47,9 @@ class BudgetRiskResponse(BaseModel):
 
 
 def _build_allocation(production_type: str, budget_total: float) -> Dict[str, float]:
-    """Sum template percentages by category → dollar allocation per category."""
-    key = production_type if production_type in _TEMPLATES else "feature_film"
-    rows = _TEMPLATES[key]
-    alloc: Dict[str, float] = {}
-    for row in rows:
-        cat = row["cat"]
-        alloc[cat] = alloc.get(cat, 0.0) + row["pct"] * budget_total
-    return alloc
+    key = production_type if production_type in _ALLOC_PCT else 'feature_film'
+    pcts = _ALLOC_PCT[key]
+    return {cat: pct * budget_total for cat, pct in pcts.items()}
 
 
 @router.post(
