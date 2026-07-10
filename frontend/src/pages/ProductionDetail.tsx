@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   DollarSign,
@@ -401,6 +401,12 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
   const qualifyingSpend = expenses.reduce((s, i) => s + (i.isQualifying ? i.amount : 0), 0);
   const jur = jurisdictions.find(j => j.id === production?.jurisdictionId);
   const activeSignalCount = signals.filter(s => !s.isResolved).length;
+  const healthScore = Math.max(0, 100 - signals.filter(s => !s.isResolved).reduce((acc, s) => {
+    const penalty: Record<string, number> = { critical: 25, high: 15, medium: 5, low: 1 };
+    return acc + (penalty[s.severity] ?? 0);
+  }, 0));
+  const healthColor = healthScore >= 80 ? 'text-emerald-600' : healthScore >= 50 ? 'text-amber-500' : 'text-red-600';
+  const healthLabel = healthScore >= 80 ? 'Healthy' : healthScore >= 50 ? 'At Risk' : 'Critical';
 
   if (loading) return <div className="flex justify-center py-32"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>;
   if (!production) return <div className="p-8 text-center">Production not found. <button onClick={onBack} className="text-blue-600 underline">Go back</button></div>;
@@ -469,6 +475,11 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
                 <p className="text-xl font-bold text-emerald-600">{compliance.pct}%</p>
               </div>
             )}
+            <div className="text-right">
+              <p className="text-xs text-slate-400 font-medium">Production Health</p>
+              <p className={	ext-xl font-bold \}>{healthScore}</p>
+              <p className={	ext-xs font-semibold \}>{healthLabel}</p>
+            </div>
           </div>
         </div>
       </div>
