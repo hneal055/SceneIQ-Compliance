@@ -75,7 +75,6 @@ async def predict_ot(production_id: str):
         where={"productionId": production_id},
         order={"dayNumber": "asc"},
     )
-    )
 
     # Load all scenes for this production keyed by shootDayId
     all_scenes = await prisma.scene.find_many(
