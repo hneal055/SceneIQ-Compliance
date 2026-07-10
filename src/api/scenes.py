@@ -1,4 +1,4 @@
-﻿"""
+"""
 scenes.py — AURA → SceneIQ scene import endpoint
 POST /productions/{production_id}/scenes/import-from-aura
 Accepts a structured scene list from AURA's /api/scenes/extract endpoint
@@ -8,8 +8,6 @@ import logging
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from prisma import Prisma
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
@@ -17,7 +15,7 @@ router = APIRouter(
     tags=["Scenes"],
 )
 
-prisma = Prisma(auto_register=True)
+from src.utils.database import prisma
 
 
 class SceneImport(BaseModel):
