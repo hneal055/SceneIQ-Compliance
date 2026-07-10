@@ -477,8 +477,8 @@ export default function ProductionDetail({ productionId, onBack }: Props) {
             )}
             <div className="text-right">
               <p className="text-xs text-slate-400 font-medium">Production Health</p>
-              <p className={	ext-xl font-bold \}>{healthScore}</p>
-              <p className={	ext-xs font-semibold \}>{healthLabel}</p>
+              <p className={`text-xl font-bold ${healthColor}`}>{healthScore}</p>
+              <p className={`text-xs font-semibold ${healthColor}`}>{healthLabel}</p>
             </div>
           </div>
         </div>
