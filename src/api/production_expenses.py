@@ -534,11 +534,11 @@ async def import_from_budget_analysis(production_id: str, data: BudgetImportRequ
     qualify = sum(e.amount for e in created if e.isQualifying)
 
     logger.info(
-    await _trigger_budget_analysis(production_id)
         f"Imported {len(created)} expenses from Budget Analysis id={data.budget_analysis_id} "
         f"into production {production_id} (total ${total:,.0f}, qualifying ${qualify:,.0f}, "
         f"{labor_flagged} labor item(s) flagged for review)"
     )
+    await _trigger_budget_analysis(production_id)
 
     return {
         "created": len(created),
