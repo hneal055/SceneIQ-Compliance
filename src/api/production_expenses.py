@@ -1,13 +1,9 @@
-"""
-
-
 async def _trigger_budget_analysis(production_id: str) -> None:
     try:
         from src.api.budget_risk import analyze_budget
         await analyze_budget(production_id)
     except Exception:
         logger.exception('budget drift auto-analysis failed for %s', production_id)
-"""
 
 
 """
