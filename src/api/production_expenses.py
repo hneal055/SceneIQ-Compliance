@@ -415,10 +415,10 @@ async def generate_expenses(production_id: str, replace: bool = False):
     qualify = sum(e.amount for e in created if e.isQualifying)
 
     logger.info(
-    await _trigger_budget_analysis(production_id)
         f"Generated {len(created)} expenses for production {production_id} "
         f"(total ${total:,.0f}, qualifying ${qualify:,.0f})"
     )
+    await _trigger_budget_analysis(production_id)
 
     return {
         "created": len(created),
