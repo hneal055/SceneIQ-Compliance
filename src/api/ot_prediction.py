@@ -1,10 +1,14 @@
-"""
-ot_prediction.py — Phase 4 Slice 3: OT Prediction Engine
+﻿"""
+ot_prediction.py — Phase 4 Slice 3: OT Prediction Engine (v2)
 GET /productions/{id}/budget/ot-prediction
 
-Analyzes shoot days against page count thresholds to predict
-overtime risk and projected OT cost. Fires ot_spike signals
-for days likely to run over standard 8-page day limit.
+Analyzes shoot days against the 8-page industry standard.
+v2 changes:
+  - Corrected OT cost model: OT hours are incremental hours paid at
+    time-and-a-half (1.5x hourly), not a 0.5 premium on budgeted hours.
+  - Per-day ot_spike signals (medium severity) for each HIGH risk day,
+    with dedupe and auto-resolve.
+  - Aggregate signal (OT > 5% of budget) unchanged.
 """
 import logging
 from typing import List, Optional
@@ -20,9 +24,11 @@ router = APIRouter(tags=["Budget Risk"])
 
 # Industry standard pages per shoot day
 _STANDARD_PAGES = 8.0
-# OT premium multiplier (union standard: time-and-a-half)
-_OT_MULTIPLIER = 0.5
-# Signal threshold: projected OT > 5% of budget
+# Standard shoot day length in hours (daily rate / this = hourly rate)
+_STANDARD_HOURS = 10.0
+# OT hours are paid at time-and-a-half
+_OT_RATE_MULTIPLIER = 1.5
+# Aggregate signal threshold: projected OT > 5% of budget
 _OT_SIGNAL_PCT = 0.05
 
 
@@ -49,6 +55,7 @@ class OTPredictionResponse(BaseModel):
     projected_ot_cost: float
     projected_ot_pct: float
     signal_created: bool
+    day_signals_created: int
     shoot_days: List[ShootDayRisk]
 
 
@@ -60,9 +67,9 @@ class OTPredictionResponse(BaseModel):
 async def predict_ot(production_id: str):
     """
     Analyzes all shoot days against the 8-page industry standard.
-    Days with more than 8 pages are flagged as OT risk.
-    Projects total OT cost using crew rates and fires an ot_spike
-    signal if projected OT exceeds 5% of the total budget.
+    Days over 8 pages are flagged as OT risk. Each HIGH risk day fires
+    a per-day ot_spike signal (medium severity). If total projected OT
+    exceeds 5% of budget, an aggregate production-level signal fires.
     """
     production = await prisma.production.find_unique(where={"id": production_id})
     if not production:
@@ -98,10 +105,31 @@ async def predict_ot(production_id: str):
     avg_daily_rate = sum(rates) / len(rates) if rates else 500.0  # $500 default if no rates
     crew_count = len(crew) if crew else 20  # industry average crew size if no crew loaded
 
+    # Derived hourly rate from standard day length
+    avg_hourly_rate = avg_daily_rate / _STANDARD_HOURS
+
+    # Load all unresolved OT signals for this production once,
+    # split into per-day and aggregate for dedupe/resolve logic.
+    existing_signals = await prisma.productionsignal.find_many(
+        where={
+            "productionId": production_id,
+            "signalType": "ot_spike",
+            "source": "ot_engine",
+            "resolved": False,
+        }
+    )
+    existing_day_signals = {
+        sig.entityId: sig for sig in existing_signals if sig.entityType == "shoot_day"
+    }
+    existing_aggregate = [
+        sig for sig in existing_signals if sig.entityType == "production"
+    ]
+
     # Analyze each shoot day
     day_risks: List[ShootDayRisk] = []
     total_projected_ot = 0.0
     total_pages = 0.0
+    day_signals_created = 0
 
     for day in shoot_days:
         # Use totalPages if set, otherwise sum scene page counts
@@ -123,14 +151,51 @@ async def predict_ot(production_id: str):
         else:
             ot_risk = "high"
 
-        # Estimate OT hours: each page over standard = ~7.5 min of screen time
-        # Industry rule: 1 page ≈ 1 hour of shoot time
+        # Industry rule: 1 page over standard ~ 1 hour of additional shoot time
         estimated_ot_hours = pages_over
 
-        # OT cost: crew × avg_daily_rate × OT_premium × (OT_hours / standard_hours)
-        standard_hours = 10.0  # standard 10-hour shoot day
-        ot_cost = crew_count * avg_daily_rate * _OT_MULTIPLIER * (estimated_ot_hours / standard_hours)
+        # OT cost: incremental hours paid at time-and-a-half, whole crew
+        ot_cost = crew_count * avg_hourly_rate * _OT_RATE_MULTIPLIER * estimated_ot_hours
         total_projected_ot += ot_cost
+
+        # --- Per-day signal management ---
+        if ot_risk == "high":
+            day_label = f"Day {day.dayNumber}" + (f" ({day.date})" if day.date else "")
+            day_message = (
+                f"{day_label} is scheduled at {pages:.2f} pages "
+                f"({pages_over:.2f} over the {_STANDARD_PAGES:.0f}-page standard). "
+                f"Estimated {estimated_ot_hours:.1f} OT hours, "
+                f"~${ot_cost:,.0f} projected OT cost."
+            )
+            if day.id in existing_day_signals:
+                await prisma.productionsignal.update(
+                    where={"id": existing_day_signals[day.id].id},
+                    data={"severity": "medium", "message": day_message},
+                )
+            else:
+                await prisma.productionsignal.create(
+                    data={
+                        "productionId": production_id,
+                        "signalType":   "ot_spike",
+                        "severity":     "medium",
+                        "source":       "ot_engine",
+                        "entityType":   "shoot_day",
+                        "entityId":     day.id,
+                        "message":      day_message,
+                    }
+                )
+                day_signals_created += 1
+        else:
+            # Auto-resolve a per-day signal if this day is no longer high risk
+            if day.id in existing_day_signals:
+                await prisma.productionsignal.update(
+                    where={"id": existing_day_signals[day.id].id},
+                    data={
+                        "resolved": True,
+                        "resolvedAt": datetime.now(timezone.utc),
+                        "resolvedBy": "ot_engine",
+                    },
+                )
 
         day_risks.append(ShootDayRisk(
             day_number=day.dayNumber,
@@ -146,7 +211,7 @@ async def predict_ot(production_id: str):
     avg_pages = total_pages / len(shoot_days) if shoot_days else 0.0
     projected_ot_pct = (total_projected_ot / budget_total * 100) if budget_total > 0 else 0.0
 
-    # Fire ot_spike signal if OT projection exceeds threshold
+    # --- Aggregate signal: projected OT > 5% of budget ---
     signal_created = False
     if projected_ot_pct > _OT_SIGNAL_PCT * 100:
         severity = "critical" if projected_ot_pct > 15 else "high" if projected_ot_pct > 8 else "medium"
@@ -156,18 +221,10 @@ async def predict_ot(production_id: str):
             f"({projected_ot_pct:.1f}% of budget). "
             f"Average {avg_pages:.1f} pages/day against {_STANDARD_PAGES:.0f}-page standard."
         )
-        existing = await prisma.productionsignal.find_many(
-            where={
-                "productionId": production_id,
-                "signalType": "ot_spike",
-                "source": "ot_engine",
-                "resolved": False,
-            }
-        )
-        if existing:
+        if existing_aggregate:
             await prisma.productionsignal.update(
-                where={"id": existing[0].id},
-                data={"severity": severity, "message": message}
+                where={"id": existing_aggregate[0].id},
+                data={"severity": severity, "message": message},
             )
         else:
             await prisma.productionsignal.create(
@@ -183,23 +240,15 @@ async def predict_ot(production_id: str):
             )
             signal_created = True
     else:
-        # Resolve existing OT signal if now under threshold
-        existing = await prisma.productionsignal.find_many(
-            where={
-                "productionId": production_id,
-                "signalType": "ot_spike",
-                "source": "ot_engine",
-                "resolved": False,
-            }
-        )
-        if existing:
+        # Resolve existing aggregate signal if now under threshold
+        if existing_aggregate:
             await prisma.productionsignal.update(
-                where={"id": existing[0].id},
+                where={"id": existing_aggregate[0].id},
                 data={
                     "resolved": True,
                     "resolvedAt": datetime.now(timezone.utc),
                     "resolvedBy": "ot_engine",
-                }
+                },
             )
 
     return OTPredictionResponse(
@@ -215,5 +264,6 @@ async def predict_ot(production_id: str):
         projected_ot_cost=round(total_projected_ot, 2),
         projected_ot_pct=round(projected_ot_pct, 1),
         signal_created=signal_created,
+        day_signals_created=day_signals_created,
         shoot_days=day_risks,
     )
