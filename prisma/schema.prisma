@@ -169,7 +169,8 @@ model IncentiveRule {
   maxCredit        Float?
   eligibleExpenses String[]
   excludedExpenses String[]
-  creditType       String       @default("refundable")
+  creditType       String?
+  stackable        Boolean?     @default(false)
   effectiveDate    DateTime
   expirationDate   DateTime?
   requirements     String?
@@ -191,7 +192,7 @@ model Production {
   budgetQualifying  Float?
   startDate         DateTime
   endDate           DateTime?
-   episodeCount      Int?
+  episodeCount      Int?
   productionCompany String
   status            String
   contact           String?
@@ -261,7 +262,7 @@ model User {
   @@map("users")
 }
 
-/// Maximizer scenarios saved by a user — persisted in DB, not localStorage.
+/// Maximizer scenarios saved by a user Ã¢â‚¬â€ persisted in DB, not localStorage.
 model UserScenario {
   id          String   @id @default(uuid())
   userId      String
@@ -345,7 +346,7 @@ model MonitoringEvent {
   @@map("monitoring_events")
 }
 
-// ─── Phase 0: Sub-Jurisdiction Layer ──────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Phase 0: Sub-Jurisdiction Layer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 /// County, city, region, or special-district incentive that stacks on top of
 /// the base state credit. Links to the parent Jurisdiction via parentJurisdictionId.
@@ -431,7 +432,7 @@ model ScenarioOptimizationResult {
   effectiveRate       Decimal? @db.Decimal(5, 2)  @map("effective_rate")
   /// e.g. "refundable within 90 days of audit"
   cashFlowEstimate    String?  @map("cash_flow_estimate")
-  /// e.g. ["Annual cap 82% exhausted — apply early"]
+  /// e.g. ["Annual cap 82% exhausted Ã¢â‚¬â€ apply early"]
   warnings            Json?
 
   createdAt DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
@@ -440,7 +441,7 @@ model ScenarioOptimizationResult {
   @@map("scenario_optimization_results")
 }
 
-// ─── Broadcast Scheduler Parser ───────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Broadcast Scheduler Parser Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 /// One parsed segment from a broadcast schedule (CSV / XML/BXF / JSON).
 /// Populated by the schedule_parser router from the broadcast_scheduler
@@ -472,11 +473,11 @@ model ScheduleEvent {
   @@map("schedule_events")
 }
 
-// ─── Production Schedule Engine ───────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Production Schedule Engine Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 /// One scene from a script breakdown. Imported from CSV / Movie Magic
 /// Scheduling (.mms) / Final Draft (.fdx). Optionally pinned to a shoot day
-/// and a jurisdiction. NOTE: this is a PRODUCTION SHOOTING scene — distinct
+/// and a jurisdiction. NOTE: this is a PRODUCTION SHOOTING scene Ã¢â‚¬â€ distinct
 /// from broadcast/playout records in schedule_events.
 model Scene {
   id              String        @id @default(uuid())
@@ -494,7 +495,7 @@ model Scene {
   pageCount       Float?
   jurisdictionId  String?
   jurisdiction    Jurisdiction? @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
-  /// CastMember.id list — denormalized for MVP. Replace with a join table
+  /// CastMember.id list Ã¢â‚¬â€ denormalized for MVP. Replace with a join table
   /// if scene/cast queries become hot.
   castIds         String[]      @default([])
   notes           String?
@@ -526,6 +527,9 @@ model ShootDay {
   totalPages      Float?
   /// Crew call time string, e.g. "06:00 AM"
   callTime        String?
+  /// Crew wrap time string, e.g. "11:30 PM". A wrap time earlier than
+  /// callTime is interpreted as after midnight (next calendar day).
+  wrapTime        String?
   location        String?
   nearestHospital String?
   notes           String?
@@ -576,7 +580,7 @@ model CallSheet {
   generalCall     String?
   location        String?
   nearestHospital String?
-  /// Placeholder — populated manually or via weather API later
+  /// Placeholder Ã¢â‚¬â€ populated manually or via weather API later
   weather         String?
   /// Snapshot of scene list at generation time
   scenes          Json?
@@ -613,7 +617,7 @@ model JurisdictionShootDays {
   @@map("jurisdiction_shoot_days")
 }
 
-// ─── Conflict Engine (ported from incentives-app) ─────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Conflict Engine (ported from incentives-app) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 /// Lookup table of the four resolution strategies.
 model ConflictResolutionStrategy {
@@ -752,3 +756,5 @@ model ProductionSignal {
   @@index([resolved])
   @@map("production_signals")
 }
+
+
