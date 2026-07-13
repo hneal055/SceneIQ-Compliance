@@ -35,6 +35,7 @@ from src.api.atl_btl import router as atl_btl_router
 from src.api.budget_risk import router as budget_risk_router
 from src.api.burn_rate import router as burn_rate_router
 from src.api.ot_prediction import router as ot_prediction_router
+from src.api.turnaround_analysis import router as turnaround_router
 from src.api.what_if import router as what_if_router
 from src.api.scenes import router as scenes_router
 from src.utils.auth_utils import get_current_user
@@ -79,6 +80,7 @@ router.include_router(atl_btl_router, dependencies=_auth_dep)
 router.include_router(budget_risk_router, dependencies=_auth_dep)
 router.include_router(burn_rate_router, dependencies=_auth_dep)
 router.include_router(ot_prediction_router, dependencies=_auth_dep)
+router.include_router(turnaround_router, dependencies=_auth_dep)
 router.include_router(what_if_router, dependencies=_auth_dep)
 router.include_router(scenes_router, dependencies=_auth_dep)
 
