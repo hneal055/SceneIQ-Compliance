@@ -50,6 +50,7 @@ class CrewCallItem(BaseModel):
     department: Optional[str] = None
     name: Optional[str] = None
     call_time: Optional[str] = Field(None, description="e.g. '05:30 AM'")
+    wrap_time: Optional[str] = Field(None, description="e.g. '11:30 PM'")
 
 
 class CreateShootDayBody(BaseModel):
@@ -63,6 +64,7 @@ class CreateShootDayBody(BaseModel):
     )
     location: Optional[str] = None
     call_time: Optional[str] = Field(None, description="e.g. '06:00 AM'")
+    wrap_time: Optional[str] = Field(None, description="e.g. '11:30 PM'")
     nearest_hospital: Optional[str] = None
     notes: Optional[str] = None
 
@@ -78,6 +80,7 @@ class UpdateShootDayBody(BaseModel):
     )
     location: Optional[str] = None
     call_time: Optional[str] = Field(None, description="e.g. '06:00 AM'")
+    wrap_time: Optional[str] = Field(None, description="e.g. '11:30 PM'")
     nearest_hospital: Optional[str] = None
     notes: Optional[str] = None
     crew_calls: Optional[List[CrewCallItem]] = Field(

@@ -41,6 +41,9 @@ class ShootDay:
     # Crew call time string, e.g. "06:00 AM".
     call_time: Optional[str] = None
 
+    # Crew wrap time string, e.g. "11:30 PM".
+    wrap_time: Optional[str] = None
+
     # Primary shooting location for the day.
     location: Optional[str] = None
 
