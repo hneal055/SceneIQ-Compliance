@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
 
 from src.utils.database import prisma
+from src.api.fringe_analysis import get_fringe_multiplier
 
 logger = logging.getLogger(__name__)
 
@@ -102,9 +103,9 @@ async def analyze_turnaround(production_id: str):
     crew = await prisma.crewmember.find_many(
         where={"productionId": production_id, "status": "active"},
     )
-    rates = [c.dailyRate for c in crew if c.dailyRate and c.dailyRate > 0]
+    rates = [c.dailyRate * get_fringe_multiplier(c.union) for c in crew if c.dailyRate and c.dailyRate > 0]
     if not rates:
-        rates = [c.weeklyRate / 5 for c in crew if c.weeklyRate and c.weeklyRate > 0]
+        rates = [(c.weeklyRate / 5) * get_fringe_multiplier(c.union) for c in crew if c.weeklyRate and c.weeklyRate > 0]
     avg_daily_rate = sum(rates) / len(rates) if rates else 500.0
     crew_count = len(crew) if crew else 20
 
@@ -180,7 +181,7 @@ async def analyze_turnaround(production_id: str):
                 f"({d_to.date}) - only {turnaround:.1f} hours of rest against the "
                 f"{_MIN_TURNAROUND_HOURS:.0f}-hour minimum ({hours_short:.1f} hours short). "
                 f"Estimated forced-call exposure: ${forced_cost:,.0f} "
-                f"({crew_count} crew at ${avg_daily_rate:,.0f}/day)."
+                f"({crew_count} crew at ${avg_daily_rate:,.0f}/day loaded)."
             )
             if d_to.id in existing_by_day:
                 await prisma.productionsignal.update(

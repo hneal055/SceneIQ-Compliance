@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from datetime import datetime, timezone
 
 from src.utils.database import prisma
+from src.api.fringe_analysis import get_fringe_multiplier
 
 logger = logging.getLogger(__name__)
 
@@ -98,10 +99,10 @@ async def predict_ot(production_id: str):
     )
 
     # Calculate average daily rate across crew
-    rates = [c.dailyRate for c in crew if c.dailyRate and c.dailyRate > 0]
+    rates = [c.dailyRate * get_fringe_multiplier(c.union) for c in crew if c.dailyRate and c.dailyRate > 0]
     if not rates:
         # Fall back to weekly rate / 5 if no daily rates
-        rates = [c.weeklyRate / 5 for c in crew if c.weeklyRate and c.weeklyRate > 0]
+        rates = [(c.weeklyRate / 5) * get_fringe_multiplier(c.union) for c in crew if c.weeklyRate and c.weeklyRate > 0]
     avg_daily_rate = sum(rates) / len(rates) if rates else 500.0  # $500 default if no rates
     crew_count = len(crew) if crew else 20  # industry average crew size if no crew loaded
 
