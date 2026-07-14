@@ -37,6 +37,7 @@ from src.api.burn_rate import router as burn_rate_router
 from src.api.ot_prediction import router as ot_prediction_router
 from src.api.turnaround_analysis import router as turnaround_router
 from src.api.meal_penalty import router as meal_penalty_router
+from src.api.fringe_analysis import router as fringe_router
 from src.api.what_if import router as what_if_router
 from src.api.scenes import router as scenes_router
 from src.utils.auth_utils import get_current_user
@@ -83,6 +84,7 @@ router.include_router(burn_rate_router, dependencies=_auth_dep)
 router.include_router(ot_prediction_router, dependencies=_auth_dep)
 router.include_router(turnaround_router, dependencies=_auth_dep)
 router.include_router(meal_penalty_router, dependencies=_auth_dep)
+router.include_router(fringe_router, dependencies=_auth_dep)
 router.include_router(what_if_router, dependencies=_auth_dep)
 router.include_router(scenes_router, dependencies=_auth_dep)
 
