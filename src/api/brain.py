@@ -120,7 +120,27 @@ async def brain_diag():
         )
         out["call"] = "SUCCEEDED: " + msg.content[0].text
     except Exception as e:
-        out["call"] = f"FAILED: {type(e).__name__} - {e}"
+        chain = []
+        cur = e
+        while cur is not None:
+            chain.append(f"{type(cur).__name__}: {cur}")
+            cur = cur.__cause__ or cur.__context__
+            if len(chain) > 6:
+                break
+        out["call"] = "FAILED"
+        out["cause_chain"] = chain
+    # Raw probes to separate DNS / TLS / egress
+    import httpx
+    for name, url in [("https_anthropic", "https://api.anthropic.com"),
+                      ("https_google", "https://www.google.com")]:
+        try:
+            r = httpx.get(url, timeout=8)
+            out[name] = f"OK {r.status_code}"
+        except Exception as pe:
+            root = pe
+            while root.__cause__ or root.__context__:
+                root = root.__cause__ or root.__context__
+            out[name] = f"FAIL {type(pe).__name__} / root: {type(root).__name__}: {root}"
     return out
 
 
