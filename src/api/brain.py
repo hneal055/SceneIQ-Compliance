@@ -101,6 +101,29 @@ async def _claude_narrative(prompt: str) -> Optional[str]:
 # Brain run
 # ---------------------------------------------------------------------------
 
+@router.get("/brain/diag", summary="TEMPORARY: diagnose Claude connectivity")
+async def brain_diag():
+    import os
+    out = {
+        "key_present": bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "key_prefix": (os.environ.get("ANTHROPIC_API_KEY") or "")[:14],
+        "base_url_env": os.environ.get("ANTHROPIC_BASE_URL", "not set"),
+        "proxy_vars": [k for k in os.environ if "PROXY" in k.upper()] or "none",
+    }
+    try:
+        import anthropic
+        out["anthropic_version"] = anthropic.__version__
+        client = anthropic.AsyncAnthropic()
+        msg = await client.messages.create(
+            model="claude-sonnet-4-6", max_tokens=20,
+            messages=[{"role": "user", "content": "Say OK"}],
+        )
+        out["call"] = "SUCCEEDED: " + msg.content[0].text
+    except Exception as e:
+        out["call"] = f"FAILED: {type(e).__name__} - {e}"
+    return out
+
+
 @router.post(
     "/productions/{production_id}/brain/run",
     response_model=BrainRunResponse,
