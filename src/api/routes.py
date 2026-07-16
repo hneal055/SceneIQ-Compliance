@@ -41,6 +41,7 @@ from src.api.fringe_analysis import router as fringe_router
 from src.api.dood_analysis import router as dood_router
 from src.api.crew_assignment import router as assignment_router
 from src.api.brain import router as brain_router
+from src.api.weather_risk import router as weather_router
 from src.api.what_if import router as what_if_router
 from src.api.scenes import router as scenes_router
 from src.utils.auth_utils import get_current_user
@@ -91,6 +92,7 @@ router.include_router(fringe_router, dependencies=_auth_dep)
 router.include_router(dood_router, dependencies=_auth_dep)
 router.include_router(assignment_router, dependencies=_auth_dep)
 router.include_router(brain_router, dependencies=_auth_dep)
+router.include_router(weather_router, dependencies=_auth_dep)
 router.include_router(what_if_router, dependencies=_auth_dep)
 router.include_router(scenes_router, dependencies=_auth_dep)
 
