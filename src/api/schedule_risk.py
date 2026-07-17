@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from datetime import datetime, timezone
 
 from src.utils.database import prisma
+from src.api.tier_config import pages_standard
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,7 @@ async def score_schedule(production_id: str):
     production = await prisma.production.find_unique(where={"id": production_id})
     if not production:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Production not found")
+    _std = pages_standard(production)
 
     shoot_days = await prisma.shootday.find_many(
         where={"productionId": production_id}, order={"dayNumber": "asc"},
@@ -191,7 +193,7 @@ async def score_schedule(production_id: str):
                 turnaround_pressure = rest < _MIN_COMFORT_REST
 
         # --- Score ---
-        f_pages = min((total_pages / _STANDARD_PAGES) * _W_PAGES, _W_PAGES * 1.5)
+        f_pages = min((total_pages / _std) * _W_PAGES, _W_PAGES * 1.5)
         f_ext = ext_ratio * _W_EXT
         f_night = night_ratio * _W_NIGHT
         f_flags = min(len(flags_found) * _W_FLAG_EACH, _W_FLAG_CAP)
@@ -203,7 +205,7 @@ async def score_schedule(production_id: str):
         tier = next(t for threshold, t in _TIERS if score >= threshold)
 
         # Predicted slippage: pages at risk of not completing
-        overload = max(0.0, total_pages - _STANDARD_PAGES)
+        overload = max(0.0, total_pages - _std)
         pages_at_risk = round(overload + (score / 100.0) * 1.0, 2)
 
         factors = {

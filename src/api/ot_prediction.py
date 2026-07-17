@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from datetime import datetime, timezone
 
 from src.utils.database import prisma
+from src.api.tier_config import pages_standard
 from src.api.fringe_analysis import get_fringe_multiplier
 
 logger = logging.getLogger(__name__)
@@ -108,6 +109,7 @@ async def predict_ot(production_id: str):
 
     # Derived hourly rate from standard day length
     avg_hourly_rate = avg_daily_rate / _STANDARD_HOURS
+    _std = pages_standard(production)
 
     # Load all unresolved OT signals for this production once,
     # split into per-day and aggregate for dedupe/resolve logic.
@@ -142,7 +144,7 @@ async def predict_ot(production_id: str):
             pages = 0.0
 
         total_pages += pages
-        pages_over = max(0.0, pages - _STANDARD_PAGES)
+        pages_over = max(0.0, pages - _std)
 
         # OT risk classification
         if pages_over == 0:
@@ -164,7 +166,7 @@ async def predict_ot(production_id: str):
             day_label = f"Day {day.dayNumber}" + (f" ({day.date})" if day.date else "")
             day_message = (
                 f"{day_label} is scheduled at {pages:.2f} pages "
-                f"({pages_over:.2f} over the {_STANDARD_PAGES:.0f}-page standard). "
+                f"({pages_over:.2f} over the {_std:.0f}-page standard). "
                 f"Estimated {estimated_ot_hours:.1f} OT hours, "
                 f"~${ot_cost:,.0f} projected OT cost."
             )
@@ -217,10 +219,10 @@ async def predict_ot(production_id: str):
     if projected_ot_pct > _OT_SIGNAL_PCT * 100:
         severity = "critical" if projected_ot_pct > 15 else "high" if projected_ot_pct > 8 else "medium"
         message = (
-            f"{days_at_risk} of {len(shoot_days)} shoot days are over the 8-page standard. "
+            f"{days_at_risk} of {len(shoot_days)} shoot days are over the {_std:.0f}-page standard. "
             f"Projected OT cost: ${total_projected_ot:,.0f} "
             f"({projected_ot_pct:.1f}% of budget). "
-            f"Average {avg_pages:.1f} pages/day against {_STANDARD_PAGES:.0f}-page standard."
+            f"Average {avg_pages:.1f} pages/day against {_std:.0f}-page standard."
         )
         if existing_aggregate:
             await prisma.productionsignal.update(
