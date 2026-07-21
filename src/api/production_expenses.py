@@ -204,6 +204,8 @@ _LABOR_KEYWORDS = [
     "labor", "staff", "salary", "wage", "director", "actor",
     "cast", "talent", "operator", "crew", "technician", "artist",
     "coordinator", "supervisor", "producer", "assistant", "manager",
+    "personnel", "employee", "workforce", "payroll", "contractor",
+    "freelance", "hire", "human resources", "hr", "benefits",
 ]
 _LABOR_NOTE = (
     "Imported as labor — requires manual Above-the-Line / Below-the-Line "
@@ -230,6 +232,21 @@ _CATEGORY_RULES: list[tuple[list[str], str, bool, str]] = [
      "Auto-classified as legal (never qualifying)."),
     (["insurance"], "insurance", False,
      "Auto-classified as insurance (never qualifying)."),
+    (["asset", "assets", "purchase", "procurement"], "equipment", True,
+     "Auto-classified as equipment/assets (qualifying)."),
+    (["technology", "software", "license", "saas", "cloud", "infrastructure",
+      "server", "hosting", "computing"], "equipment", True,
+     "Auto-classified as technology/infrastructure (qualifying)."),
+    (["supplies", "office", "materials", "consumables"], "locations", True,
+     "Auto-classified as supplies/materials (qualifying)."),
+    (["marketing", "advertising", "promotion", "publicity", "campaign"], "other", True,
+     "Auto-classified as marketing/advertising (qualifying where applicable)."),
+    (["training", "development", "education", "workshop"], "other", True,
+     "Auto-classified as training/development (qualifying where applicable)."),
+    (["morale", "team building", "team lunch", "team event"], "catering", True,
+     "Auto-classified as team/morale expense under catering (qualifying)."),
+    (["personnel"], "labor", False,
+     "Auto-classified as labor/personnel - requires ATL/BTL review."),
 ]
 
 
