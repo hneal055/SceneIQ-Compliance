@@ -47,6 +47,7 @@ from src.api.monte_carlo import router as monte_carlo_router
 from src.api.budget_hygiene import router as hygiene_router
 from src.api.aicp_parser import router as aicp_router
 from src.api.what_if import router as what_if_router
+from src.api.crew_intelligence import router as crew_intelligence_router
 from src.api.scenes import router as scenes_router
 from src.utils.auth_utils import get_current_user
 
@@ -102,6 +103,7 @@ router.include_router(monte_carlo_router, dependencies=_auth_dep)
 router.include_router(hygiene_router, dependencies=_auth_dep)
 router.include_router(aicp_router, dependencies=_auth_dep)
 router.include_router(what_if_router, dependencies=_auth_dep)
+router.include_router(crew_intelligence_router, dependencies=_auth_dep)
 router.include_router(scenes_router, dependencies=_auth_dep)
 
 
