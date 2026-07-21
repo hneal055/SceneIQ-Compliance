@@ -1,5 +1,5 @@
 """
-crew_intelligence.py — Phase 5 Slice 1: Workplace Compliance Engine
+crew_intelligence.py - Phase 5 Slice 1: Workplace Compliance Engine
 POST /productions/{id}/crew/analyze
 
 Analyzes the shoot schedule for labor rule violations:
@@ -7,7 +7,7 @@ Analyzes the shoot schedule for labor rule violations:
 - Forced calls (turnaround < 8hr = critical)
 - Extended-day meal penalty risk (page count implies shoot day beyond 12hrs)
 
-Fires crew_conflict signals. Idempotent — resolves stale signals on re-run.
+Fires crew_conflict signals. Idempotent - resolves stale signals on re-run.
 """
 import logging
 from datetime import datetime, timedelta, timezone
@@ -135,14 +135,14 @@ async def analyze_crew(production_id: str):
             elif turnaround_hours < turnaround_req:
                 msg = (
                     f"Turnaround violation: Day {day.dayNumber} call is {turnaround_hours}h after "
-                    f"Day {prev_day_number} estimated wrap — {strictest} requires {turnaround_req}h."
+                    f"Day {prev_day_number} estimated wrap - {strictest} requires {turnaround_req}h."
                 )
                 violations.append(msg)
                 violation_msgs.append(("high", msg))
 
         if day_hours > _STANDARD_DAY_HOURS:
             msg = (
-                f"Extended day risk: Day {day.dayNumber} has {pages} pages scheduled — estimated "
+                f"Extended day risk: Day {day.dayNumber} has {pages} pages scheduled - estimated "
                 f"{day_hours:.1f}h day. Second meal penalty likely; budget meal penalties or split the day."
             )
             violations.append(msg)
