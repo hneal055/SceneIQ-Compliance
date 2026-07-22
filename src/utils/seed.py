@@ -1,4 +1,4 @@
-﻿"""
+"""
 Database seeding â€” jurisdictions, incentive rules.
 
 Called from src/main.py lifespan on every startup.
@@ -342,7 +342,7 @@ async def seed_all() -> None:
     """Seed jurisdictions, incentive rules, demo productions, and monitoring data. Idempotent â€” safe on every startup."""
     await _seed_jurisdictions()
     await _seed_rules()
-    await _seed_productions()
+    # await _seed_productions()  # disabled — demo data no longer seeded on deploy
     await _seed_monitoring()
 
 
