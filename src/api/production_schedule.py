@@ -67,6 +67,8 @@ from src.services.production_schedule.generators.stripboard import (
 from src.services.production_schedule.importers.csv_importer import parse_csv_breakdown
 from src.services.production_schedule.importers.fdx_importer import parse_fdx_file
 from src.services.production_schedule.importers.mms_importer import parse_mms_file
+from src.services.production_schedule.importers.fountain_importer import parse_fountain_file
+from src.services.production_schedule.importers.txt_importer import parse_txt_file
 from src.services.production_schedule.models.call_sheet import CallSheet
 from src.services.production_schedule.models.cast_member import CastMember
 from src.services.production_schedule.models.jurisdiction_shoot_days import (
