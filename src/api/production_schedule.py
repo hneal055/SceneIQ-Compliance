@@ -1,4 +1,4 @@
-﻿"""
+"""
 Production Schedule Engine API endpoints.
 
 Wires every Phase 2â€“9 service module into FastAPI:
@@ -227,7 +227,6 @@ async def import_breakdown(production_id: str, file: UploadFile = File(...)):
                         "locationType":   scene.location_type,
                         "timeOfDay":      scene.time_of_day,
                         "pageCount":      scene.page_count,
-                        "jurisdictionId": resolved_jid,
                         "castIds":        resolved_cast_ids,
                         "notes":          scene.notes,
                     }
@@ -427,7 +426,7 @@ async def create_shoot_day(production_id: str, body: CreateShootDayBody):
                 "productionId":    production_id,
                 "dayNumber":       next_day_number,
                 "date":            body.date,
-                "jurisdictionId":  resolved_jid,
+        # jurisdictionId added below only when resolved
                 "callTime":        body.call_time,
                 "wrapTime":        body.wrap_time,
                 "location":        body.location,
@@ -491,8 +490,11 @@ async def update_shoot_day(
         "nearestHospital": body.nearest_hospital,
         "notes":           body.notes,
     }
+    if resolved_jid is not None:
+        data["jurisdictionId"] = resolved_jid
     if crew_calls_json is not None:
-        data["crewCalls"] = crew_calls_json
+        import json as _json
+        data["crewCalls"] = _json.dumps(crew_calls_json)
 
     try:
         updated = await prisma.shootday.update(where={"id": shoot_day_id}, data=data)
