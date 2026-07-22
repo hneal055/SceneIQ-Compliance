@@ -1,6 +1,6 @@
 """
-calculator_export.py — PDF export for Scenario Calculator results
-POST /calculator/scenario/export — returns a PDF report
+calculator_export.py â€” PDF export for Scenario Calculator results
+POST /calculator/scenario/export â€” returns a PDF report
 
 Runs the same scenario calculation and formats the results as a
 downloadable PDF with jurisdiction, scenario comparison table,
