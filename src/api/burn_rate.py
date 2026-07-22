@@ -1,4 +1,4 @@
-﻿"""
+"""
 burn_rate.py — Phase 4 Slice 2: Burn Rate Forecasting
 GET /productions/{id}/budget/burn-rate
 
@@ -122,7 +122,7 @@ async def get_burn_rate(production_id: str):
     # If we have expenses with dates, use the earliest expense date as burn start
     if expenses:
         earliest_expense = _parse_date(expenses[0].expenseDate)
-        if earliest_expense and earliest_expense > start_date:
+        if earliest_expense and earliest_expense < today:
             days_elapsed = max(1, (today - earliest_expense).days)
             forecast_basis = "actual_dates"
 
