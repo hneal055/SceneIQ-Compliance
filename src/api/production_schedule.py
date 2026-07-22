@@ -91,6 +91,8 @@ _IMPORTERS = {
     ".csv": ("csv", parse_csv_breakdown),
     ".mms": ("mms", parse_mms_file),
     ".fdx": ("fdx", parse_fdx_file),
+    ".fountain": ("fountain", parse_fountain_file),
+    ".txt": ("txt", parse_txt_file),
 }
 
 
