@@ -1,3 +1,4 @@
+import USJurisdictionMap from '../components/USJurisdictionMap';
 import { useState, useEffect, useMemo } from 'react';
 import { Search, RefreshCw, Bookmark, ChevronDown, X, ExternalLink, CheckCircle, Send, Loader2 } from 'lucide-react';
 import type { Jurisdiction, IncentiveRule, MonitoringEvent } from '../types';
