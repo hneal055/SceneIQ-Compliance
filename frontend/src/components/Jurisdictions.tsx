@@ -5,7 +5,7 @@ import type { Jurisdiction, IncentiveRule, MonitoringEvent } from '../types';
 import api from '../api';
 import JurisdictionDetail from '../components/JurisdictionDetail';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// --- Helpers -----------------------------------------------------------------
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -17,11 +17,9 @@ function timeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function capitalize(s: string) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// --- Sub-components ----------------------------------------------------------
 
 function FilterDropdown({ value, options, onChange }: { value: string; options: string[]; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -67,7 +65,7 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   );
 }
 
-// ─── Concierge modal ──────────────────────────────────────────────────────────
+// --- Concierge modal ---------------------------------------------------------
 
 const INQUIRY_TYPES = [
   'Custom jurisdiction application',
@@ -111,7 +109,7 @@ function ConciergeModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">Contact Concierge</h2>
-              <p className="text-slate-500 text-xs mt-0.5">SceneIQ specialist team · typically replies in 2h</p>
+              <p className="text-slate-500 text-xs mt-0.5">SceneIQ specialist team - typically replies in 2h</p>
             </div>
           </div>
           <button type="button" onClick={onClose} title="Close" aria-label="Close" className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -189,7 +187,7 @@ function ConciergeModal({ onClose }: { onClose: () => void }) {
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">Message <span className="text-red-400">*</span></label>
               <textarea
                 rows={4}
-                placeholder="Describe your production's needs, jurisdiction targets, and any specific questions…"
+                placeholder="Describe your production's needs, jurisdiction targets, and any specific questions..."
                 value={form.message}
                 onChange={e => { setForm(f => ({ ...f, message: e.target.value })); setErrors(er => ({ ...er, message: undefined })); }}
                 className={`w-full px-3.5 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none ${errors.message ? 'border-red-400' : 'border-slate-200'}`}
@@ -213,7 +211,7 @@ function ConciergeModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// --- Main component ----------------------------------------------------------
 
 export default function Jurisdictions() {
   const [jurisdictions, setJurisdictions] = useState<Jurisdiction[]>([]);
@@ -245,7 +243,7 @@ export default function Jurisdictions() {
       .finally(() => setFeedLoading(false));
   }, []);
 
-  // ── Client-side join helpers ─────────────────────────────────────────────────
+  // -- Client-side join helpers -----------------------------------------------
 
   function getBestRate(jId: string): number {
     return rules
@@ -285,7 +283,7 @@ export default function Jurisdictions() {
     grant:          'Grant',
   };
 
-  // ── Dynamic filter options ───────────────────────────────────────────────────
+  // -- Dynamic filter options -------------------------------------------------
 
   const ALL_TYPES = useMemo(() => {
     const types = Array.from(new Set(jurisdictions.map(j => capitalize(j.type)))).sort();
@@ -297,7 +295,7 @@ export default function Jurisdictions() {
     return ['All Countries', ...countries];
   }, [jurisdictions]);
 
-  // ── Filtering ────────────────────────────────────────────────────────────────
+  // -- Filtering --------------------------------------------------------------
 
   const filtered = useMemo(() => jurisdictions.filter(j => {
     const matchType    = typeFilter    === 'All Types'     || capitalize(j.type) === typeFilter;
@@ -309,7 +307,7 @@ export default function Jurisdictions() {
     return matchType && matchCountry && matchSearch;
   }), [jurisdictions, search, typeFilter, countryFilter]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
+  // -- Handlers ---------------------------------------------------------------
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(null), 3000); }
 
@@ -358,7 +356,7 @@ export default function Jurisdictions() {
   return (
     <div className="flex gap-6 h-full min-h-0">
 
-      {/* ── Left panel ────────────────────────────────────────── */}
+      {/* -- Left panel ---------------------------------------------------- */}
       <div className="w-72 shrink-0 flex flex-col gap-4">
 
         {/* Regulatory Feed */}
@@ -435,29 +433,10 @@ export default function Jurisdictions() {
         </div>
       </div>
 
-      {/* ── Main content ──────────────────────────────────────── */}
+      {/* -- Main content -------------------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0 gap-4">
 
-      {/* Header */}
-        <div>
-          <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
-            Jurisdiction Intelligence
-          </h1>
-          <p className="text-slate-500 mt-1 text-[15px]">
-            Explore and filter international tax incentive profiles.
-          </p>
-        </div>
-
-        {/* Interactive Map */}
-        <USJurisdictionMap
-          jurisdictions={jurisdictions}
-          onSelect={(code) => {
-            const target = jurisdictions.find(j => j.code === code);
-            if (target) setSelectedId(target.id);
-          }}
-        />
-
-        {/* Filters */}  {/* Header */}
+        {/* Header */}
         <div>
           <h1 className="text-[28px] font-bold text-slate-900 tracking-tight leading-tight">
             Jurisdiction Intelligence
@@ -494,6 +473,10 @@ export default function Jurisdictions() {
           </button>
         </div>
 
+        {/* Jurisdiction Map */}
+        {!isLoading && jurisdictions.length > 0 && (
+          <USJurisdictionMap jurisdictions={jurisdictions} onSelect={(code) => setSearch(code)} />
+        )}
 
         {/* Loading */}
         {isLoading && (

@@ -65,3 +65,5 @@ temp_token.txt
 *.pdf
 *.pptx
 node_modules/
+
+SysinternalsSuite.zip

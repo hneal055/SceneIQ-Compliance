@@ -140,7 +140,23 @@ export default function USJurisdictionMap({ jurisdictions, onSelect }: Props) {
         alignItems: 'center',
         marginBottom: '16px',
       }}>
-       
+        <div>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 700,
+            color: '#1A1A2E',
+            margin: 0,
+          }}>
+            Jurisdiction Intelligence
+          </h2>
+          <p style={{
+            fontSize: '13px',
+            color: '#6B7280',
+            margin: '4px 0 0',
+          }}>
+            US film incentive coverage across {activeCodes.size} active jurisdictions
+          </p>
+        </div>
 
         {/* Legend */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '12px' }}>
