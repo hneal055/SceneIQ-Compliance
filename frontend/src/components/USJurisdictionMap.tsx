@@ -43,6 +43,23 @@ const REGION_LABELS: Record<Region, string> = {
   international: 'International',
 };
 
+// geoAlbersUsa auto-fits the US, so it needs no manual config. The other two
+// projections default to fitting the WHOLE GLOBE, so without an explicit
+// scale/center they render as a tiny sliver — these values manually frame
+// each region. Treat these numbers as a starting point; they're untested
+// against the live viewBox and will likely need a round of visual tuning.
+const PROJECTIONS: Record<Region, 'geoAlbersUsa' | 'geoMercator'> = {
+  us: 'geoAlbersUsa',
+  canada: 'geoMercator',
+  international: 'geoMercator',
+};
+
+const PROJECTION_CONFIG: Record<Region, { scale: number; center: [number, number] }> = {
+  us: { scale: 1000, center: [-96, 38] }, // unused by geoAlbersUsa, harmless
+  canada: { scale: 550, center: [-96, 62] },
+  international: { scale: 260, center: [15, 15] }, // splits the difference between Europe and South Africa
+};
+
 // Countries to highlight on the International tab (EU + South Africa + a couple
 // of others already seen in the jurisdiction list). Add more names here as needed —
 // names must match how world-atlas labels them (Natural Earth naming conventions).
@@ -188,7 +205,8 @@ export default function USJurisdictionMap({ jurisdictions, onSelect }: Props) {
           padding: '16px',
         }}>
           <ComposableMap
-            projection={region === 'us' ? 'geoAlbersUsa' : 'geoEqualEarth'}
+            projection={PROJECTIONS[region]}
+            projectionConfig={PROJECTION_CONFIG[region]}
             style={{ width: '100%', height: 'auto', maxHeight: '440px' }}
           >
             <Geographies geography={GEO_URLS[region]}>
