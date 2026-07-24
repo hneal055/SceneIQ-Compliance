@@ -63,7 +63,7 @@ const INTERNATIONAL_COUNTRIES = new Set([
   'Estonia', 'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Ireland',
   'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Netherlands', 'Poland',
   'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden',
-  'United Kingdom', 'South Africa', 'Australia',
+  'United Kingdom', 'South Africa',
 ]);
 
 // Known name mismatches between the SceneIQ database and the map's geography data.
