@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "axios": "^1.15.0",
+    "d3-geo": "^3.1.1",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
     "prop-types": "^15.8.1",
@@ -20,16 +21,19 @@
     "react-router-dom": "^7.12.0",
     "react-simple-maps": "^3.0.0",
     "recharts": "^3.6.0",
+    "topojson-client": "^3.1.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/axios": "^0.9.36",
+    "@types/d3-geo": "^3.1.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/react-simple-maps": "^3.0.6",
+    "@types/topojson-client": "^3.1.5",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.23",
     "eslint": "^9.39.1",
