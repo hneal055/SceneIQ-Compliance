@@ -5,8 +5,8 @@ Really enjoyed our conversation — your insights were exactly the kind of persp
 As promised, here's your access to SceneIQ:
 
 🔗 https://pilotforge-production-7c79.up.railway.app
-📧 admin@pilotforge.com
-🔑 pilotforge2024
+📧 <ADMIN_EMAIL>
+🔑 <ADMIN_PASSWORD_EXAMPLE>
 
 A few things worth exploring:
 - Productions → click into any project to see the full detail view with expenses, inline calculator, and matched incentive rules
