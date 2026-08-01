@@ -13,7 +13,7 @@ A full-stack compliance platform for discovering, stacking, and managing film an
 docker compose up -d
 ```
 
-Open `http://localhost:3000` — Login: `admin@pilotforge.com` / `pilotforge2024`
+Open `http://localhost:3000` — Login: <ADMIN_EMAIL> / <ADMIN_PASSWORD_EXAMPLE>  (do NOT commit real credentials)
 
 ---
 
@@ -47,7 +47,7 @@ Hosted on Railway with PostgreSQL. Auto-deploys on push to `main`.
 
 ## Production Schedule Engine
 
-Pre-production scheduling for film/TV: import a script breakdown, build the stripboard, generate the Day Out of Days and daily call sheets, and push verified per-jurisdiction shoot-day counts into the Incentive Calculator for qualification math.
+Pre-production scheduling for film/TV: import a script breakdown, build the stripboard, generate the Day Out of Days and daily call sheets, and push verified per-jurisdiction shoot-day counts into[...]
 
 **Sidebar:** Production Schedule → 5 sub-tabs (Import · Stripboard · Day Out of Days · Call Sheets · Jurisdiction Tracker).
 
@@ -77,7 +77,7 @@ All paths prefixed `/api/0.1.0/production-schedule/{production_id}` and require 
 
 ### Not to be confused with — Transmission Log
 
-The Production Schedule Engine handles **pre-production shooting schedules** (what is *filmed*, by whom, on which day, in which jurisdiction). The **Transmission Log** (sidebar: Transmission Log) handles **post-production broadcast schedules** (what *aired*, when, on which channel). Same word "schedule", two opposite ends of the production lifecycle. See [sceneiq_scheduler_integration.md](sceneiq_scheduler_integration.md) for the Transmission Log.
+The Production Schedule Engine handles **pre-production shooting schedules** (what is *filmed*, by whom, on which day, in which jurisdiction). The **Transmission Log** (sidebar: Transmission Log) [...]
 
 **Full operator guide:** [PRODUCTION_SCHEDULE_USER_GUIDE.md](PRODUCTION_SCHEDULE_USER_GUIDE.md).
 
