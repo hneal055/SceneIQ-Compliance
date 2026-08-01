@@ -5,9 +5,9 @@ from src.utils.auth_utils import hash_password
 
 async def main():
     await prisma.connect()
-    existing = await prisma.user.find_first(where={"email": "admin@pilotforge.com"})
+    existing = await prisma.user.find_first(where={"email": "<ADMIN_EMAIL>"})
     if not existing:
-        await prisma.user.create(data={"email": "admin@pilotforge.com", "passwordHash": hash_password("pilotforge2024"), "role": "admin", "isActive": True})
+        await prisma.user.create(data={"email": "<ADMIN_EMAIL>", "passwordHash": hash_password("<ADMIN_PASSWORD_EXAMPLE>"), "role": "admin", "isActive": True})
         print("Admin user created")
     else:
         print("Admin user already exists")
