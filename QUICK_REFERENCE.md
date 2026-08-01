@@ -4,8 +4,8 @@
 
 | Environment | URL | Login |
 |-------------|-----|-------|
-| Local | http://localhost:3000 | admin@pilotforge.com / pilotforge2024 |
-| Production | https://taxincentivecomplianceplatform-production.up.railway.app | admin@pilotforge.com / pilotforge2024 |
+| Local | http://localhost:3000 | <ADMIN_EMAIL> / <ADMIN_PASSWORD_EXAMPLE> |
+| Production | https://taxincentivecomplianceplatform-production.up.railway.app | <ADMIN_EMAIL> / <ADMIN_PASSWORD_EXAMPLE> |
 | API Docs | http://localhost:8001/api/0.1.0/docs | (requires login token) |
 
 ---
@@ -104,7 +104,7 @@ TOKEN="eyJ..."   # from POST /auth/login
 # Login
 curl -X POST http://localhost:8001/api/0.1.0/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@pilotforge.com","password":"pilotforge2024"}'
+  -d '{"email":"<ADMIN_EMAIL>","password":"<ADMIN_PASSWORD_EXAMPLE>"}'
 
 # Health (no auth)
 curl http://localhost:8001/health
