@@ -19,4 +19,4 @@ Flask-CORS==4.0.0
 Flask-Migrate==4.0.5
 SQLAlchemy==2.0.23
 bcrypt==4.1.1
-PyJWT==2.8.0
+PyJWT==2.13.0
